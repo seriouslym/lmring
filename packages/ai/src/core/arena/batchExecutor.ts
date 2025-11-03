@@ -1,0 +1,239 @@
+/**
+ * Batch Executor for Arena
+ *
+ * Enables concurrent execution of multiple models for comparison
+ */
+
+import type { GenerateTextResult, ModelMessage, StreamTextResult } from 'ai';
+import type { RequestInterceptor } from '../../types/interceptor';
+import type { CreateProviderOptions } from '../../types/provider';
+import { RuntimeExecutor } from '../runtime/RuntimeExecutor';
+
+/**
+ * Model configuration for comparison
+ */
+export interface ModelComparisonConfig {
+  /** Provider ID */
+  provider: string;
+  /** Model ID */
+  model: string;
+  /** Provider options (API key, etc.) */
+  options: Partial<CreateProviderOptions>;
+  /** Optional interceptor for this specific model */
+  interceptor?: RequestInterceptor;
+}
+
+/**
+ * Comparison result for a single model
+ */
+export interface ModelComparisonResult {
+  /** Provider ID */
+  provider: string;
+  /** Model ID */
+  model: string;
+  /** Result from streamText or generateText */
+  // biome-ignore lint/suspicious/noExplicitAny: Generic result type from AI SDK
+  result?: GenerateTextResult<any, any> | StreamTextResult<any, any>;
+  /** Error if the request failed */
+  error?: Error;
+  /** Execution metrics */
+  metrics?: {
+    /** Time to first token (ms) */
+    timeToFirstToken?: number;
+    /** Total execution time (ms) */
+    totalTime: number;
+    /** Total tokens generated */
+    totalTokens?: number;
+    /** Tokens per second */
+    tokensPerSecond?: number;
+  };
+}
+
+/**
+ * Progress callback for streaming results
+ */
+export type ProgressCallback = (
+  provider: string,
+  model: string,
+  chunk: string,
+) => void | Promise<void>;
+
+/**
+ * Options for batch comparison
+ */
+export interface CompareModelsOptions {
+  /** Progress callback for streaming updates */
+  onProgress?: ProgressCallback;
+  /** Whether to use streaming (default: true) */
+  streaming?: boolean;
+  /** Stop on first error (default: false) */
+  stopOnError?: boolean;
+}
+
+/**
+ * Compare multiple models concurrently
+ *
+ * @param models - Array of models to compare
+ * @param messages - Messages to send to each model
+ * @param options - Comparison options
+ * @returns Array of comparison results
+ *
+ * @example
+ * ```typescript
+ * const results = await compareModels(
+ *   [
+ *     {
+ *       provider: 'openai',
+ *       model: 'gpt-4',
+ *       options: { apiKey: 'sk-xxx' }
+ *     },
+ *     {
+ *       provider: 'anthropic',
+ *       model: 'claude-3-opus-20240229',
+ *       options: { apiKey: 'sk-ant-xxx' }
+ *     }
+ *   ],
+ *   [{ role: 'user', content: 'Hello!' }],
+ *   {
+ *     streaming: true,
+ *     onProgress: (provider, model, chunk) => {
+ *       console.log(`${provider}/${model}:`, chunk);
+ *     }
+ *   }
+ * );
+ * ```
+ */
+export async function compareModels(
+  models: ModelComparisonConfig[],
+  messages: ModelMessage[],
+  options: CompareModelsOptions = {},
+): Promise<ModelComparisonResult[]> {
+  const { onProgress, streaming = true, stopOnError = false } = options;
+
+  // Execute all models concurrently
+  const promises = models.map(async (config) => {
+    const startTime = Date.now();
+    let timeToFirstToken: number | undefined;
+
+    try {
+      // Create executor for this model
+      const executor = RuntimeExecutor.create(config.provider, config.options, config.interceptor);
+
+      if (streaming) {
+        // Streaming mode
+        const result = await executor.streamText({
+          model: config.model,
+          messages,
+        });
+
+        // Collect full text and track metrics
+        let _fullText = '';
+        let firstToken = true;
+
+        for await (const chunk of result.textStream) {
+          if (firstToken) {
+            timeToFirstToken = Date.now() - startTime;
+            firstToken = false;
+          }
+
+          _fullText += chunk;
+
+          // Call progress callback
+          if (onProgress) {
+            await onProgress(config.provider, config.model, chunk);
+          }
+        }
+
+        const totalTime = Date.now() - startTime;
+
+        return {
+          provider: config.provider,
+          model: config.model,
+          result,
+          metrics: {
+            timeToFirstToken,
+            totalTime,
+          },
+        };
+      } else {
+        // Non-streaming mode
+        const result = await executor.generateText({
+          model: config.model,
+          messages,
+        });
+
+        const totalTime = Date.now() - startTime;
+
+        return {
+          provider: config.provider,
+          model: config.model,
+          result,
+          metrics: {
+            totalTime,
+            totalTokens: result.usage?.totalTokens,
+            tokensPerSecond: result.usage?.totalTokens
+              ? (result.usage.totalTokens / totalTime) * 1000
+              : undefined,
+          },
+        };
+      }
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+
+      // If stopOnError is true, throw the error
+      if (stopOnError) {
+        throw error;
+      }
+
+      // Otherwise, return the error in the result
+      return {
+        provider: config.provider,
+        model: config.model,
+        error: error as Error,
+        metrics: {
+          totalTime,
+        },
+      };
+    }
+  });
+
+  // Wait for all results
+  return Promise.all(promises);
+}
+
+/**
+ * Compare models in a race
+ * Returns the first model to complete successfully
+ *
+ * @param models - Array of models to race
+ * @param messages - Messages to send
+ * @returns The first successful result
+ */
+export async function raceModels(
+  models: ModelComparisonConfig[],
+  messages: ModelMessage[],
+): Promise<ModelComparisonResult> {
+  const promises = models.map(async (config) => {
+    const startTime = Date.now();
+    const executor = RuntimeExecutor.create(config.provider, config.options, config.interceptor);
+
+    const result = await executor.generateText({
+      model: config.model,
+      messages,
+    });
+
+    const totalTime = Date.now() - startTime;
+
+    return {
+      provider: config.provider,
+      model: config.model,
+      result,
+      metrics: {
+        totalTime,
+        totalTokens: result.usage?.totalTokens,
+      },
+    };
+  });
+
+  return Promise.race(promises);
+}
