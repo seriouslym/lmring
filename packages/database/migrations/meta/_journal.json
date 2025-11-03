@@ -43,6 +43,27 @@
       "when": 1761650098478,
       "tag": "0005_secret_human_robot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762165060094,
+      "tag": "0006_overconfident_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1762166867762,
+      "tag": "0008_add_uuid_default",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1762170000000,
+      "tag": "0009_add_text_id_defaults",
+      "breakpoints": true
     }
   ]
 }

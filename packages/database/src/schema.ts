@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -20,21 +21,23 @@ export const voteTypeEnum = pgEnum('vote_type', ['like', 'neutral', 'dislike']);
 export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'disabled', 'pending']);
 
-// Users table (synced with Supabase Auth)
+// Users table (managed by Better-Auth)
 export const users = pgTable(
   'users',
   {
-    id: uuid('id').primaryKey(), // References auth.users.id in Supabase
+    id: uuid('id').primaryKey().defaultRandom(), // Auto-generate UUID
     email: text('email').notNull().unique(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+
+    fullName: text('full_name').notNull(), // Mapped to Better-Auth's "name"
     username: text('username').unique(),
-    fullName: text('full_name'),
-    avatarUrl: text('avatar_url'),
-    
-    // Better-Auth fields
+    avatarUrl: text('avatar_url'), // Mapped to Better-Auth's "image"
+
+    // Better-Auth role and status fields
     role: userRoleEnum('role').default('user').notNull(),
     status: userStatusEnum('status').default('active').notNull(),
     
-    // OAuth identifiers (reserved for future use)
+    // OAuth identifiers (used by Better-Auth for account linking)
     githubId: text('github_id').unique(),
     googleId: text('google_id').unique(),
     linuxdoId: text('linuxdo_id').unique(),

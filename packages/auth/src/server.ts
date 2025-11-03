@@ -5,7 +5,7 @@
 import { betterAuth } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db } from '@lmring/database';
+import { db, users, session, account, verification } from '@lmring/database';
 import { getAuthConfig } from './config';
 import { UserStatus } from './status';
 import type { AuthLogger } from './logger';
@@ -37,11 +37,29 @@ export function createAuth(options: CreateAuthOptions) {
       provider: 'pg',
     });
 
-    const auth = betterAuth({
+    // Prepare the complete betterAuth configuration
+    const betterAuthConfig = {
       ...config,
       database: drizzleAdapter(db, {
         provider: 'pg',
+        schema: {
+          user: users,
+          session: session,
+          account: account,
+          verification: verification,
+        },
       }),
+      advanced: {
+        // Let database generate UUIDs for user table only
+        // Better-Auth generates non-standard IDs incompatible with PostgreSQL UUID type
+        // For other tables (session, account, verification), let Better-Auth generate text IDs
+        generateId: (options: { model: string; fieldType?: string }) => {
+          if (options.model === 'user') {
+            return undefined; // Let database generate UUID
+          }
+          // Return undefined to use Better-Auth's default ID generation for other tables
+        },
+      },
       emailAndPassword: {
         enabled: true,
         minPasswordLength: 8,
@@ -62,6 +80,12 @@ export function createAuth(options: CreateAuthOptions) {
       },
       // User creation hooks to set default role and status
       user: {
+        // Field mapping: map Better-Auth required fields to our database schema
+        fields: {
+          name: 'fullName',          // Better-Auth's "name" -> our "fullName"
+          image: 'avatarUrl',        // Better-Auth's "image" -> our "avatarUrl"
+          emailVerified: 'emailVerified', // Keep as is (snake_case in DB)
+        },
         additionalFields: {
           role: {
             type: 'string',
@@ -87,6 +111,7 @@ export function createAuth(options: CreateAuthOptions) {
             logger.debug('Authentication attempt started', {
               path: ctx.path,
               method: ctx.method,
+              body: ctx.body,
             });
           }
         }),
@@ -146,7 +171,9 @@ export function createAuth(options: CreateAuthOptions) {
           }
         }),
       },
-    });
+    };
+
+    const auth = betterAuth(betterAuthConfig);
 
     logger.info('Better-Auth server instance created successfully', {
       sessionExpiresIn: '7 days',
