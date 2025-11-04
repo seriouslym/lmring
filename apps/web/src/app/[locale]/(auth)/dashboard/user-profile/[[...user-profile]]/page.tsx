@@ -1,7 +1,8 @@
 import type { Locale } from '@lmring/i18n';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { createClient } from '@/libs/Supabase.server';
+import { auth } from '@/libs/Auth';
 
 type IUserProfilePageProps = {
   params: Promise<{ locale: string }>;
@@ -27,10 +28,9 @@ export default async function UserProfilePage(props: IUserProfilePageProps) {
     namespace: 'UserProfile',
   });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({ headers: requestHeaders });
+  const user = session?.user;
 
   // TODO: Implement user profile page
   // - Display user information
@@ -49,8 +49,8 @@ export default async function UserProfilePage(props: IUserProfilePageProps) {
             <dd className="text-gray-600">{user?.email}</dd>
           </div>
           <div>
-            <dt className="font-medium text-gray-700">User ID:</dt>
-            <dd className="text-gray-600">{user?.id}</dd>
+            <dt className="font-medium text-gray-700">Username:</dt>
+            <dd className="text-gray-600">{user?.name}</dd>
           </div>
         </dl>
         <p className="mt-6 text-sm text-gray-500">

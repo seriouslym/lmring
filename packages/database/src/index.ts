@@ -8,4 +8,4 @@ export * from './schema';
 export { encrypt, decrypt } from './encryption';
 export { createDbConnection } from './connection';
 export { runMigrations } from './migration';
-
+export { syncUserProviderIdFromAccount } from './utils';

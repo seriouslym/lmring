@@ -125,8 +125,9 @@ export default async function middleware(request: NextRequest, _event: NextFetch
 
 export const config = {
   // Match all pathnames except for
+  // - … if they start with `/api` (API routes, including auth)
   // - … if they start with `/_next`, `/_vercel` or `monitoring`
   // - … the ones containing a dot (e.g. `favicon.ico`)
-  matcher: '/((?!_next|_vercel|monitoring|.*\\..*).*)',
+  matcher: '/((?!api|_next|_vercel|monitoring|.*\\..*).*)',
   runtime: 'nodejs',
 };

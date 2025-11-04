@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -20,21 +21,23 @@ export const voteTypeEnum = pgEnum('vote_type', ['like', 'neutral', 'dislike']);
 export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'disabled', 'pending']);
 
-// Users table (synced with Supabase Auth)
+// Users table (managed by Better-Auth)
 export const users = pgTable(
   'users',
   {
-    id: uuid('id').primaryKey(), // References auth.users.id in Supabase
+    id: uuid('id').primaryKey().defaultRandom(), // Auto-generate UUID
     email: text('email').notNull().unique(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+
+    fullName: text('full_name').notNull(), // Mapped to Better-Auth's "name"
     username: text('username').unique(),
-    fullName: text('full_name'),
-    avatarUrl: text('avatar_url'),
-    
-    // Better-Auth fields
+    avatarUrl: text('avatar_url'), // Mapped to Better-Auth's "image"
+
+    // Better-Auth role and status fields
     role: userRoleEnum('role').default('user').notNull(),
     status: userStatusEnum('status').default('active').notNull(),
     
-    // OAuth identifiers (reserved for future use)
+    // OAuth identifiers (used by Better-Auth for account linking)
     githubId: text('github_id').unique(),
     googleId: text('google_id').unique(),
     linuxdoId: text('linuxdo_id').unique(),
@@ -268,9 +271,13 @@ export const account = pgTable(
     accountId: text('account_id').notNull(),
     providerId: text('provider_id').notNull(),
     accessToken: text('access_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
     refreshToken: text('refresh_token'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
     idToken: text('id_token'),
+    // Kept for backward-compat with older data; not used by new adapter
     expiresAt: timestamp('expires_at', { withTimezone: true }),
+    scope: text('scope'),
     password: text('password'), // For email/password
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -414,4 +421,3 @@ export type Account = typeof account.$inferSelect;
 export type NewAccount = typeof account.$inferInsert;
 export type Verification = typeof verification.$inferSelect;
 export type NewVerification = typeof verification.$inferInsert;
-

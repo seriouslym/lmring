@@ -5,7 +5,14 @@ import * as schema from './schema';
 
 export const createDbConnection = () => {
   try {
-    const client = postgres(env.DATABASE_URL, {
+    // Add search_path to connection options to ensure we use the public schema
+    // This prevents conflicts with Supabase's auth schema
+    const url = new URL(env.DATABASE_URL);
+    if (!url.searchParams.has('options')) {
+      url.searchParams.set('options', '-c search_path=public');
+    }
+
+    const client = postgres(url.toString(), {
       prepare: false,
     });
 
