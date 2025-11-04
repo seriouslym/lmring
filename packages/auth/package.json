@@ -14,7 +14,8 @@
   "scripts": {},
   "dependencies": {
     "@lmring/database": "workspace:*",
-    "better-auth": "^1.3.33"
+    "better-auth": "^1.3.33",
+    "drizzle-orm": "^0.44.7"
   },
   "peerDependencies": {
     "react": "^19.0.0"
@@ -26,4 +27,3 @@
     "typescript": "^5.9.3"
   }
 }
-

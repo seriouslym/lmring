@@ -1,9 +1,10 @@
 import type { Locale } from '@lmring/i18n';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
-import { createClient } from '@/libs/Supabase.server';
+import { auth } from '@/libs/Auth';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default async function DashboardLayout(props: {
@@ -17,13 +18,9 @@ export default async function DashboardLayout(props: {
     namespace: 'DashboardLayout',
   });
 
-  // Check authentication
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  // Check authentication using Better-Auth
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
     redirect(locale ? `/${locale}/sign-in` : '/sign-in');
   }
 
