@@ -4,7 +4,7 @@ import { createVertex } from '@ai-sdk/google-vertex';
 import { createMistral } from '@ai-sdk/mistral';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createXai } from '@ai-sdk/xai';
-import { openrouter } from '@openrouter/ai-sdk-provider';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { ProviderConfig } from '../../types';
 
 /**
@@ -207,7 +207,7 @@ export const OFFICIAL_PROVIDERS: ProviderConfig[] = [
     id: 'openrouter',
     name: 'OpenRouter',
     type: 'official',
-    creator: () => openrouter,
+    creator: createOpenRouter,
     supportsStreaming: true,
     supportsStructuredOutput: true,
     supportsVision: true,

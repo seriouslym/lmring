@@ -235,5 +235,23 @@ export async function raceModels(
     };
   });
 
-  return Promise.race(promises);
+  // Return first successful result, ignore failures until all fail
+  return new Promise((resolve, reject) => {
+    let remaining = promises.length;
+    const errors: Error[] = [];
+
+    for (const promise of promises) {
+      promise
+        .then((result) => {
+          resolve(result);
+        })
+        .catch((error) => {
+          errors.push(error instanceof Error ? error : new Error(String(error)));
+          remaining -= 1;
+          if (remaining === 0) {
+            reject(new AggregateError(errors, 'All models failed'));
+          }
+        });
+    }
+  });
 }

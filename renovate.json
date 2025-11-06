@@ -39,7 +39,8 @@
     },
     {
       "description": "Group AI SDK packages",
-      "matchPackagePrefixes": ["@ai-sdk/", "ai"],
+      "matchPackagePrefixes": ["@ai-sdk/"],
+      "matchPackageNames": ["ai"],
       "groupName": "AI SDK packages"
     },
     {
