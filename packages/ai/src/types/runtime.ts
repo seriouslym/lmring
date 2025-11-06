@@ -6,7 +6,6 @@
 
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { LanguageModelMiddleware } from 'ai';
-import type { RequestInterceptor } from './interceptor';
 import type { ProviderCreatorOptions } from './provider';
 
 /**
@@ -17,8 +16,6 @@ export interface RuntimeExecutorConfig {
   providerId: string;
   /** Provider options (API key, base URL, etc.) */
   providerOptions: Partial<ProviderCreatorOptions>;
-  /** Simple request interceptor */
-  interceptor?: RequestInterceptor;
   /** Default middlewares to apply */
   middlewares?: LanguageModelMiddleware[];
 }

@@ -16,6 +16,14 @@ interface KeyRotationState {
  * Key Rotation Manager class
  *
  * Provides round-robin rotation of API keys
+ *
+ * **Concurrency Note**: This implementation uses best-effort rotation without locking.
+ * In concurrent scenarios (e.g., `compareModels()` with `Promise.all`), multiple requests
+ * may occasionally receive the same key. This is acceptable for most use cases where the
+ * goal is to distribute load across keys rather than guarantee strict round-robin order.
+ *
+ * If you need strict key rotation with concurrency safety, consider implementing your own
+ * key management strategy with proper locking mechanisms.
  */
 export class KeyRotationManager {
   private states = new Map<string, KeyRotationState>();

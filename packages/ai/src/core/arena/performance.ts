@@ -4,7 +4,7 @@
  * Tools for tracking and comparing model performance metrics
  */
 
-import type { LanguageModelUsage } from 'ai';
+import type { LanguageModelMiddleware } from 'ai';
 
 /**
  * Performance metrics for a single request
@@ -225,36 +225,83 @@ export class PerformanceTracker {
 export const performanceTracker = new PerformanceTracker();
 
 /**
- * Create a performance tracking interceptor
+ * Create a performance tracking middleware
  *
  * @param requestId - Request ID
  * @param modelId - Model ID
  * @param providerId - Provider ID
  * @param tracker - Performance tracker instance (default: global tracker)
- * @returns Request interceptor
+ * @returns Language model middleware
+ *
+ * @example
+ * ```typescript
+ * const middleware = createPerformanceMiddleware('req-1', 'gpt-4', 'openai');
+ * const model = wrapLanguageModel({
+ *   model: openai('gpt-4'),
+ *   middleware
+ * });
+ * ```
  */
-export function createPerformanceInterceptor(
+export function createPerformanceMiddleware(
   requestId: string,
   modelId: string,
   providerId: string,
   tracker: PerformanceTracker = performanceTracker,
-) {
+): LanguageModelMiddleware {
   return {
-    onBefore: <TParams>(params: TParams): TParams => {
+    // biome-ignore lint/suspicious/noExplicitAny: Middleware function parameters are not strongly typed in AI SDK
+    wrapGenerate: async ({ doGenerate }: any) => {
       tracker.startRequest(requestId, modelId, providerId);
-      return params;
-    },
-    onAfter: <TResult>(result: TResult): TResult => {
-      // Record usage if available
-      if (result && typeof result === 'object' && 'usage' in result) {
-        tracker.endRequest(requestId, result.usage as LanguageModelUsage);
-      } else {
-        tracker.endRequest(requestId);
+
+      try {
+        const result = await doGenerate();
+
+        // Record usage from the result
+        if (result.usage) {
+          tracker.endRequest(requestId, result.usage);
+        } else {
+          tracker.endRequest(requestId);
+        }
+
+        return result;
+      } catch (error) {
+        tracker.recordError(requestId, error as Error);
+        throw error;
       }
-      return result;
     },
-    onError: (error: Error) => {
-      tracker.recordError(requestId, error);
+
+    // biome-ignore lint/suspicious/noExplicitAny: Middleware function parameters are not strongly typed in AI SDK
+    wrapStream: async ({ doStream }: any) => {
+      tracker.startRequest(requestId, modelId, providerId);
+      let firstTokenRecorded = false;
+
+      try {
+        const { stream, ...rest } = await doStream();
+
+        const transformStream = new TransformStream({
+          transform(chunk, controller) {
+            if (!firstTokenRecorded && chunk.type === 'text-delta') {
+              tracker.recordFirstToken(requestId);
+              firstTokenRecorded = true;
+            }
+
+            controller.enqueue(chunk);
+          },
+
+          flush() {
+            // Note: usage will be recorded separately after stream completion
+            // This is handled in the stream consumption logic
+          },
+        });
+
+        return {
+          stream: stream.pipeThrough(transformStream),
+          ...rest,
+        };
+      } catch (error) {
+        tracker.recordError(requestId, error as Error);
+        throw error;
+      }
     },
   };
 }

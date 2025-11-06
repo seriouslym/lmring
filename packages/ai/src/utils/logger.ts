@@ -4,6 +4,8 @@
  * Basic logging utility for the Arena project
  */
 
+import type { LanguageModelMiddleware } from 'ai';
+
 /**
  * Log levels
  */
@@ -133,34 +135,71 @@ export class Logger {
 export const logger = new Logger();
 
 /**
- * Create a logging interceptor
+ * Create a logging middleware
  *
  * @param customLogger - Optional custom logger instance
- * @returns Request interceptor
+ * @returns Language model middleware
+ *
+ * @example
+ * ```typescript
+ * const middleware = createLoggingMiddleware();
+ * const model = wrapLanguageModel({
+ *   model: openai('gpt-4'),
+ *   middleware
+ * });
+ * ```
  */
-export function createLoggingInterceptor(customLogger?: Logger) {
+export function createLoggingMiddleware(customLogger?: Logger): LanguageModelMiddleware {
   const log = customLogger || logger;
 
   return {
-    onBefore: <TParams>(params: TParams): TParams => {
-      log.info('AI Request started', {
-        model: (params as { model?: string }).model,
-        messages: (params as { messages?: unknown[] }).messages?.length || 0,
+    // biome-ignore lint/suspicious/noExplicitAny: Middleware function parameters are not strongly typed in AI SDK
+    wrapGenerate: async ({ doGenerate, params }: any) => {
+      log.info('AI Request started (generate)', {
+        model: params.mode,
+        messages: params.prompt?.length || 0,
       });
-      return params;
+
+      try {
+        const result = await doGenerate();
+
+        log.info('AI Request completed (generate)', {
+          text: result.text?.substring(0, 100) || '',
+          usage: result.usage,
+        });
+
+        return result;
+      } catch (error) {
+        log.error('AI Request failed (generate)', {
+          error: (error as Error).message,
+          stack: (error as Error).stack,
+        });
+        throw error;
+      }
     },
-    onAfter: <TResult>(result: TResult): TResult => {
-      log.info('AI Request completed', {
-        hasText: !!(result as { text?: unknown }).text,
-        hasStream: !!(result as { textStream?: unknown }).textStream,
+
+    // biome-ignore lint/suspicious/noExplicitAny: Middleware function parameters are not strongly typed in AI SDK
+    wrapStream: async ({ doStream, params }: any) => {
+      log.info('AI Request started (stream)', {
+        model: params.mode,
+        messages: params.prompt?.length || 0,
       });
-      return result;
-    },
-    onError: (error: Error) => {
-      log.error('AI Request failed', {
-        error: error.message,
-        stack: error.stack,
-      });
+
+      try {
+        const result = await doStream();
+
+        log.info('AI Stream initiated', {
+          hasStream: true,
+        });
+
+        return result;
+      } catch (error) {
+        log.error('AI Request failed (stream)', {
+          error: (error as Error).message,
+          stack: (error as Error).stack,
+        });
+        throw error;
+      }
     },
   };
 }

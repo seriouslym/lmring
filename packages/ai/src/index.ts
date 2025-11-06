@@ -34,7 +34,7 @@ export {
 } from './core/arena/batchExecutor';
 
 export {
-  createPerformanceInterceptor,
+  createPerformanceMiddleware,
   type PerformanceMetrics,
   PerformanceTracker,
   performanceTracker,
@@ -67,7 +67,6 @@ export type {
   ProviderCreatorOptions,
   ProviderInstance,
 } from './types';
-export type { RequestInterceptor } from './types/interceptor';
 export type {
   ExecutionOptions,
   ResolvedModel,
@@ -91,7 +90,7 @@ export {
 } from './utils/keyRotation';
 
 export {
-  createLoggingInterceptor,
+  createLoggingMiddleware,
   Logger,
   type LoggerConfig,
   LogLevel,

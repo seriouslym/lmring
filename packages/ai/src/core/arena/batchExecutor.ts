@@ -4,8 +4,12 @@
  * Enables concurrent execution of multiple models for comparison
  */
 
-import type { GenerateTextResult, ModelMessage, StreamTextResult } from 'ai';
-import type { RequestInterceptor } from '../../types/interceptor';
+import type {
+  GenerateTextResult,
+  LanguageModelMiddleware,
+  ModelMessage,
+  StreamTextResult,
+} from 'ai';
 import type { CreateProviderOptions } from '../../types/provider';
 import { RuntimeExecutor } from '../runtime/RuntimeExecutor';
 
@@ -19,8 +23,8 @@ export interface ModelComparisonConfig {
   model: string;
   /** Provider options (API key, etc.) */
   options: Partial<CreateProviderOptions>;
-  /** Optional interceptor for this specific model */
-  interceptor?: RequestInterceptor;
+  /** Optional middlewares for this specific model */
+  middlewares?: LanguageModelMiddleware[];
 }
 
 /**
@@ -117,14 +121,17 @@ export async function compareModels(
 
     try {
       // Create executor for this model
-      const executor = RuntimeExecutor.create(config.provider, config.options, config.interceptor);
+      const executor = RuntimeExecutor.create(config.provider, config.options);
 
       if (streaming) {
         // Streaming mode
-        const result = await executor.streamText({
-          model: config.model,
-          messages,
-        });
+        const result = await executor.streamText(
+          {
+            model: config.model,
+            messages,
+          },
+          { middlewares: config.middlewares },
+        );
 
         // Track metrics
         let firstToken = true;
@@ -141,23 +148,33 @@ export async function compareModels(
           }
         }
 
+        // Wait for the full result to get usage data
+        const finalResult = await result;
+        const usage = await finalResult.usage;
         const totalTime = Date.now() - startTime;
 
         return {
           provider: config.provider,
           model: config.model,
-          result,
+          result: finalResult,
           metrics: {
             timeToFirstToken,
             totalTime,
+            totalTokens: usage?.totalTokens,
+            tokensPerSecond: usage?.totalTokens
+              ? (usage.totalTokens / totalTime) * 1000
+              : undefined,
           },
         };
       } else {
         // Non-streaming mode
-        const result = await executor.generateText({
-          model: config.model,
-          messages,
-        });
+        const result = await executor.generateText(
+          {
+            model: config.model,
+            messages,
+          },
+          { middlewares: config.middlewares },
+        );
 
         const totalTime = Date.now() - startTime;
 
@@ -212,12 +229,15 @@ export async function raceModels(
 ): Promise<ModelComparisonResult> {
   const promises = models.map(async (config) => {
     const startTime = Date.now();
-    const executor = RuntimeExecutor.create(config.provider, config.options, config.interceptor);
+    const executor = RuntimeExecutor.create(config.provider, config.options);
 
-    const result = await executor.generateText({
-      model: config.model,
-      messages,
-    });
+    const result = await executor.generateText(
+      {
+        model: config.model,
+        messages,
+      },
+      { middlewares: config.middlewares },
+    );
 
     const totalTime = Date.now() - startTime;
 
