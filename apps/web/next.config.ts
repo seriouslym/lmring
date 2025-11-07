@@ -8,7 +8,14 @@ import { env } from '@lmring/env';
 const baseConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  transpilePackages: ['@lmring/database', '@lmring/ui', '@lmring/auth'],
+  transpilePackages: [
+    '@lmring/database',
+    '@lmring/ui',
+    '@lmring/auth',
+    '@lmring/ai-hub',
+    '@lmring/i18n',
+    '@lmring/env',
+  ],
   outputFileTracingIncludes: {
     '/': ['./migrations/**/*'],
   },

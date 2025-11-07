@@ -1,6 +1,7 @@
 'use client';
 
-import { routing, usePathname } from '@lmring/i18n';
+import { routing } from '@lmring/i18n';
+import { usePathname } from '@lmring/i18n/navigation';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import type { ChangeEventHandler } from 'react';

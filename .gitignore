@@ -15,6 +15,9 @@
 .turbo/
 **/.turbo/
 
+# dist
+**/dist/
+
 # testing
 /coverage
 **/.coverage/
