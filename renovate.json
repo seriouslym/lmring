@@ -1,0 +1,127 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":pinAllExceptPeerDependencies",
+    "group:monorepos",
+    "group:recommended"
+  ],
+  "prConcurrentLimit": 5,
+  "timezone": "UTC",
+  "schedule": ["before 5am on Monday"],
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Pin Next.js to version 15.x (prevent upgrade to v16)",
+      "matchPackageNames": ["next", "@next/bundle-analyzer"],
+      "allowedVersions": "15.x"
+    },
+    {
+      "description": "Group workspace packages together",
+      "matchPackagePrefixes": ["@lmring/"],
+      "groupName": "workspace packages",
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Group React ecosystem updates",
+      "matchPackageNames": ["react", "react-dom"],
+      "matchPackagePrefixes": ["@types/react"],
+      "groupName": "React ecosystem",
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Group Drizzle ORM packages",
+      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
+      "groupName": "Drizzle ORM"
+    },
+    {
+      "description": "Group AI SDK packages",
+      "matchPackagePrefixes": ["@ai-sdk/"],
+      "matchPackageNames": ["ai"],
+      "groupName": "AI SDK packages"
+    },
+    {
+      "description": "Group Supabase packages",
+      "matchPackagePrefixes": ["@supabase/"],
+      "groupName": "Supabase packages"
+    },
+    {
+      "description": "Group Sentry packages",
+      "matchPackagePrefixes": ["@sentry/"],
+      "groupName": "Sentry packages"
+    },
+    {
+      "description": "Group Arcjet packages",
+      "matchPackagePrefixes": ["@arcjet/"],
+      "groupName": "Arcjet packages"
+    },
+    {
+      "description": "Group Playwright packages",
+      "matchPackagePrefixes": ["@playwright/"],
+      "groupName": "Playwright packages"
+    },
+    {
+      "description": "Group Tailwind CSS packages",
+      "matchPackageNames": ["tailwindcss", "postcss"],
+      "matchPackagePrefixes": ["@tailwindcss/"],
+      "groupName": "Tailwind CSS"
+    },
+    {
+      "description": "Group Vitest packages",
+      "matchPackageNames": ["vitest", "vite"],
+      "matchPackagePrefixes": ["@vitest/", "@vitejs/"],
+      "groupName": "Vitest ecosystem"
+    },
+    {
+      "description": "Group Biome packages",
+      "matchPackagePrefixes": ["@biomejs/"],
+      "groupName": "Biome"
+    },
+    {
+      "description": "Group TypeScript and related types",
+      "matchPackageNames": ["typescript"],
+      "matchPackagePrefixes": ["@types/"],
+      "groupName": "TypeScript and types",
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Automerge patch and minor updates for devDependencies",
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true,
+      "automergeType": "pr",
+      "excludePackageNames": ["typescript", "next", "@next/bundle-analyzer"]
+    },
+    {
+      "description": "More frequent checks for security updates",
+      "matchUpdateTypes": ["patch"],
+      "matchDepTypes": ["dependencies"],
+      "schedule": ["at any time"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group major updates separately with manual review",
+      "matchUpdateTypes": ["major"],
+      "labels": ["major-update", "dependencies"],
+      "automerge": false,
+      "schedule": ["before 5am on the first day of the month"]
+    },
+    {
+      "description": "Pin engines.node to >=20",
+      "matchDepTypes": ["engines"],
+      "matchPackageNames": ["node"],
+      "allowedVersions": ">=20"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"]
+  },
+  "ignoreDeps": [],
+  "prCreation": "not-pending",
+  "prHourlyLimit": 2
+}
