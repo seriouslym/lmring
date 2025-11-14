@@ -10,7 +10,7 @@ interface SignInFormProps {
   showOAuth?: boolean;
 }
 
-export function SignInForm({ callbackUrl = '/dashboard', showOAuth = false }: SignInFormProps) {
+export function SignInForm({ callbackUrl = '/arena', showOAuth = false }: SignInFormProps) {
   // Sanitize callback URL to prevent open redirect vulnerabilities
   const safeCallbackUrl = sanitizeCallbackUrl(callbackUrl);
   const router = useRouter();
@@ -36,7 +36,7 @@ export function SignInForm({ callbackUrl = '/dashboard', showOAuth = false }: Si
         return;
       }
 
-      // Redirect to callback URL or dashboard
+      // Redirect to callback URL or arena
       router.push(safeCallbackUrl);
       router.refresh();
     } catch (_err) {

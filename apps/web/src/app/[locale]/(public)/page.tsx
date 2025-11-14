@@ -41,10 +41,10 @@ export default async function Index(props: IIndexProps) {
             {t('get_started')}
           </Link>
           <Link
-            href="/dashboard/"
+            href="/arena/"
             className="rounded-lg border border-gray-300 px-6 py-3 text-gray-900 hover:bg-gray-100"
           >
-            {t('view_dashboard')}
+            {t('view_arena')}
           </Link>
         </div>
       </section>

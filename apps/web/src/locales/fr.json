@@ -3,7 +3,7 @@
     "home_link": "Accueil",
     "sign_in_link": "Se connecter",
     "sign_up_link": "S'inscrire",
-    "dashboard_link": "Tableau de bord"
+    "arena_link": "Arène"
   },
   "BaseTemplate": {
     "description": "Plateforme de comparaison de modèles d'IA"
@@ -14,7 +14,7 @@
     "title": "lmring",
     "description": "Comparez les modèles d'IA côte à côte et trouvez celui qui correspond le mieux à vos besoins",
     "get_started": "Commencer",
-    "view_dashboard": "Voir le tableau de bord",
+    "view_arena": "Voir l'arène",
     "features_title": "Fonctionnalités",
     "feature_1_title": "Comparaison de modèles",
     "feature_1_description": "Comparez plusieurs modèles d'IA côte à côte avec des métriques détaillées et des données de performance",
@@ -31,17 +31,7 @@
     "meta_title": "S'inscrire",
     "meta_description": "Créez un compte facilement grâce à notre processus d'inscription intuitif."
   },
-  "Dashboard": {
-    "meta_title": "Tableau de bord",
-    "hello_message": "Bonjour {email}!",
-    "alternative_message": "Vous voulez créer votre SaaS plus rapidement en utilisant la même stack ? Essayez <url></url>."
-  },
   "UserProfile": {
     "meta_title": "Profil de l'utilisateur"
-  },
-  "DashboardLayout": {
-    "dashboard_link": "Tableau de bord",
-    "user_profile_link": "Gérer votre compte",
-    "sign_out": "Se déconnecter"
   }
 }

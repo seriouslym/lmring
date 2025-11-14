@@ -1,0 +1,285 @@
+'use client';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Separator,
+} from '@lmring/ui';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ClockIcon,
+  HelpCircleIcon,
+  InfoIcon,
+  LifeBuoyIcon,
+  MenuIcon,
+  MessageSquarePlusIcon,
+  SparklesIcon,
+  TrophyIcon,
+  UsersIcon,
+  XIcon,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import * as React from 'react';
+
+interface NavItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+}
+
+const navItems: NavItem[] = [
+  {
+    title: 'New Chat',
+    href: '/arena',
+    icon: MessageSquarePlusIcon,
+  },
+  {
+    title: 'Leaderboard',
+    href: '/leaderboard',
+    icon: TrophyIcon,
+  },
+  {
+    title: 'History',
+    href: '/history',
+    icon: ClockIcon,
+  },
+];
+
+interface SidebarProps {
+  locale?: string;
+}
+
+export function Sidebar({ locale = 'en' }: SidebarProps) {
+  const [collapsed, setCollapsed] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Remove locale from pathname for matching
+  const currentPath = pathname.replace(`/${locale}`, '');
+
+  const sidebarWidth = collapsed ? 'w-16' : 'w-64';
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo/Brand with Dropdown Menu */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent transition-colors flex-1 min-w-0"
+            >
+              <SparklesIcon className="h-6 w-6 text-primary flex-shrink-0" />
+              <AnimatePresence>
+                {!collapsed && (
+                  <>
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-lg font-semibold whitespace-nowrap overflow-hidden text-left"
+                    >
+                      LMArena
+                    </motion.span>
+                    <ChevronDownIcon className="h-4 w-4 flex-shrink-0 ml-1" />
+                  </>
+                )}
+              </AnimatePresence>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuLabel>Resources</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a
+                href="https://lmarena.ai/about"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center cursor-pointer"
+              >
+                <InfoIcon className="mr-2 h-4 w-4" />
+                <span>About Us</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a
+                href="https://lmarena.ai/how-it-works"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center cursor-pointer"
+              >
+                <HelpCircleIcon className="mr-2 h-4 w-4" />
+                <span>How it Works</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a
+                href="https://lmarena.ai/help-center"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center cursor-pointer"
+              >
+                <LifeBuoyIcon className="mr-2 h-4 w-4" />
+                <span>Help Center</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a
+                href="https://lmarena.ai/careers"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center cursor-pointer"
+              >
+                <UsersIcon className="mr-2 h-4 w-4" />
+                <span>Join the Team</span>
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <button
+          type="button"
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1.5 rounded-lg hover:bg-sidebar-accent transition-colors lg:flex hidden flex-shrink-0"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <ChevronLeftIcon
+            className={`h-4 w-4 transition-transform ${collapsed ? 'rotate-180' : ''}`}
+          />
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-3 space-y-1">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+          const Icon = item.icon;
+
+          return (
+            <Link key={item.href} href={`/${locale}${item.href}`} className="block">
+              <motion.div
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  relative flex items-center gap-3 px-3 py-2 rounded-lg
+                  transition-colors apple-transition
+                  ${
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
+                  }
+                `}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
+                )}
+                <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                    >
+                      {item.title}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {item.badge && !collapsed && (
+                  <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+              </motion.div>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <Separator className="mx-3" />
+
+      {/* User Section */}
+      <div className="p-3 space-y-2">
+        <button
+          type="button"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
+        >
+          <HelpCircleIcon className="h-5 w-5 flex-shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Help & Support</span>}
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-background rounded-lg border shadow-sm"
+        aria-label="Open menu"
+      >
+        <MenuIcon className="h-5 w-5" />
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="lg:hidden fixed left-0 top-0 h-full w-64 bg-sidebar z-50 flex flex-col sidebar-container"
+            >
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-sidebar-accent"
+                aria-label="Close menu"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+              <SidebarContent />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 64 : 256 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        className={`hidden lg:flex flex-col h-screen bg-sidebar sidebar-container z-30 ${sidebarWidth}`}
+      >
+        <SidebarContent />
+      </motion.aside>
+    </>
+  );
+}

@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
+import { ThemeProvider } from '@/components/theme-provider';
 import '@/styles/global.css';
+import '@/styles/arena.css';
 
 export const metadata: Metadata = {
   icons: [
@@ -48,11 +50,13 @@ export default async function RootLayout(props: {
   setRequestLocale(locale as Locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body>
-        <NextIntlClientProvider>
-          <PostHogProvider>{props.children}</PostHogProvider>
-        </NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider>
+            <PostHogProvider>{props.children}</PostHogProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

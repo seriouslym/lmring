@@ -5,13 +5,10 @@
 /**
  * Sanitizes a callback URL to ensure it's a safe same-origin path
  * @param callbackUrl - The URL to sanitize (can be from user input)
- * @param fallback - Fallback path if the URL is invalid (default: '/dashboard')
+ * @param fallback - Fallback path if the URL is invalid (default: '/arena')
  * @returns A safe relative path
  */
-export function sanitizeCallbackUrl(
-  callbackUrl: string | undefined,
-  fallback = '/dashboard',
-): string {
+export function sanitizeCallbackUrl(callbackUrl: string | undefined, fallback = '/arena'): string {
   // If no callback URL provided, use fallback
   if (!callbackUrl || typeof callbackUrl !== 'string') {
     return fallback;

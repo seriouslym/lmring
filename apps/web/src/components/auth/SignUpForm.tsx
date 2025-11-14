@@ -10,7 +10,7 @@ interface SignUpFormProps {
   showOAuth?: boolean;
 }
 
-export function SignUpForm({ callbackUrl = '/dashboard', showOAuth = false }: SignUpFormProps) {
+export function SignUpForm({ callbackUrl = '/arena', showOAuth = false }: SignUpFormProps) {
   const safeCallbackUrl = sanitizeCallbackUrl(callbackUrl);
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -56,7 +56,7 @@ export function SignUpForm({ callbackUrl = '/dashboard', showOAuth = false }: Si
         return;
       }
 
-      // Redirect to callback URL or dashboard (auto sign-in is enabled)
+      // Redirect to callback URL or arena (auto sign-in is enabled)
       router.push(safeCallbackUrl);
       router.refresh();
     } catch (_err) {

@@ -38,7 +38,7 @@ export default async function SignInPage(props: ISignInPageProps) {
         <p className="mt-2 text-sm text-muted-foreground">{t('meta_description')}</p>
       </div>
 
-      <AuthFormWrapper type="signin" callbackUrl={callbackUrl || `/${locale}/dashboard`} />
+      <AuthFormWrapper type="signin" callbackUrl={callbackUrl || `/${locale}/arena`} />
 
       <div className="text-center text-sm">
         <span className="text-muted-foreground">Don't have an account? </span>

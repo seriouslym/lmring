@@ -1,0 +1,347 @@
+/* Arena Theme - Apple-inspired OKLCH Color System */
+@reference "./global.css";
+
+@layer theme {
+  /* Override theme radius for Apple-like rounded corners */
+  :root {
+    --radius: 0.75rem; /* 12px - Apple-like rounded corners */
+  }
+
+  /* Light mode colors - Apple HIG inspired with OKLCH */
+  :root {
+    /* Core colors */
+    --background: oklch(0.98 0.002 264); /* Nearly white with subtle blue tint */
+    --foreground: oklch(0.2 0.015 264); /* Dark text */
+
+    /* Card and surface colors */
+    --card: oklch(1 0 0); /* Pure white */
+    --card-foreground: oklch(0.25 0.015 264); /* Slightly darker text */
+
+    --popover: oklch(1 0 0); /* Pure white */
+    --popover-foreground: oklch(0.2 0.015 264);
+
+    /* Accent colors */
+    --primary: oklch(0.55 0.18 255); /* Refined blue accent */
+    --primary-foreground: oklch(1 0 0); /* White on primary */
+
+    --secondary: oklch(0.96 0.005 264); /* Subtle gray surface */
+    --secondary-foreground: oklch(0.25 0.015 264);
+
+    --muted: oklch(0.96 0.005 264); /* Muted elements */
+    --muted-foreground: oklch(0.45 0.01 264); /* Lighter text */
+
+    --accent: oklch(0.96 0.01 255); /* Accent highlights */
+    --accent-foreground: oklch(0.25 0.015 264);
+
+    --destructive: oklch(0.55 0.22 25); /* Red for destructive actions */
+    --destructive-foreground: oklch(1 0 0); /* White on destructive */
+
+    /* Border and input colors */
+    --border: oklch(0.9 0.005 264); /* Soft borders */
+    --input: oklch(0.95 0.005 264); /* Input backgrounds */
+    --ring: oklch(0.55 0.18 255); /* Focus rings (blue) */
+
+    /* Chart colors */
+    --chart-1: oklch(0.55 0.18 255); /* Primary blue */
+    --chart-2: oklch(0.6 0.2 150); /* Green */
+    --chart-3: oklch(0.65 0.18 30); /* Orange */
+    --chart-4: oklch(0.5 0.22 280); /* Purple */
+    --chart-5: oklch(0.55 0.19 330); /* Pink */
+
+    /* Sidebar specific colors */
+    --sidebar: oklch(0.99 0.002 264); /* Light sidebar bg */
+    --sidebar-foreground: oklch(0.25 0.015 264);
+    --sidebar-primary: oklch(0.55 0.18 255); /* Blue */
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.96 0.01 255);
+    --sidebar-accent-foreground: oklch(0.25 0.015 264);
+    --sidebar-border: oklch(0.92 0.005 264);
+    --sidebar-ring: oklch(0.55 0.18 255);
+  }
+
+  /* Dark mode colors - True dark with vibrant accents */
+  .dark {
+    /* Core colors */
+    --background: oklch(0.18 0.01 264); /* True dark with blue tint */
+    --foreground: oklch(0.95 0.005 264); /* Light text */
+
+    /* Card and surface colors */
+    --card: oklch(0.22 0.01 264); /* Slightly lighter dark */
+    --card-foreground: oklch(0.95 0.005 264);
+
+    --popover: oklch(0.24 0.01 264); /* Elevated surface */
+    --popover-foreground: oklch(0.95 0.005 264);
+
+    /* Accent colors */
+    --primary: oklch(0.65 0.2 255); /* Brighter blue for dark mode */
+    --primary-foreground: oklch(0.15 0.01 264); /* Dark text on primary */
+
+    --secondary: oklch(0.25 0.01 264); /* Secondary surface */
+    --secondary-foreground: oklch(0.9 0.005 264);
+
+    --muted: oklch(0.25 0.01 264); /* Muted surface */
+    --muted-foreground: oklch(0.65 0.005 264); /* Muted text */
+
+    --accent: oklch(0.28 0.015 255); /* Accent in dark */
+    --accent-foreground: oklch(0.95 0.005 264);
+
+    --destructive: oklch(0.6 0.24 25); /* Brighter red in dark */
+    --destructive-foreground: oklch(0.15 0.01 264);
+
+    /* Border and input colors */
+    --border: oklch(0.3 0.01 264); /* Darker borders */
+    --input: oklch(0.26 0.01 264); /* Dark input bg */
+    --ring: oklch(0.65 0.2 255); /* Bright focus ring */
+
+    /* Chart colors - brighter for dark mode */
+    --chart-1: oklch(0.65 0.2 255); /* Primary blue */
+    --chart-2: oklch(0.7 0.22 150); /* Green */
+    --chart-3: oklch(0.75 0.2 30); /* Orange */
+    --chart-4: oklch(0.6 0.24 280); /* Purple */
+    --chart-5: oklch(0.65 0.21 330); /* Pink */
+
+    /* Sidebar specific colors */
+    --sidebar: oklch(0.2 0.01 264); /* Dark sidebar */
+    --sidebar-foreground: oklch(0.9 0.005 264);
+    --sidebar-primary: oklch(0.65 0.2 255);
+    --sidebar-primary-foreground: oklch(0.15 0.01 264);
+    --sidebar-accent: oklch(0.26 0.015 255);
+    --sidebar-accent-foreground: oklch(0.95 0.005 264);
+    --sidebar-border: oklch(0.28 0.01 264);
+    --sidebar-ring: oklch(0.65 0.2 255);
+  }
+}
+
+/* Apple-inspired utility classes */
+@layer utilities {
+  /* Glass morphism effect */
+  .glass-effect {
+    backdrop-filter: blur(20px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.72);
+  }
+
+  .dark .glass-effect {
+    backdrop-filter: blur(20px) saturate(180%);
+    background-color: rgba(24, 24, 27, 0.72);
+  }
+
+  /* Soft, layered shadows for depth */
+  .apple-shadow {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 4px 8px rgba(0, 0, 0, 0.04),
+      0 12px 24px rgba(0, 0, 0, 0.04);
+  }
+
+  .apple-shadow-sm {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.02),
+      0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  .apple-shadow-lg {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 8px 16px rgba(0, 0, 0, 0.04),
+      0 24px 48px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .apple-shadow {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      0 4px 8px rgba(0, 0, 0, 0.2),
+      0 12px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .apple-shadow-sm {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .apple-shadow-lg {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.2),
+      0 8px 16px rgba(0, 0, 0, 0.3),
+      0 24px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Smooth transitions with custom easing */
+  .apple-transition {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .apple-transition-fast {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .apple-transition-slow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Apple-style focus states */
+  .apple-focus {
+    &:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 2px var(--ring),
+        0 0 0 4px rgb(0 0 0 / 0.05);
+    }
+  }
+
+  /* Smooth font rendering */
+  .smooth-font {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Card hover states */
+  .card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 8px 16px rgba(0, 0, 0, 0.04),
+      0 24px 48px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .card-hover:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.2),
+      0 8px 16px rgba(0, 0, 0, 0.3),
+      0 24px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Button press effect */
+  .button-press {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* Gradient text effect */
+  .gradient-text {
+    background: linear-gradient(135deg, oklch(0.55 0.18 255), oklch(0.65 0.2 280));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .dark .gradient-text {
+    background: linear-gradient(135deg, oklch(0.65 0.2 255), oklch(0.75 0.22 280));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Arena-specific component styles */
+@layer components {
+  /* Model card container */
+  .arena-card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.02),
+      0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .arena-card:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 8px 16px rgba(0, 0, 0, 0.04),
+      0 24px 48px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .arena-card {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .arena-card:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.2),
+      0 8px 16px rgba(0, 0, 0, 0.3),
+      0 24px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Sidebar styles */
+  .sidebar-container {
+    background-color: var(--sidebar);
+    color: var(--sidebar-foreground);
+    border-right: 1px solid var(--sidebar-border);
+  }
+
+  /* Header glass effect */
+  .header-glass {
+    backdrop-filter: blur(20px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.72);
+    border-bottom: 1px solid rgba(var(--border), 0.5);
+  }
+
+  .dark .header-glass {
+    backdrop-filter: blur(20px) saturate(180%);
+    background-color: rgba(24, 24, 27, 0.72);
+    border-bottom: 1px solid rgba(var(--border), 0.5);
+  }
+
+  /* Arena prompt input */
+  .prompt-input {
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(var(--ring), 0.2);
+    }
+  }
+}
+
+/* Custom scrollbar styles */
+@layer utilities {
+  /* Webkit scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: oklch(0.5 0 0 / 20%);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.5 0 0 / 30%);
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: oklch(1 0 0 / 20%);
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(1 0 0 / 30%);
+  }
+}

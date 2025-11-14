@@ -11,7 +11,7 @@ import { logger } from '@/libs/Logger';
 
 const handleI18nRouting = createMiddleware(routing);
 
-const PROTECTED_PATHS = ['/dashboard'];
+const PROTECTED_PATHS = ['/arena', '/account', '/settings', '/history', '/leaderboard'];
 const AUTH_PATHS = ['/sign-in', '/sign-up'];
 const ACCOUNT_DISABLED_PATH = '/account-disabled';
 const LOCALE_PREFIX_REGEX = /^\/[a-z]{2}(\/|$)/;
@@ -114,10 +114,10 @@ export default async function middleware(request: NextRequest, _event: NextFetch
     return NextResponse.redirect(signInUrl);
   }
 
-  // Redirect to dashboard if accessing auth paths while authenticated
+  // Redirect to arena if accessing auth paths while authenticated
   if (matchesAnyPath(pathname, AUTH_PATHS) && user) {
-    const dashboardUrl = new URL(locale ? `/${locale}/dashboard` : '/dashboard', request.url);
-    return NextResponse.redirect(dashboardUrl);
+    const arenaUrl = new URL(locale ? `/${locale}/arena` : '/arena', request.url);
+    return NextResponse.redirect(arenaUrl);
   }
 
   return handleI18nRouting(request);

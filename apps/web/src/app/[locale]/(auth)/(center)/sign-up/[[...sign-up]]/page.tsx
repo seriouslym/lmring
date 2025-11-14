@@ -38,7 +38,7 @@ export default async function SignUpPage(props: ISignUpPageProps) {
         <p className="mt-2 text-sm text-muted-foreground">{t('meta_description')}</p>
       </div>
 
-      <AuthFormWrapper type="signup" callbackUrl={callbackUrl || `/${locale}/dashboard`} />
+      <AuthFormWrapper type="signup" callbackUrl={callbackUrl || `/${locale}/arena`} />
 
       <div className="text-center text-sm">
         <span className="text-muted-foreground">Already have an account? </span>

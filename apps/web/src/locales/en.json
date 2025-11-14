@@ -3,7 +3,7 @@
     "home_link": "Home",
     "sign_in_link": "Sign in",
     "sign_up_link": "Sign up",
-    "dashboard_link": "Dashboard"
+    "arena_link": "Arena"
   },
   "BaseTemplate": {
     "description": "AI Model Comparison Platform"
@@ -14,7 +14,7 @@
     "title": "lmring",
     "description": "Compare AI models side by side and find the best fit for your needs",
     "get_started": "Get Started",
-    "view_dashboard": "View Dashboard",
+    "view_arena": "View Arena",
     "features_title": "Features",
     "feature_1_title": "Model Comparison",
     "feature_1_description": "Compare multiple AI models side by side with detailed metrics and performance data",
@@ -31,17 +31,7 @@
     "meta_title": "Sign up",
     "meta_description": "Effortlessly create an account through our intuitive sign-up process."
   },
-  "Dashboard": {
-    "meta_title": "Dashboard",
-    "hello_message": "Hello {email}!",
-    "alternative_message": "Want to build your SaaS faster using the same stack? Try <url></url>."
-  },
   "UserProfile": {
     "meta_title": "User Profile"
-  },
-  "DashboardLayout": {
-    "dashboard_link": "Dashboard",
-    "user_profile_link": "Manage your account",
-    "sign_out": "Sign out"
   }
 }
