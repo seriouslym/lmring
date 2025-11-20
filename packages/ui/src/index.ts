@@ -45,4 +45,5 @@ export {
 export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './popover';
 export { Slider } from './slider';
 export { Switch } from './switch';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './tooltip';
 

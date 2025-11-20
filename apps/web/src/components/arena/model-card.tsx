@@ -6,12 +6,17 @@ import {
   Card,
   CardContent,
   CardHeader,
+  cn,
   Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
   Slider,
   Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@lmring/ui';
 import { motion } from 'framer-motion';
 import {
@@ -21,11 +26,15 @@ import {
   ClockIcon,
   EraserIcon,
   ExternalLinkIcon,
+  MoreHorizontalIcon,
   MoreVerticalIcon,
   PlusIcon,
   Settings2Icon,
+  SlidersHorizontalIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
+  ToggleLeftIcon,
+  ToggleRightIcon,
   Trash2Icon,
 } from 'lucide-react';
 import * as React from 'react';
@@ -212,220 +221,257 @@ export function ModelCard({
 
             {/* Action Toolbar */}
             <div className="flex items-center gap-1">
-              {/* Sync/Custom Toggle */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 bg-background/50">
-                <Label
-                  htmlFor={`sync-${index}`}
-                  className="text-xs cursor-pointer font-medium select-none"
-                >
-                  {synced ? 'Synced' : 'Custom'}
-                </Label>
-                <Switch
-                  id={`sync-${index}`}
-                  checked={synced}
-                  onCheckedChange={onSyncToggle}
-                  className="scale-90"
-                />
-              </div>
-
-              {/* Settings Popover */}
-              <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover-lift">
-                    <Settings2Icon className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 glass-effect" align="end">
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Model Settings</h4>
-
-                    <div className="space-y-3">
-                      {/* Max Tokens */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Max Output Tokens</Label>
-                          <span className="text-sm text-muted-foreground">{config.maxTokens}</span>
-                        </div>
-                        <Slider
-                          value={[config.maxTokens]}
-                          onValueChange={([value]) =>
-                            handleConfigChange('maxTokens', value ?? config.maxTokens)
-                          }
-                          min={256}
-                          max={8192}
-                          step={256}
-                        />
-                      </div>
-
-                      {/* Temperature */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Temperature</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {config.temperature.toFixed(2)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[config.temperature]}
-                          onValueChange={([value]) =>
-                            handleConfigChange('temperature', value ?? config.temperature)
-                          }
-                          min={0}
-                          max={2}
-                          step={0.01}
-                        />
-                      </div>
-
-                      {/* Top P */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Top P</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {config.topP.toFixed(2)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[config.topP]}
-                          onValueChange={([value]) =>
-                            handleConfigChange('topP', value ?? config.topP)
-                          }
-                          min={0}
-                          max={1}
-                          step={0.01}
-                        />
-                      </div>
-
-                      {/* Frequency Penalty */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Frequency Penalty</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {config.frequencyPenalty.toFixed(2)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[config.frequencyPenalty]}
-                          onValueChange={([value]) =>
-                            handleConfigChange('frequencyPenalty', value ?? config.frequencyPenalty)
-                          }
-                          min={0}
-                          max={2}
-                          step={0.01}
-                        />
-                      </div>
-
-                      {/* Presence Penalty */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Presence Penalty</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {config.presencePenalty.toFixed(2)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[config.presencePenalty]}
-                          onValueChange={([value]) =>
-                            handleConfigChange('presencePenalty', value ?? config.presencePenalty)
-                          }
-                          min={0}
-                          max={2}
-                          step={0.01}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              {/* Add Card Button */}
-              {onAddCard && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover-lift"
-                  onClick={onAddCard}
-                >
-                  <PlusIcon className="h-4 w-4" />
-                </Button>
-              )}
-
-              {/* More Actions Dropdown */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover-lift"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                >
-                  <MoreVerticalIcon className="h-4 w-4" />
-                </Button>
-
-                {dropdownOpen && (
-                  <>
-                    <button
-                      type="button"
-                      className="fixed inset-0 z-10"
-                      onClick={() => setDropdownOpen(false)}
-                      onKeyDown={(e) => e.key === 'Escape' && setDropdownOpen(false)}
-                      aria-label="Close dropdown menu"
-                    />
-                    <div className="absolute top-full right-0 mt-1 z-20 bg-popover border rounded-xl shadow-lg min-w-[160px] py-1">
-                      {onClear && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onClear();
-                            setDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
-                        >
-                          <EraserIcon className="h-4 w-4" />
-                          Clear Chat
-                        </button>
-                      )}
-                      {canMoveLeft && onMoveLeft && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onMoveLeft();
-                            setDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
-                        >
-                          <ArrowLeftIcon className="h-4 w-4" />
-                          Move Left
-                        </button>
-                      )}
-                      {canMoveRight && onMoveRight && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onMoveRight();
-                            setDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
-                        >
-                          <ArrowRightIcon className="h-4 w-4" />
-                          Move Right
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onDelete();
-                            setDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left text-destructive"
-                        >
-                          <Trash2Icon className="h-4 w-4" />
-                          Delete Chat
-                        </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover-lift text-muted-foreground hover:text-foreground"
+                        onClick={() => onSyncToggle?.(!synced)}
+                      >
+                        {synced ? (
+                          <ToggleRightIcon className="h-4 w-4" />
+                        ) : (
+                          <ToggleLeftIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                      {synced && (
+                        <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 border border-background ring-1 ring-background pointer-events-none" />
                       )}
                     </div>
-                  </>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Sync chat messages with other models</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Settings Popover */}
+                <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover-lift">
+                          <SlidersHorizontalIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Model Settings</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <PopoverContent className="w-80 glass-effect" align="end">
+                    <div className="space-y-4">
+                      <h4 className="font-medium sr-only">Model Settings</h4>
+
+                      <div className="space-y-3">
+                        {/* Max Tokens */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Max Output Tokens</Label>
+                            <span className="text-sm text-muted-foreground">
+                              {config.maxTokens}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[config.maxTokens]}
+                            onValueChange={([value]) =>
+                              handleConfigChange('maxTokens', value ?? config.maxTokens)
+                            }
+                            min={256}
+                            max={64000}
+                            step={256}
+                          />
+                        </div>
+
+                        {/* Temperature */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Temperature</Label>
+                            <span className="text-sm text-muted-foreground">
+                              {config.temperature.toFixed(2)}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[config.temperature]}
+                            onValueChange={([value]) =>
+                              handleConfigChange('temperature', value ?? config.temperature)
+                            }
+                            min={0}
+                            max={2}
+                            step={0.01}
+                          />
+                        </div>
+
+                        {/* Top P */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Top P</Label>
+                            <span className="text-sm text-muted-foreground">
+                              {config.topP.toFixed(2)}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[config.topP]}
+                            onValueChange={([value]) =>
+                              handleConfigChange('topP', value ?? config.topP)
+                            }
+                            min={0}
+                            max={1}
+                            step={0.01}
+                          />
+                        </div>
+
+                        {/* Frequency Penalty */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Frequency Penalty</Label>
+                            <span className="text-sm text-muted-foreground">
+                              {config.frequencyPenalty.toFixed(2)}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[config.frequencyPenalty]}
+                            onValueChange={([value]) =>
+                              handleConfigChange(
+                                'frequencyPenalty',
+                                value ?? config.frequencyPenalty,
+                              )
+                            }
+                            min={0}
+                            max={2}
+                            step={0.01}
+                          />
+                        </div>
+
+                        {/* Presence Penalty */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Presence Penalty</Label>
+                            <span className="text-sm text-muted-foreground">
+                              {config.presencePenalty.toFixed(2)}
+                            </span>
+                          </div>
+                          <Slider
+                            value={[config.presencePenalty]}
+                            onValueChange={([value]) =>
+                              handleConfigChange('presencePenalty', value ?? config.presencePenalty)
+                            }
+                            min={0}
+                            max={2}
+                            step={0.01}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Add Card Button */}
+                {onAddCard && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover-lift"
+                        onClick={onAddCard}
+                      >
+                        <PlusIcon className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add Model</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
-              </div>
+
+                {/* More Actions Dropdown */}
+                <div className="relative">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover-lift"
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                      >
+                        <MoreHorizontalIcon className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>More Options</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {dropdownOpen && (
+                    <>
+                      <button
+                        type="button"
+                        className="fixed inset-0 z-10"
+                        onClick={() => setDropdownOpen(false)}
+                        onKeyDown={(e) => e.key === 'Escape' && setDropdownOpen(false)}
+                        aria-label="Close dropdown menu"
+                      />
+                      <div className="absolute top-full right-0 mt-1 z-20 bg-popover border rounded-xl shadow-lg min-w-[160px] py-1">
+                        {onClear && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onClear();
+                              setDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+                          >
+                            <EraserIcon className="h-4 w-4" />
+                            Clear Chat
+                          </button>
+                        )}
+                        {canMoveLeft && onMoveLeft && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onMoveLeft();
+                              setDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+                          >
+                            <ArrowLeftIcon className="h-4 w-4" />
+                            Move Left
+                          </button>
+                        )}
+                        {canMoveRight && onMoveRight && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onMoveRight();
+                              setDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+                          >
+                            <ArrowRightIcon className="h-4 w-4" />
+                            Move Right
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onDelete();
+                              setDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-left text-destructive"
+                          >
+                            <Trash2Icon className="h-4 w-4" />
+                            Delete Chat
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </TooltipProvider>
             </div>
           </div>
         </CardHeader>
