@@ -4,7 +4,6 @@
     "config:recommended",
     ":dependencyDashboard",
     ":semanticCommits",
-    ":pinAllExceptPeerDependencies",
     "group:monorepos",
     "group:recommended"
   ],
