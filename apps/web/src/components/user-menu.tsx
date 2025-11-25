@@ -80,11 +80,11 @@ export function UserMenu({ user }: UserMenuProps) {
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => router.push(`/${locale}/dashboard`)}
+          onClick={() => router.push(`/${locale}/arena`)}
           className="apple-transition"
         >
           <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Dashboard</span>
+          <span className="font-medium">Arena</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem

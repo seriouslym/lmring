@@ -200,6 +200,16 @@ export default function ArenaPage() {
     },
   ]);
 
+  const timeoutRefs = React.useRef<Map<number, NodeJS.Timeout>>(new Map());
+
+  React.useEffect(() => {
+    return () => {
+      timeoutRefs.current.forEach((timeout) => {
+        clearTimeout(timeout);
+      });
+    };
+  }, []);
+
   const handleAddModel = () => {
     if (comparisons.length < 4) {
       setComparisons([
@@ -288,7 +298,7 @@ export default function ArenaPage() {
     );
 
     // Simulate API call
-    setTimeout(
+    const timeoutId = setTimeout(
       () => {
         const model = AVAILABLE_MODELS.find((m) => m.id === comparison.modelId);
         const mockResponse = `This is a mock response from ${model?.name || 'Unknown Model'} for the prompt: "${promptToUse}"
@@ -315,9 +325,11 @@ The actual implementation would stream real responses from the AI models using t
               : c,
           ),
         );
+        timeoutRefs.current.delete(index);
       },
       Math.random() * 3000 + 1000,
     );
+    timeoutRefs.current.set(index, timeoutId);
   };
 
   const handleSubmit = async () => {

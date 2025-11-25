@@ -18,10 +18,15 @@ export interface ModelOption {
   id: string;
   name: string;
   provider: string;
-  category?: string;
   description?: string;
-  isNew?: boolean;
+  category?: string;
+  icon?: string;
+  context?: string;
+  inputPricing?: string;
+  outputPricing?: string;
+  badge?: 'Hobby' | 'Pro' | 'Enterprise';
   isPremium?: boolean;
+  isNew?: boolean;
 }
 
 interface ModelSelectorProps {

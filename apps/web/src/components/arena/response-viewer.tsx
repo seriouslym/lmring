@@ -19,11 +19,12 @@ export function ResponseViewer({
   const lines = content.split('\n');
   const lastLineRef = React.useRef<HTMLDivElement>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: content triggers scroll on updates during streaming
   React.useEffect(() => {
     if (isStreaming && lastLineRef.current) {
       lastLineRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [isStreaming]);
+  }, [isStreaming, content]);
 
   if (!content) {
     return <div className="text-sm text-muted-foreground italic">Waiting for response...</div>;

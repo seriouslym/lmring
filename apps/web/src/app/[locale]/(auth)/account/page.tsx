@@ -83,6 +83,8 @@ export default function AccountPage() {
       : 'U';
 
   const handleSave = () => {
+    // TODO: Implement actual save functionality with API call
+    // This is currently a visual feedback placeholder
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
