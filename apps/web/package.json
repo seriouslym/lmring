@@ -28,6 +28,7 @@
     "@lmring/env": "workspace:*",
     "@lmring/i18n": "workspace:*",
     "@lmring/ui": "workspace:*",
+    "@lobehub/icons": "^2.43.1",
     "@logtape/logtape": "^1.1.1",
     "@sentry/nextjs": "^10.22.0",
     "@supabase/ssr": "^0.7.0",

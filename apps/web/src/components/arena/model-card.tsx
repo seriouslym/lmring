@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelConfig, ModelOption } from '@/types/arena';
 
 interface ModelCardProps {
@@ -132,13 +133,8 @@ export function ModelCard({
               >
                 {selectedModel ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{selectedModel.icon || '🤖'}</span>
+                    <ProviderIcon providerId={selectedModel.providerId} size={16} />
                     <span className="font-medium text-sm">{selectedModel.name}</span>
-                    {selectedModel.badge && (
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                        {selectedModel.badge}
-                      </Badge>
-                    )}
                     {selectedModel.isNew && (
                       <Badge variant="default" className="text-xs px-1.5 py-0">
                         NEW
@@ -169,25 +165,17 @@ export function ModelCard({
                           onModelSelect?.(model.id);
                           setModelMenuOpen(false);
                         }}
-                        className="w-full flex items-start gap-2 py-3 px-3 hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center gap-2 py-3 px-3 hover:bg-accent transition-colors text-left"
                       >
-                        <span className="text-base">{model.icon || '🤖'}</span>
+                        <ProviderIcon providerId={model.providerId} size={16} />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{model.name}</div>
-                          <div className="text-xs text-muted-foreground">{model.provider}</div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {model.badge && (
-                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                              {model.badge}
-                            </Badge>
-                          )}
-                          {model.isNew && (
-                            <Badge variant="default" className="text-xs px-1.5 py-0">
-                              NEW
-                            </Badge>
-                          )}
-                        </div>
+                        {model.isNew && (
+                          <Badge variant="default" className="text-xs px-1.5 py-0">
+                            NEW
+                          </Badge>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -459,10 +447,8 @@ export function ModelCard({
             <div className="flex-1 flex items-center justify-center p-4">
               <div className="rounded-lg border bg-muted/30 p-4 space-y-3 max-w-xl w-full backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <span className="text-base">{selectedModel.icon || '🤖'}</span>
-                  <span>
-                    {selectedModel.provider} / {selectedModel.name}
-                  </span>
+                  <ProviderIcon providerId={selectedModel.providerId} size={16} />
+                  <span>{selectedModel.name}</span>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {selectedModel.description}

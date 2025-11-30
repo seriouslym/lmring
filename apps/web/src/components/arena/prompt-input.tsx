@@ -2,7 +2,7 @@
 
 import { Button, Textarea } from '@lmring/ui';
 import { motion } from 'framer-motion';
-import { SendIcon, SparklesIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon, SparklesIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 
 interface PromptInputProps {
@@ -57,7 +57,7 @@ export function PromptInput({
           isFocused ? 'border-primary ring-2 ring-ring/20' : 'border-border'
         } bg-background apple-transition apple-shadow-sm`}
       >
-        <div className="flex items-start p-4 gap-3">
+        <div className="flex items-start p-3 gap-3">
           <motion.div
             animate={{ rotate: isLoading ? 360 : 0 }}
             transition={{
@@ -80,13 +80,13 @@ export function PromptInput({
               placeholder={placeholder}
               disabled={isLoading}
               maxLength={maxLength}
-              className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0 shadow-none bg-transparent placeholder:text-muted-foreground/60"
+              className="min-h-[44px] resize-none border-0 p-0 focus-visible:ring-0 shadow-none bg-transparent placeholder:text-muted-foreground/60"
               style={{
                 scrollbarWidth: 'thin',
               }}
             />
 
-            <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className={isNearLimit ? 'text-destructive' : ''}>
                   {characterCount} / {maxLength}
@@ -125,13 +125,12 @@ export function PromptInput({
                 )}
 
                 <Button
-                  size="sm"
+                  size="icon"
                   onClick={onSubmit}
                   disabled={!value.trim() || isLoading}
-                  className="h-8 px-3"
+                  className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white p-0"
                 >
-                  <SendIcon className="h-4 w-4 mr-1.5" />
-                  Send
+                  <ArrowRightIcon className="h-4 w-4" />
                 </Button>
               </div>
             </div>

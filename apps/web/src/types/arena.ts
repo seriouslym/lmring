@@ -6,15 +6,16 @@ export interface ModelOption {
   id: string;
   name: string;
   provider: string;
+  providerId: string;
   description?: string;
   category?: string;
-  icon?: string;
   context?: string;
   inputPricing?: string;
   outputPricing?: string;
-  badge?: 'Hobby' | 'Pro' | 'Enterprise';
+  type?: 'hobby' | 'pro';
   isPremium?: boolean;
   isNew?: boolean;
+  default?: boolean;
 }
 
 export interface ModelConfig {

@@ -15,6 +15,7 @@ const baseConfig: NextConfig = {
     '@lmring/ai-hub',
     '@lmring/i18n',
     '@lmring/env',
+    '@lobehub/icons',
   ],
   outputFileTracingIncludes: {
     '/': ['./migrations/**/*'],
