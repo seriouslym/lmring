@@ -13,474 +13,713 @@ import {
   Separator,
   Switch,
 } from '@lmring/ui';
+import { Anthropic, Aws, Azure, DeepSeek, Google, Moonshot, Ollama, OpenAI } from '@lobehub/icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDownIcon,
-  CopyIcon,
+  BotIcon,
+  BoxIcon,
+  ChevronRightIcon,
+  DatabaseIcon,
   ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
+  GithubIcon,
+  GlobeIcon,
+  InfoIcon,
+  MailIcon,
   PlusIcon,
-  RotateCwIcon,
   SearchIcon,
-  SettingsIcon,
-  TrashIcon,
+  Settings2Icon,
+  TwitterIcon,
 } from 'lucide-react';
 import * as React from 'react';
 
 // Mock Data for Providers
-const providers = [
+const defaultProviders = [
   {
-    id: 'cherryin',
-    name: 'CherryIN',
+    id: 'azure',
+    name: 'Azure AI',
     connected: true,
-    icon: '🍒',
-    description: 'CherryIN AI Services',
-  },
-  { id: 'mnapi', name: 'mnapi', connected: false, icon: 'Ⓜ️', description: 'MNAPI Services' },
-  {
-    id: 'siliconflow',
-    name: 'SiliconFlow',
-    connected: true,
-    icon: '🌊',
-    description: 'SiliconFlow AI',
+    Icon: Azure,
+    description:
+      'Azure offers a variety of advanced AI models, including GPT-3.5 and the latest GPT-4 series.',
+    type: 'enabled',
+    tags: [],
   },
   {
-    id: 'modelscope',
-    name: 'ModelScope',
+    id: 'comfyui',
+    name: 'ComfyUI',
     connected: true,
-    icon: '🤖',
-    description: 'ModelScope MaaS',
+    Icon: null, // Placeholder
+    description: 'A powerful open-source workflow engine for generating images, videos, and audio.',
+    type: 'enabled',
+    tags: [],
   },
   {
-    id: 'aliyun',
-    name: 'Aliyun Bailian',
+    id: 'fal',
+    name: 'fal',
     connected: true,
-    icon: '☁️',
-    description: 'Aliyun Bailian',
+    Icon: null, // Placeholder
+    description: 'Generative Media Platform for Developers',
+    type: 'enabled',
+    tags: [],
   },
-  { id: 'aihubmix', name: 'AiHubMix', connected: false, icon: '🔄', description: 'AiHubMix' },
-  { id: 'openai', name: 'OpenAI', connected: false, icon: '🧠', description: 'OpenAI' },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    connected: false,
+    Icon: OpenAI,
+    description:
+      'OpenAI is a global leader in artificial intelligence research, with models like the GPT series.',
+    type: 'disabled',
+    tags: ['OpenAI'],
+  },
+  {
+    id: 'azure-openai',
+    name: 'Microsoft Azure',
+    connected: false,
+    Icon: Azure,
+    description:
+      'Azure offers a variety of advanced AI models, including GPT-3.5 and the latest GPT-4 series.',
+    type: 'disabled',
+    tags: ['Microsoft Azure', 'OpenAI'],
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama',
+    connected: false,
+    Icon: Ollama,
+    description:
+      'Ollama provides models that cover a wide range of fields, including code generation.',
+    type: 'disabled',
+    tags: ['Ollama'],
+  },
+  {
+    id: 'ollama-cloud',
+    name: 'Ollama Cloud',
+    connected: false,
+    Icon: Ollama,
+    description:
+      'Ollama Cloud offers officially hosted inference services, providing out-of-the-box access.',
+    type: 'disabled',
+    tags: ['Ollama Cloud'],
+  },
+  {
+    id: 'vllm',
+    name: 'vLLM',
+    connected: false,
+    Icon: null, // Placeholder
+    description: 'vLLM is a fast and easy-to-use library for LLM inference and serving.',
+    type: 'disabled',
+    tags: ['LLM'],
+  },
+  {
+    id: 'xinference',
+    name: 'Xinference',
+    connected: false,
+    Icon: null, // Placeholder
+    description:
+      'Xorbits Inference (Xinference) is an open-source platform designed to simplify the...',
+    type: 'disabled',
+    tags: ['Xinference'],
+  },
   {
     id: 'anthropic',
     name: 'Anthropic',
     connected: false,
-    icon: 'claude',
-    description: 'Anthropic Claude',
+    Icon: Anthropic,
+    description:
+      'Anthropic is a company focused on AI research and development, offering a range of...',
+    type: 'disabled',
+    tags: ['ANTHROPIC', 'Claude'],
+  },
+  {
+    id: 'bedrock',
+    name: 'Amazon Bedrock',
+    connected: false,
+    Icon: Aws,
+    description:
+      'Bedrock is a service provided by Amazon AWS, focusing on delivering advanced AI languag...',
+    type: 'disabled',
+    tags: ['aws', 'Amazon Bedrock'],
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    connected: false,
+    Icon: Google,
+    description: 'Google AI offers a wide range of AI services and models.',
+    type: 'disabled',
+    tags: ['Google'],
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    connected: false,
+    Icon: DeepSeek,
+    description: 'DeepSeek is an AI company focused on AGI.',
+    type: 'disabled',
+    tags: ['DeepSeek'],
+  },
+  {
+    id: 'moonshot',
+    name: 'Moonshot',
+    connected: false,
+    Icon: Moonshot,
+    description: 'Moonshot AI provides advanced LLM services.',
+    type: 'disabled',
+    tags: ['Moonshot'],
   },
 ];
 
-type Tab = 'services' | 'default-model' | 'general';
+// Mock Data for System Models
+const systemModels = [
+  { id: 'gpt-4o', name: 'GPT-4o', description: 'OpenAI flagship model' },
+  {
+    id: 'claude-3-5-sonnet',
+    name: 'Claude 3.5 Sonnet',
+    description: 'Anthropic most intelligent model',
+  },
+  { id: 'gemini-pro', name: 'Gemini 1.5 Pro', description: 'Google most capable AI model' },
+];
+
+type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'about';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = React.useState<Tab>('services');
-  const [selectedProviderId, setSelectedProviderId] = React.useState<string>(
-    providers[0]?.id ?? '',
-  );
+  const [activeTab, setActiveTab] = React.useState<Tab>('general');
+  const [selectedProviderId, setSelectedProviderId] = React.useState<string | null>(null);
   const [showKey, setShowKey] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [providers, setProviders] = React.useState(defaultProviders);
 
-  const selectedProvider = providers.find((p) => p.id === selectedProviderId) ?? providers[0];
+  const handleToggleProvider = (id: string) => {
+    setProviders((prev) => prev.map((p) => (p.id === id ? { ...p, connected: !p.connected } : p)));
+  };
 
-  const filteredProviders = providers.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const selectedProvider = providers.find((p) => p.id === selectedProviderId);
+
+  const renderSidebarItem = (id: Tab, label: string, icon: React.ReactNode) => (
+    <button
+      type="button"
+      onClick={() => {
+        setActiveTab(id);
+        setSelectedProviderId(null); // Reset provider selection when switching tabs
+      }}
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+        activeTab === id
+          ? 'bg-secondary text-secondary-foreground'
+          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
+
+  const ProviderCard = ({
+    provider,
+    onToggle,
+  }: {
+    provider: (typeof defaultProviders)[0];
+    onToggle: (id: string) => void;
+  }) => {
+    const Icon = provider.Icon;
+    return (
+      <Card
+        className="cursor-pointer hover:shadow-md transition-all h-full flex flex-col"
+        onClick={() => setSelectedProviderId(provider.id)}
+      >
+        <div className="p-4 flex-1 flex flex-col">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-muted/20 shrink-0">
+              {Icon ? (
+                <Icon size={24} className={provider.connected ? '' : 'grayscale'} />
+              ) : (
+                <span className="text-xl">{provider.name[0]}</span>
+              )}
+            </div>
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base">{provider.name}</h3>
+                {provider.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[10px] text-muted-foreground flex items-center gap-1"
+                  >
+                    {tag === 'OpenAI' && <OpenAI.Avatar size={12} />}
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 mb-2">
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              {provider.description}
+            </p>
+          </div>
+
+          <div className="pt-3 border-t flex justify-end">
+            <Switch
+              checked={provider.connected}
+              onCheckedChange={() => onToggle(provider.id)}
+              className="data-[state=checked]:bg-blue-600"
+            />
+          </div>
+        </div>
+      </Card>
+    );
+  };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-background">
-      {/* Header & Tabs */}
-      <div className="flex-none px-6 py-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setActiveTab('services')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                activeTab === 'services'
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              Model Services
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('default-model')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                activeTab === 'default-model'
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              Default Model
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('general')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                activeTab === 'general'
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              General Settings
-            </button>
+    <div className="h-[calc(100vh-4rem)] flex bg-background">
+      {/* Sidebar */}
+      <div className="w-64 flex-none border-r border-border bg-muted/10 flex flex-col">
+        <div className="p-6 pb-4">
+          <h1 className="text-2xl font-bold">Settings</h1>
+          <p className="text-xs text-muted-foreground mt-1">Preferences and model settings.</p>
+        </div>
+        <div className="px-3 space-y-1">
+          {renderSidebarItem('general', 'General', <Settings2Icon className="h-4 w-4" />)}
+          {renderSidebarItem('provider', 'AI Service Provider', <BotIcon className="h-4 w-4" />)}
+          {renderSidebarItem('system-model', 'System Model', <BoxIcon className="h-4 w-4" />)}
+          {renderSidebarItem('storage', 'Data Storage', <DatabaseIcon className="h-4 w-4" />)}
+          {renderSidebarItem('about', 'About', <InfoIcon className="h-4 w-4" />)}
+        </div>
+        <div className="mt-auto p-4 border-t border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Powered by</span>
+            <span className="font-semibold text-foreground">LMRing</span>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          {activeTab === 'services' && (
-            <motion.div
-              key="services"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full flex"
-            >
-              {/* Left Sidebar - Provider List */}
-              <div className="w-80 border-r border-border flex flex-col bg-sidebar/30">
-                <div className="p-4">
-                  <div className="relative">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search model platform..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 bg-background border-input focus-visible:ring-1"
-                    />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto p-8">
+          <AnimatePresence mode="wait">
+            {/* General Settings */}
+            {activeTab === 'general' && (
+              <motion.div
+                key="general"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h2 className="text-lg font-medium mb-1">General Settings</h2>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <Label className="text-base">Theme</Label>
+                    <div className="grid grid-cols-3 gap-4 max-w-md">
+                      <div className="cursor-pointer group">
+                        <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
+                          <div className="bg-[#f4f4f5] h-16 rounded w-full relative">
+                            <div className="absolute top-2 left-2 w-8 h-2 bg-white rounded-sm shadow-sm" />
+                            <div className="absolute top-6 left-2 w-12 h-8 bg-white rounded-sm shadow-sm" />
+                          </div>
+                        </div>
+                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                          <span className="text-muted-foreground">☀</span> Light
+                        </div>
+                      </div>
+                      <div className="cursor-pointer group">
+                        <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
+                          <div className="bg-[#18181b] h-16 rounded w-full relative">
+                            <div className="absolute top-2 left-2 w-8 h-2 bg-zinc-800 rounded-sm" />
+                            <div className="absolute top-6 left-2 w-12 h-8 bg-zinc-800 rounded-sm" />
+                          </div>
+                        </div>
+                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                          <span className="text-muted-foreground">🌙</span> Dark
+                        </div>
+                      </div>
+                      <div className="cursor-pointer group">
+                        <div className="border-2 border-primary rounded-lg p-1 mb-2 overflow-hidden">
+                          <div className="bg-gradient-to-br from-[#f4f4f5] to-[#18181b] h-16 rounded w-full flex relative">
+                            <div className="w-1/2 h-full relative">
+                              <div className="absolute top-2 left-2 w-4 h-2 bg-white rounded-sm shadow-sm" />
+                            </div>
+                            <div className="w-1/2 h-full relative">
+                              <div className="absolute top-2 right-2 w-4 h-2 bg-zinc-800 rounded-sm" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                          <span className="text-muted-foreground">💻</span> Automatic
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label className="text-base">Language</Label>
+                    <div className="max-w-md">
+                      <Button variant="outline" className="w-full justify-between font-normal">
+                        English
+                        <ChevronRightIcon className="h-4 w-4 opacity-50 rotate-90" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
-                  {filteredProviders.map((provider) => (
+              </motion.div>
+            )}
+
+            {/* Service Provider */}
+            {activeTab === 'provider' && (
+              <motion.div
+                key="provider"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                {!selectedProvider ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 max-w-sm">
+                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Search Providers..." className="pl-9 bg-muted/50" />
+                      </div>
+                      <Button size="icon" variant="outline" className="shrink-0">
+                        <PlusIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button variant="secondary" size="sm" className="h-8 px-3 gap-2">
+                        <BoxIcon className="h-3.5 w-3.5" />
+                        All
+                      </Button>
+                    </div>
+
+                    <div className="space-y-8">
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <h3 className="font-bold text-lg">Enabled</h3>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
+                          >
+                            3
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {providers
+                            .filter((p) => p.type === 'enabled')
+                            .map((provider) => (
+                              <ProviderCard
+                                key={provider.id}
+                                provider={provider}
+                                onToggle={handleToggleProvider}
+                              />
+                            ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <h3 className="font-bold text-lg">Disabled</h3>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
+                          >
+                            65
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {providers
+                            .filter((p) => p.type === 'disabled')
+                            .map((provider) => (
+                              <ProviderCard
+                                key={provider.id}
+                                provider={provider}
+                                onToggle={handleToggleProvider}
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-6">
                     <button
                       type="button"
-                      key={provider.id}
-                      onClick={() => setSelectedProviderId(provider.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
-                        selectedProviderId === provider.id
-                          ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
-                          : 'hover:bg-sidebar-accent/50 text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="flex items-center gap-2 text-sm text-muted-foreground mb-4 cursor-pointer hover:text-foreground"
+                      onClick={() => setSelectedProviderId(null)}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-background border flex items-center justify-center text-lg shadow-sm">
-                          {provider.icon}
-                        </div>
-                        <span className="font-medium text-sm">{provider.name}</span>
-                      </div>
-                      {provider.connected && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0 h-5 text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400"
-                        >
-                          ON
-                        </Badge>
-                      )}
+                      <ChevronRightIcon className="h-4 w-4 rotate-180" /> Back to Providers
                     </button>
-                  ))}
-                  <div className="pt-2 px-2">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground border border-dashed border-border"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                      Add Custom Provider
-                    </Button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Right Panel - Provider Details */}
-              <div className="flex-1 overflow-y-auto p-8 bg-background">
-                {selectedProvider && (
-                  <div className="max-w-3xl mx-auto space-y-8">
-                    {/* Header */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-2xl">
-                          {selectedProvider.icon}
+                      <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 flex items-center justify-center rounded-2xl bg-muted/20 text-4xl">
+                          {selectedProvider.Icon ? (
+                            <selectedProvider.Icon size={40} />
+                          ) : (
+                            selectedProvider.name[0]
+                          )}
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-2xl font-bold">{selectedProvider.name}</h2>
-                            <ExternalLinkIcon className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedProvider.description}
-                          </p>
+                          <h2 className="text-2xl font-bold">{selectedProvider.name}</h2>
+                          <p className="text-muted-foreground">{selectedProvider.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="provider-active" className="text-sm text-muted-foreground">
-                          Enabled
-                        </Label>
-                        <Switch id="provider-active" checked={selectedProvider.connected} />
-                      </div>
+                      <Switch
+                        checked={selectedProvider.connected}
+                        onCheckedChange={() => handleToggleProvider(selectedProvider.id)}
+                        className="data-[state=checked]:bg-blue-600"
+                      />
                     </div>
 
                     <Separator />
 
-                    {/* API Key Section */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold flex items-center gap-2">
-                          API Key
-                          <Badge variant="secondary" className="text-[10px] font-normal">
-                            Required
-                          </Badge>
-                        </h3>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <Input
-                              type={showKey ? 'text' : 'password'}
-                              placeholder="sk-..."
-                              className="pr-10 font-mono text-sm"
-                              defaultValue={
-                                selectedProvider.connected ? 'sk-xxxxxxxxxxxxxxxxxxxxxxxx' : ''
-                              }
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowKey(!showKey)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              {showKey ? (
-                                <EyeOffIcon className="h-4 w-4" />
-                              ) : (
-                                <EyeIcon className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                          <Button variant="secondary">Check</Button>
-                        </div>
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                      <Label>API Key</Label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Input
+                            type={showKey ? 'text' : 'password'}
+                            defaultValue={selectedProvider.connected ? 'sk-xxxxxxxxxxxxxxxx' : ''}
+                            placeholder="Enter API Key"
+                            className="pr-10"
+                          />
                           <button
                             type="button"
-                            className="text-primary hover:underline flex items-center gap-1"
+                            onClick={() => setShowKey(!showKey)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                           >
-                            Get API Key <ExternalLinkIcon className="h-3 w-3" />
+                            {showKey ? (
+                              <EyeOffIcon className="h-4 w-4" />
+                            ) : (
+                              <EyeIcon className="h-4 w-4" />
+                            )}
                           </button>
-                          <span>Supports multiple keys (comma separated)</span>
                         </div>
+                        <Button variant="secondary">Check</Button>
                       </div>
                     </div>
 
-                    {/* API Address Section */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold">API Address</h3>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <RotateCwIcon className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        <Input
-                          defaultValue="https://api.example.com/v1"
-                          className="font-mono text-sm"
-                        />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Base URL for chat completions</span>
-                        </div>
-                      </div>
+                      <Label>API Proxy URL</Label>
+                      <Input placeholder="https://api.openai.com/v1" />
                     </div>
 
-                    <Separator />
-
-                    {/* Models Section */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-semibold">Models</h3>
-                          <Badge variant="outline" className="text-xs font-normal">
-                            3 Available
-                          </Badge>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="gap-2">
-                            <SettingsIcon className="h-3.5 w-3.5" />
-                            Manage
-                          </Button>
-                          <Button size="sm" className="gap-2">
-                            <PlusIcon className="h-3.5 w-3.5" />
-                            Add Model
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-3">
+                      <Label>Model List</Label>
+                      <div className="border rounded-lg divide-y">
                         {['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'].map((model) => (
                           <div
                             key={model}
-                            className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors group"
+                            className="p-3 flex items-center justify-between hover:bg-muted/50"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center text-primary">
-                                <SettingsIcon className="h-4 w-4" />
-                              </div>
-                              <div>
-                                <div className="font-medium text-sm">{model}</div>
-                                <div className="text-xs text-muted-foreground">Chat Completion</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <CopyIcon className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <span className="font-medium">{model}</span>
+                            <Badge variant="outline">Chat</Badge>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {activeTab === 'default-model' && (
-            <motion.div
-              key="default-model"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="p-8 max-w-4xl mx-auto"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Default Models</CardTitle>
-                  <CardDescription>
-                    Choose your preferred models for different tasks
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+            {/* System Model */}
+            {activeTab === 'system-model' && (
+              <motion.div
+                key="system-model"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h2 className="text-lg font-medium mb-1">System Models</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Default models provided by the system.
+                  </p>
+                </div>
+
+                <div className="grid gap-4">
+                  {systemModels.map((model) => (
+                    <Card key={model.id}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">{model.name}</CardTitle>
+                        <CardDescription>{model.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">System Default</Badge>
+                          <Badge variant="outline">Chat</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Data Storage */}
+            {activeTab === 'storage' && (
+              <motion.div
+                key="storage"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h2 className="text-lg font-medium mb-1">Advanced Operations</h2>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between py-4 border-b">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Import Data</div>
+                      <div className="text-sm text-muted-foreground">
+                        Import data from a local file
+                      </div>
+                    </div>
+                    <Button variant="outline" className="gap-2">
+                      <DatabaseIcon className="h-4 w-4" /> Import
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4 border-b">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Clear All Session Messages</div>
+                      <div className="text-sm text-muted-foreground">
+                        This will clear all session data, including assistant, files, messages,
+                        plugins, etc.
+                      </div>
+                    </div>
+                    <Button variant="destructive">Clear Now</Button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Reset All Settings</div>
+                      <div className="text-sm text-muted-foreground">
+                        Reset all settings to default values
+                      </div>
+                    </div>
+                    <Button variant="destructive">Reset Now</Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* About */}
+            {activeTab === 'about' && (
+              <motion.div
+                key="about"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h2 className="text-lg font-medium mb-1">About LMRing</h2>
+                </div>
+
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
+                        🤯
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg">LMRing</h3>
+                        <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
+                      </div>
+                    </div>
+                    <Button variant="outline">Changelog</Button>
+                  </div>
+
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="space-y-1">
-                        <div className="font-medium">Main Chat Model</div>
-                        <div className="text-sm text-muted-foreground">
-                          Used for general conversation
-                        </div>
-                      </div>
-                      <div className="w-[200px]">
-                        <Button variant="outline" className="w-full justify-between font-normal">
-                          GPT-4o
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="space-y-1">
-                        <div className="font-medium">Coding Model</div>
-                        <div className="text-sm text-muted-foreground">
-                          Used for code generation and analysis
-                        </div>
-                      </div>
-                      <div className="w-[200px]">
-                        <Button variant="outline" className="w-full justify-between font-normal">
-                          Claude 3.5 Sonnet
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="space-y-1">
-                        <div className="font-medium">Reasoning Model</div>
-                        <div className="text-sm text-muted-foreground">
-                          Used for complex logic and reasoning
-                        </div>
-                      </div>
-                      <div className="w-[200px]">
-                        <Button variant="outline" className="w-full justify-between font-normal">
-                          o1-preview
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </Button>
-                      </div>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Contact Us
+                    </h3>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm hover:underline"
+                      >
+                        <GlobeIcon className="h-4 w-4" /> Official Website{' '}
+                        <ExternalLinkIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm hover:underline"
+                      >
+                        <MailIcon className="h-4 w-4" /> Email Support{' '}
+                        <ExternalLinkIcon className="h-3 w-3" />
+                      </button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
 
-          {activeTab === 'general' && (
-            <motion.div
-              key="general"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="p-8 max-w-4xl mx-auto"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>General Settings</CardTitle>
-                  <CardDescription>Customize your experience</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
                   <div className="space-y-4">
-                    <Label className="text-base">Language</Label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="relative flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors bg-accent/50 border-primary">
-                        <div className="flex-1">
-                          <div className="font-medium">English</div>
-                          <div className="text-xs text-muted-foreground">English</div>
-                        </div>
-                        <div className="h-4 w-4 rounded-full border border-primary bg-primary" />
-                      </div>
-                      <div className="relative flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors">
-                        <div className="flex-1">
-                          <div className="font-medium">Chinese</div>
-                          <div className="text-xs text-muted-foreground">中文</div>
-                        </div>
-                        <div className="h-4 w-4 rounded-full border border-muted-foreground" />
-                      </div>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Community and News
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <Button variant="secondary" className="w-full justify-start gap-2">
+                        <GithubIcon className="h-4 w-4" /> GitHub
+                      </Button>
+                      <Button variant="secondary" className="w-full justify-start gap-2">
+                        <div className="h-4 w-4 bg-indigo-500 rounded-full" /> Discord
+                      </Button>
+                      <Button variant="secondary" className="w-full justify-start gap-2">
+                        <TwitterIcon className="h-4 w-4" /> X / Twitter
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Legal Disclaimer
+                    </h3>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm hover:underline"
+                      >
+                        Terms of Service <ExternalLinkIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm hover:underline"
+                      >
+                        Privacy Policy <ExternalLinkIcon className="h-3 w-3" />
+                      </button>
                     </div>
                   </div>
 
                   <Separator />
 
-                  <div className="space-y-4">
-                    <Label className="text-base">Theme</Label>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-muted rounded-lg p-2 mb-2 group-hover:border-primary transition-colors">
-                          <div className="bg-[#f4f4f5] h-20 rounded-md w-full" />
-                        </div>
-                        <div className="text-center text-sm font-medium">Light</div>
-                      </div>
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-muted rounded-lg p-2 mb-2 group-hover:border-primary transition-colors">
-                          <div className="bg-[#18181b] h-20 rounded-md w-full" />
-                        </div>
-                        <div className="text-center text-sm font-medium">Dark</div>
-                      </div>
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-primary rounded-lg p-2 mb-2">
-                          <div className="bg-gradient-to-br from-[#f4f4f5] to-[#18181b] h-20 rounded-md w-full" />
-                        </div>
-                        <div className="text-center text-sm font-medium">System</div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Send Anonymous Usage Data</div>
+                      <div className="text-sm text-muted-foreground">
+                        By opting to send telemetry data, you can help us improve the overall user
+                        experience.
                       </div>
                     </div>
+                    <Switch />
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

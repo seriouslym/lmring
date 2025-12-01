@@ -105,7 +105,7 @@ export function Sidebar({ locale = 'en' }: SidebarProps) {
                         transition={{ duration: 0.2 }}
                         className="text-lg font-semibold whitespace-nowrap overflow-hidden text-left"
                       >
-                        LMArena
+                        LMRing
                       </motion.span>
                       <ChevronDownIcon className="h-4 w-4 flex-shrink-0" />
                     </>
@@ -118,7 +118,7 @@ export function Sidebar({ locale = 'en' }: SidebarProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmarena.ai/about"
+                  href="https://lmring.ai/about"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -129,7 +129,7 @@ export function Sidebar({ locale = 'en' }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmarena.ai/how-it-works"
+                  href="https://lmring.ai/how-it-works"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -140,7 +140,7 @@ export function Sidebar({ locale = 'en' }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmarena.ai/help-center"
+                  href="https://lmring.ai/help-center"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -151,7 +151,7 @@ export function Sidebar({ locale = 'en' }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmarena.ai/careers"
+                  href="https://lmring.ai/careers"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
