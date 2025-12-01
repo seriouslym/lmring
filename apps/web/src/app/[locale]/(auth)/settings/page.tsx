@@ -188,14 +188,78 @@ const systemModels = [
 
 type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
+interface ProviderCardProps {
+  provider: (typeof defaultProviders)[0];
+  onToggle: (id: string) => void;
+  onSelect: (id: string) => void;
+}
+
+function ProviderCard({ provider, onToggle, onSelect }: ProviderCardProps) {
+  const Icon = provider.Icon;
+  return (
+    <Card
+      className="cursor-pointer hover:shadow-md transition-all h-full flex flex-col"
+      onClick={() => onSelect(provider.id)}
+    >
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-muted/20 shrink-0">
+            {Icon ? (
+              <Icon size={24} className={provider.connected ? '' : 'grayscale'} />
+            ) : (
+              <span className="text-xl">{provider.name[0]}</span>
+            )}
+          </div>
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base">{provider.name}</h3>
+              {provider.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] text-muted-foreground flex items-center gap-1"
+                >
+                  {tag === 'OpenAI' && <OpenAI.Avatar size={12} />}
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 mb-2">
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+            {provider.description}
+          </p>
+        </div>
+
+        <div className="pt-3 border-t flex justify-end">
+          <Switch
+            checked={provider.connected}
+            onCheckedChange={() => onToggle(provider.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="data-[state=checked]:bg-blue-600"
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<Tab>('general');
   const [selectedProviderId, setSelectedProviderId] = React.useState<string | null>(null);
   const [showKey, setShowKey] = React.useState(false);
   const [providers, setProviders] = React.useState(defaultProviders);
+  const [telemetryEnabled, setTelemetryEnabled] = React.useState(false);
 
   const handleToggleProvider = (id: string) => {
-    setProviders((prev) => prev.map((p) => (p.id === id ? { ...p, connected: !p.connected } : p)));
+    setProviders((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, connected: !p.connected, type: p.connected ? 'disabled' : 'enabled' }
+          : p,
+      ),
+    );
   };
 
   const selectedProvider = providers.find((p) => p.id === selectedProviderId);
@@ -217,62 +281,6 @@ export default function SettingsPage() {
       {label}
     </button>
   );
-
-  const ProviderCard = ({
-    provider,
-    onToggle,
-  }: {
-    provider: (typeof defaultProviders)[0];
-    onToggle: (id: string) => void;
-  }) => {
-    const Icon = provider.Icon;
-    return (
-      <Card
-        className="cursor-pointer hover:shadow-md transition-all h-full flex flex-col"
-        onClick={() => setSelectedProviderId(provider.id)}
-      >
-        <div className="p-4 flex-1 flex flex-col">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-muted/20 shrink-0">
-              {Icon ? (
-                <Icon size={24} className={provider.connected ? '' : 'grayscale'} />
-              ) : (
-                <span className="text-xl">{provider.name[0]}</span>
-              )}
-            </div>
-            <div className="flex flex-col justify-center">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base">{provider.name}</h3>
-                {provider.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[10px] text-muted-foreground flex items-center gap-1"
-                  >
-                    {tag === 'OpenAI' && <OpenAI.Avatar size={12} />}
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 mb-2">
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-              {provider.description}
-            </p>
-          </div>
-
-          <div className="pt-3 border-t flex justify-end">
-            <Switch
-              checked={provider.connected}
-              onCheckedChange={() => onToggle(provider.id)}
-              className="data-[state=checked]:bg-blue-600"
-            />
-          </div>
-        </div>
-      </Card>
-    );
-  };
 
   return (
     <div className="h-full flex bg-background">
@@ -410,7 +418,7 @@ export default function SettingsPage() {
                             variant="secondary"
                             className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
                           >
-                            3
+                            {providers.filter((p) => p.type === 'enabled').length}
                           </Badge>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -421,6 +429,7 @@ export default function SettingsPage() {
                                 key={provider.id}
                                 provider={provider}
                                 onToggle={handleToggleProvider}
+                                onSelect={setSelectedProviderId}
                               />
                             ))}
                         </div>
@@ -433,7 +442,7 @@ export default function SettingsPage() {
                             variant="secondary"
                             className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
                           >
-                            65
+                            {providers.filter((p) => p.type === 'disabled').length}
                           </Badge>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -444,6 +453,7 @@ export default function SettingsPage() {
                                 key={provider.id}
                                 provider={provider}
                                 onToggle={handleToggleProvider}
+                                onSelect={setSelectedProviderId}
                               />
                             ))}
                         </div>
@@ -754,20 +764,22 @@ export default function SettingsPage() {
                       Contact Us
                     </h3>
                     <div className="space-y-2">
-                      <button
-                        type="button"
+                      <a
+                        href="https://lmring.ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-2 text-sm hover:underline"
                       >
                         <GlobeIcon className="h-4 w-4" /> Official Website{' '}
                         <ExternalLinkIcon className="h-3 w-3" />
-                      </button>
-                      <button
-                        type="button"
+                      </a>
+                      <a
+                        href="mailto:support@lmring.ai"
                         className="flex items-center gap-2 text-sm hover:underline"
                       >
                         <MailIcon className="h-4 w-4" /> Email Support{' '}
                         <ExternalLinkIcon className="h-3 w-3" />
-                      </button>
+                      </a>
                     </div>
                   </div>
 
@@ -793,18 +805,22 @@ export default function SettingsPage() {
                       Legal Disclaimer
                     </h3>
                     <div className="space-y-2">
-                      <button
-                        type="button"
+                      <a
+                        href="https://lmring.ai/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-2 text-sm hover:underline"
                       >
                         Terms of Service <ExternalLinkIcon className="h-3 w-3" />
-                      </button>
-                      <button
-                        type="button"
+                      </a>
+                      <a
+                        href="https://lmring.ai/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-2 text-sm hover:underline"
                       >
                         Privacy Policy <ExternalLinkIcon className="h-3 w-3" />
-                      </button>
+                      </a>
                     </div>
                   </div>
 
@@ -818,7 +834,7 @@ export default function SettingsPage() {
                         experience.
                       </div>
                     </div>
-                    <Switch />
+                    <Switch checked={telemetryEnabled} onCheckedChange={setTelemetryEnabled} />
                   </div>
                 </div>
               </motion.div>
