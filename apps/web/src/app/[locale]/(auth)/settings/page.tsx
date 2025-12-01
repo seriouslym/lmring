@@ -25,12 +25,15 @@ import {
   EyeOffIcon,
   GithubIcon,
   GlobeIcon,
+  HelpCircleIcon,
   InfoIcon,
+  LifeBuoyIcon,
   MailIcon,
   PlusIcon,
   SearchIcon,
   Settings2Icon,
   TwitterIcon,
+  UsersIcon,
 } from 'lucide-react';
 import * as React from 'react';
 
@@ -183,7 +186,7 @@ const systemModels = [
   { id: 'gemini-pro', name: 'Gemini 1.5 Pro', description: 'Google most capable AI model' },
 ];
 
-type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'about';
+type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<Tab>('general');
@@ -272,10 +275,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex bg-background">
+    <div className="h-full flex bg-background">
       {/* Sidebar */}
       <div className="w-64 flex-none border-r border-border bg-muted/10 flex flex-col">
-        <div className="p-6 pb-4">
+        <div className="p-4 pb-2">
           <h1 className="text-2xl font-bold">Settings</h1>
           <p className="text-xs text-muted-foreground mt-1">Preferences and model settings.</p>
         </div>
@@ -284,9 +287,10 @@ export default function SettingsPage() {
           {renderSidebarItem('provider', 'AI Service Provider', <BotIcon className="h-4 w-4" />)}
           {renderSidebarItem('system-model', 'System Model', <BoxIcon className="h-4 w-4" />)}
           {renderSidebarItem('storage', 'Data Storage', <DatabaseIcon className="h-4 w-4" />)}
+          {renderSidebarItem('help', 'Help & Support', <LifeBuoyIcon className="h-4 w-4" />)}
           {renderSidebarItem('about', 'About', <InfoIcon className="h-4 w-4" />)}
         </div>
-        <div className="mt-auto p-4 border-t border-border">
+        <div className="mt-auto p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Powered by</span>
             <span className="font-semibold text-foreground">LMRing</span>
@@ -611,6 +615,107 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <Button variant="destructive">Reset Now</Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Help & Support */}
+            {activeTab === 'help' && (
+              <motion.div
+                key="help"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h2 className="text-lg font-medium mb-1">Help & Support</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Resources and support to help you get the most out of LMRing.
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Resources Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Resources
+                    </h3>
+                    <div className="grid gap-4">
+                      <a
+                        href="https://lmring.ai/how-it-works"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Card className="cursor-pointer hover:shadow-md transition-all">
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <HelpCircleIcon className="h-8 w-8 text-primary" />
+                            <div>
+                              <h4 className="font-medium">How it Works</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Learn how LMRing works
+                              </p>
+                            </div>
+                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                          </CardContent>
+                        </Card>
+                      </a>
+                      <a
+                        href="https://lmring.ai/help-center"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Card className="cursor-pointer hover:shadow-md transition-all">
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <LifeBuoyIcon className="h-8 w-8 text-primary" />
+                            <div>
+                              <h4 className="font-medium">Help Center</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Browse FAQs and guides
+                              </p>
+                            </div>
+                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                          </CardContent>
+                        </Card>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* About Us Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      About Us
+                    </h3>
+                    <div className="grid gap-4">
+                      <a href="https://lmring.ai/about" target="_blank" rel="noopener noreferrer">
+                        <Card className="cursor-pointer hover:shadow-md transition-all">
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <InfoIcon className="h-8 w-8 text-primary" />
+                            <div>
+                              <h4 className="font-medium">About LMRing</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Learn about our mission
+                              </p>
+                            </div>
+                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                          </CardContent>
+                        </Card>
+                      </a>
+                      <a href="https://lmring.ai/careers" target="_blank" rel="noopener noreferrer">
+                        <Card className="cursor-pointer hover:shadow-md transition-all">
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <UsersIcon className="h-8 w-8 text-primary" />
+                            <div>
+                              <h4 className="font-medium">Join the Team</h4>
+                              <p className="text-sm text-muted-foreground">View open positions</p>
+                            </div>
+                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                          </CardContent>
+                        </Card>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </motion.div>

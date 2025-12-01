@@ -21,9 +21,10 @@ interface UserMenuProps {
     email?: string;
     image?: string;
   };
+  collapsed?: boolean;
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user, collapsed = false }: UserMenuProps) {
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || 'en';
@@ -42,17 +43,33 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="relative h-9 w-9 rounded-full ring-offset-background apple-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors ring-offset-background apple-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 ${
+            collapsed ? 'justify-center' : 'w-full'
+          }`}
         >
-          <Avatar className="h-9 w-9 apple-shadow">
+          <Avatar className="h-8 w-8 apple-shadow flex-shrink-0">
             <AvatarImage src={user?.image} alt={user?.name || 'User'} />
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+            <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
+          {!collapsed && (
+            <div className="flex flex-col items-start text-left overflow-hidden">
+              <span className="text-sm font-medium truncate max-w-[140px]">
+                {user?.name || 'User'}
+              </span>
+              <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                {user?.email || 'user@example.com'}
+              </span>
+            </div>
+          )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-background border-border shadow-lg">
+      <DropdownMenuContent
+        side="top"
+        align="start"
+        className="w-56 bg-background border-border shadow-lg"
+      >
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-semibold">{user?.name || 'User'}</p>
