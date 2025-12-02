@@ -35,6 +35,14 @@ export const voteSchema = z.object({
 export const apiKeySchema = z.object({
   providerName: z.string().min(1).max(50),
   apiKey: z.string().min(10).max(500),
+  proxyUrl: z
+    .string()
+    .max(500)
+    .refine(
+      (val) => val === '' || /^https?:\/\/.+/.test(val),
+      'Must be a valid URL starting with http:// or https://',
+    )
+    .optional(),
 });
 
 export const userPreferencesSchema = z.object({

@@ -1,3 +1,4 @@
+import { getDefaultProviderUrl } from '@lmring/ai-hub';
 import { and, db, encrypt, eq } from '@lmring/database';
 import { apiKeys } from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
@@ -21,6 +22,7 @@ export async function GET(request: Request) {
       .select({
         id: apiKeys.id,
         providerName: apiKeys.providerName,
+        proxyUrl: apiKeys.proxyUrl,
         configSource: apiKeys.configSource,
         createdAt: apiKeys.createdAt,
         updatedAt: apiKeys.updatedAt,
@@ -28,7 +30,13 @@ export async function GET(request: Request) {
       .from(apiKeys)
       .where(eq(apiKeys.userId, userId));
 
-    return NextResponse.json({ keys }, { status: 200 });
+    // Add default URL fallback for each key
+    const keysWithDefaults = keys.map((key) => ({
+      ...key,
+      proxyUrl: key.proxyUrl ?? getDefaultProviderUrl(key.providerName),
+    }));
+
+    return NextResponse.json({ keys: keysWithDefaults }, { status: 200 });
   } catch (error) {
     logError('Get API keys error', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -66,12 +74,16 @@ export async function POST(request: Request) {
 
     const encryptedKey = encrypt(body.apiKey);
 
+    // Normalize empty string to null for storage
+    const proxyUrlToStore = body.proxyUrl?.trim() || null;
+
     const [existingKey] = existing;
     if (existingKey) {
       await db
         .update(apiKeys)
         .set({
           encryptedKey,
+          proxyUrl: proxyUrlToStore,
           updatedAt: new Date(),
         })
         .where(eq(apiKeys.id, existingKey.id));
@@ -81,6 +93,7 @@ export async function POST(request: Request) {
           message: 'API key updated successfully',
           id: existingKey.id,
           providerName: body.providerName,
+          proxyUrl: proxyUrlToStore ?? getDefaultProviderUrl(body.providerName),
         },
         { status: 200 },
       );
@@ -92,6 +105,7 @@ export async function POST(request: Request) {
         userId,
         providerName: body.providerName,
         encryptedKey,
+        proxyUrl: proxyUrlToStore,
         configSource: 'manual',
       })
       .returning();
@@ -101,6 +115,7 @@ export async function POST(request: Request) {
         message: 'API key added successfully',
         id: newKey?.id,
         providerName: body.providerName,
+        proxyUrl: proxyUrlToStore ?? getDefaultProviderUrl(body.providerName),
       },
       { status: 201 },
     );

@@ -1,3 +1,4 @@
+import { getDefaultProviderUrl } from '@lmring/ai-hub';
 import { and, db, decrypt, eq } from '@lmring/database';
 import { apiKeys } from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
@@ -34,6 +35,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
         id: key.id,
         providerName: key.providerName,
         apiKey: decryptedKey,
+        proxyUrl: key.proxyUrl ?? getDefaultProviderUrl(key.providerName),
         configSource: key.configSource,
       },
       { status: 200 },

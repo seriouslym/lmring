@@ -137,6 +137,7 @@ export async function* streamCompare(
 export interface ApiKey {
   id: string;
   providerName: string;
+  proxyUrl: string;
   configSource: string;
   createdAt: Date;
   updatedAt: Date;
@@ -156,7 +157,8 @@ export async function getApiKeys(): Promise<{ keys: ApiKey[] }> {
 export async function addApiKey(
   providerName: string,
   apiKey: string,
-): Promise<{ message: string; id: string; providerName: string }> {
+  proxyUrl?: string,
+): Promise<{ message: string; id: string; providerName: string; proxyUrl: string }> {
   const response = await fetch('/api/settings/api-keys', {
     method: 'POST',
     headers: {
@@ -165,6 +167,7 @@ export async function addApiKey(
     body: JSON.stringify({
       providerName,
       apiKey,
+      proxyUrl,
     }),
   });
 
@@ -189,9 +192,13 @@ export async function deleteApiKey(keyId: string): Promise<{ message: string }> 
   return response.json();
 }
 
-export async function getProviderApiKey(
-  providerName: string,
-): Promise<{ id: string; providerName: string; apiKey: string; configSource: string }> {
+export async function getProviderApiKey(providerName: string): Promise<{
+  id: string;
+  providerName: string;
+  apiKey: string;
+  proxyUrl: string;
+  configSource: string;
+}> {
   const response = await fetch(`/api/settings/api-keys/${providerName}`);
 
   if (!response.ok) {
