@@ -130,6 +130,11 @@ export async function fetchAvailableModels(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      throw error;
+    }
+
     const isExpectedError =
       errorMessage.includes('404') ||
       errorMessage.includes('Not Found') ||
