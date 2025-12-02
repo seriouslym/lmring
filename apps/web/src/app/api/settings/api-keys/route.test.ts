@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GET as GET_PROVIDER_KEY } from '@/app/api/settings/api-keys/[provider]/route';
+import { GET as GET_KEY_BY_ID } from '@/app/api/settings/api-keys/[id]/route';
 import { DELETE, GET, POST } from '@/app/api/settings/api-keys/route';
 import { createMockRequest, parseJsonResponse, setupTestEnvironment } from '@/test/helpers';
 
@@ -248,8 +248,22 @@ describe('API Keys Management', () => {
     });
   });
 
-  describe('GET /api/settings/api-keys/[provider]', () => {
-    it('should return 404 when API key not found for provider', async () => {
+  describe('GET /api/settings/api-keys/[id]', () => {
+    it('should return 400 when ID format is invalid', async () => {
+      const request = createMockRequest(
+        'GET',
+        'http://localhost:3000/api/settings/api-keys/invalid-id',
+      );
+      const response = await GET_KEY_BY_ID(request, {
+        params: Promise.resolve({ id: 'invalid-id' }),
+      });
+      const data = await parseJsonResponse(response);
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('INVALID_ID');
+    });
+
+    it('should return 404 when API key not found for ID', async () => {
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
@@ -257,10 +271,10 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest(
         'GET',
-        'http://localhost:3000/api/settings/api-keys/openai',
+        'http://localhost:3000/api/settings/api-keys/11111111-1111-1111-1111-111111111111',
       );
-      const response = await GET_PROVIDER_KEY(request, {
-        params: Promise.resolve({ provider: 'openai' }),
+      const response = await GET_KEY_BY_ID(request, {
+        params: Promise.resolve({ id: '11111111-1111-1111-1111-111111111111' }),
       });
       const data = await parseJsonResponse(response);
 
@@ -268,7 +282,7 @@ describe('API Keys Management', () => {
       expect(data.error).toBe('API key not found');
     });
 
-    it('should return decrypted API key for provider', async () => {
+    it('should return decrypted API key for valid ID', async () => {
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
@@ -276,10 +290,10 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest(
         'GET',
-        'http://localhost:3000/api/settings/api-keys/openai',
+        'http://localhost:3000/api/settings/api-keys/key-123',
       );
-      const response = await GET_PROVIDER_KEY(request, {
-        params: Promise.resolve({ provider: 'openai' }),
+      const response = await GET_KEY_BY_ID(request, {
+        params: Promise.resolve({ id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }),
       });
       const data = await parseJsonResponse(response);
 

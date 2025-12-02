@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '@/app/api/arena/stream/route';
 import { createMockRequest, setupTestEnvironment } from '@/test/helpers';
 
-const { mockAuthInstance, mockCompareModels } = vi.hoisted(() => {
+// UUIDs must follow v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx where y is 8, 9, a, or b
+const TEST_OPENAI_KEY_ID = '11111111-1111-4111-a111-111111111111';
+const TEST_ANTHROPIC_KEY_ID = '22222222-2222-4222-a222-222222222222';
+
+const { mockAuthInstance, mockCompareModels, mockFetchUserApiKeys } = vi.hoisted(() => {
   const mockSession = {
     session: {
       id: 'test-session-id',
@@ -24,6 +28,17 @@ const { mockAuthInstance, mockCompareModels } = vi.hoisted(() => {
     },
   };
 
+  const mockKeyData = new Map([
+    [
+      '11111111-1111-4111-a111-111111111111',
+      { providerName: 'openai', apiKey: 'sk-test-openai-key', proxyUrl: null },
+    ],
+    [
+      '22222222-2222-4222-a222-222222222222',
+      { providerName: 'anthropic', apiKey: 'sk-test-anthropic-key', proxyUrl: null },
+    ],
+  ]);
+
   return {
     mockAuthInstance: {
       api: {
@@ -31,11 +46,38 @@ const { mockAuthInstance, mockCompareModels } = vi.hoisted(() => {
       },
     },
     mockCompareModels: vi.fn(),
+    mockFetchUserApiKeys: vi.fn().mockImplementation((keyIds: string[]) => {
+      const result = new Map();
+      for (const keyId of keyIds) {
+        const data = mockKeyData.get(keyId);
+        if (data) {
+          result.set(keyId, data);
+        }
+      }
+      return Promise.resolve(result);
+    }),
   };
 });
 
 vi.mock('@/libs/Auth', () => ({
   auth: mockAuthInstance,
+}));
+
+vi.mock('@/libs/provider-factory', () => ({
+  fetchUserApiKeys: mockFetchUserApiKeys,
+  buildProviderConfigs: vi.fn().mockImplementation((models, keyMap) => {
+    return models.map((model: { keyId: string; modelId: string }) => {
+      const keyData = keyMap.get(model.keyId);
+      if (!keyData) {
+        throw new Error(`API key not found: ${model.keyId}`);
+      }
+      return {
+        provider: { providerId: keyData.providerName },
+        model: model.modelId,
+        options: {},
+      };
+    });
+  }),
 }));
 
 vi.mock('@lmring/ai-hub', () => ({
@@ -60,9 +102,8 @@ describe('POST /api/arena/stream', () => {
   const validRequestBody = {
     models: [
       {
-        providerId: 'openai',
+        keyId: TEST_OPENAI_KEY_ID,
         modelId: 'gpt-4o',
-        apiKey: 'test-openai-key',
         options: {
           temperature: 0.7,
           maxTokens: 2048,
@@ -103,9 +144,7 @@ describe('POST /api/arena/stream', () => {
           }
           try {
             events.push(JSON.parse(data));
-          } catch {
-            // Skip invalid JSON
-          }
+          } catch {}
         }
       }
     }
@@ -281,9 +320,8 @@ describe('POST /api/arena/stream', () => {
       models: [
         validRequestBody.models[0],
         {
-          providerId: 'anthropic',
+          keyId: TEST_ANTHROPIC_KEY_ID,
           modelId: 'claude-3-5-sonnet-20241022',
-          apiKey: 'test-anthropic-key',
         },
       ],
       messages: validRequestBody.messages,

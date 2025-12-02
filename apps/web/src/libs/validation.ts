@@ -56,23 +56,9 @@ export const shareSchema = z.object({
   expiresInDays: z.number().int().min(1).max(365).optional(),
 });
 
-const allowedProviders = [
-  'openai',
-  'anthropic',
-  'deepseek',
-  'mistral',
-  'xai',
-  'openrouter',
-  'google',
-  'cohere',
-  'together',
-  'perplexity',
-] as const;
-
 export const arenaModelSchema = z.object({
-  providerId: z.enum(allowedProviders),
+  keyId: z.string().uuid('Invalid API key ID'),
   modelId: z.string().min(1).max(200),
-  apiKey: z.string().min(10).max(500),
   options: z
     .object({
       temperature: z.number().min(0).max(2).optional(),

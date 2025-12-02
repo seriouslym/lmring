@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
 import { logError } from '@/libs/error-logging';
 
-export async function GET(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -16,12 +16,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
     }
 
     const userId = session.user.id;
-    const { provider: providerName } = await params;
+    const { id: keyId } = await params;
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(keyId)) {
+      return NextResponse.json(
+        { error: 'INVALID_ID', message: 'Invalid API key ID format' },
+        { status: 400 },
+      );
+    }
 
     const [key] = await db
       .select()
       .from(apiKeys)
-      .where(and(eq(apiKeys.userId, userId), eq(apiKeys.providerName, providerName)))
+      .where(and(eq(apiKeys.id, keyId), eq(apiKeys.userId, userId)))
       .limit(1);
 
     if (!key) {

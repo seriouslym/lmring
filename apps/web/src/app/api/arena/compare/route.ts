@@ -2,14 +2,13 @@ import { compareModels, type ModelMessage } from '@lmring/ai-hub';
 import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
 import { logError } from '@/libs/error-logging';
-import { createProviderConfigs } from '@/libs/provider-factory';
+import { buildProviderConfigs, fetchUserApiKeys } from '@/libs/provider-factory';
 import { arenaCompareSchema } from '@/libs/validation';
 
 interface CompareRequest {
   models: Array<{
-    providerId: string;
+    keyId: string;
     modelId: string;
-    apiKey: string;
     options?: {
       temperature?: number;
       maxTokens?: number;
@@ -18,7 +17,6 @@ interface CompareRequest {
   }>;
   messages: ModelMessage[];
   options?: {
-    streaming?: boolean;
     stopOnError?: boolean;
   };
 }
@@ -45,7 +43,18 @@ export async function POST(request: Request) {
 
     const body = validationResult.data;
 
-    const providerConfigs = createProviderConfigs(body.models);
+    const keyIds = body.models.map((m) => m.keyId);
+    const keyMap = await fetchUserApiKeys(keyIds, session.user.id);
+
+    const missingKeys = keyIds.filter((id) => !keyMap.has(id));
+    if (missingKeys.length > 0) {
+      return NextResponse.json(
+        { error: 'API key not found or not authorized', keyIds: missingKeys },
+        { status: 403 },
+      );
+    }
+
+    const providerConfigs = buildProviderConfigs(body.models, keyMap);
 
     const results = await compareModels(providerConfigs, body.messages, {
       streaming: false,

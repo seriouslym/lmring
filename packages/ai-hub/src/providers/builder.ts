@@ -88,11 +88,23 @@ export class ConfigurableBuilder {
   }
 }
 
+/**
+ * Creates a proper ProviderInstance wrapper around an AI SDK provider.
+ * AI SDK providers are special callable objects/proxies where Object.assign
+ * silently fails to add new properties. This function creates a clean wrapper
+ * that properly exposes all required ProviderInstance properties.
+ */
 const attachProviderId = <T extends { languageModel: ProviderInstance['languageModel'] }>(
   providerId: string,
   provider: T,
   metadata?: Pick<ProviderInstance, 'apiKey' | 'baseURL'>,
-): ProviderInstance => Object.assign(provider, metadata, { providerId });
+): ProviderInstance => ({
+  providerId,
+  name: providerId,
+  apiKey: metadata?.apiKey,
+  baseURL: metadata?.baseURL,
+  languageModel: (modelId: string) => provider.languageModel(modelId),
+});
 
 export const ProviderBuilder = {
   openai(apiKey: string, baseURL?: string): ProviderInstance {
@@ -186,7 +198,6 @@ export const ProviderBuilder = {
       throw new ProviderError(`Provider ${providerId} not found in registry`, providerId);
     }
 
-    // Check cached instance
     const cacheKey = `${providerId}_${JSON.stringify(options)}`;
     const cached = registry.getCachedInstance(cacheKey);
     if (cached) {
@@ -222,7 +233,6 @@ export const ProviderBuilder = {
       );
     }
 
-    // Cache the instance
     registry.cacheInstance(cacheKey, instance);
     return instance;
   },
