@@ -90,6 +90,7 @@ export const apiKeys = pgTable(
       .notNull(),
     providerName: text('provider_name').notNull(),
     encryptedKey: text('encrypted_key').notNull(),
+    proxyUrl: text('proxy_url'), // Custom proxy URL (nullable, plain text)
     configSource: configSourceEnum('config_source').default('manual'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

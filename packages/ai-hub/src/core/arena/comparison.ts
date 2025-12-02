@@ -24,27 +24,21 @@ export async function compareModels(
     retryOptions,
   } = options || {};
 
-  // Create abort controller for cancellation
   const abortController = controller || new AbortController();
 
-  // Execute all model requests in parallel
   const promises = models.map(async (config) => {
     const { provider, model, options: modelOptions } = config;
 
-    // Extract provider info
     let providerId = 'unknown';
     if (typeof provider === 'object' && provider !== null) {
       providerId = provider.providerId || provider.name || 'unknown';
     }
 
-    // Create metrics collector
     const collector = new MetricsCollector();
     collector.start();
 
-    // Create executor with plugins
     const executor = new RuntimeExecutor(provider, plugins);
 
-    // Add retry plugin if configured
     const executorPlugins: AiPlugin[] = [];
     if (retryOptions) {
       executorPlugins.push(new RetryPlugin(retryOptions));
@@ -63,8 +57,6 @@ export async function compareModels(
           },
         );
         let hasFirstToken = false;
-
-        // Process stream to collect metrics and notify progress
         const reader = streamResult.textStream.getReader();
         const chunks: string[] = [];
 
@@ -90,7 +82,6 @@ export async function compareModels(
           }
         }
 
-        // Record token usage if available
         const usage = await streamResult.usage;
         if (usage) {
           collector.recordTokens({
@@ -100,7 +91,6 @@ export async function compareModels(
           });
         }
 
-        // Record metrics to global tracker
         const metrics = collector.getMetrics();
         globalMetricsTracker.record(providerId, model, metrics);
 
@@ -116,7 +106,6 @@ export async function compareModels(
         };
         return successResult;
       } else {
-        // Non-streaming mode
         const result = await executor.generateText(
           {
             model,
@@ -128,7 +117,6 @@ export async function compareModels(
           },
         );
 
-        // Record token usage
         if (result.usage) {
           const usage = result.usage;
           collector.recordTokens({
@@ -138,7 +126,6 @@ export async function compareModels(
           });
         }
 
-        // Record metrics to global tracker
         const metrics = collector.getMetrics();
         globalMetricsTracker.record(providerId, model, metrics);
 
@@ -153,8 +140,6 @@ export async function compareModels(
       }
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-
-      // Still record metrics even on error
       const metrics = collector.getMetrics();
 
       const result: ModelComparisonResult = {
@@ -166,7 +151,6 @@ export async function compareModels(
       };
 
       if (stopOnError) {
-        // Cancel all other requests
         abortController.abort();
         throw new ArenaError(`Model ${providerId}/${model} failed`, [errorObj]);
       }
@@ -175,20 +159,35 @@ export async function compareModels(
     }
   });
 
-  // Wait for all results
   const results = await Promise.all(promises);
 
-  // Check if all failed
   const allFailed = results.every((r) => r.status === 'failed');
   if (allFailed) {
     const errors = results.filter((r) => r.error).map((r) => r.error as Error);
+    console.error('=== Arena Comparison: All Models Failed ===');
+    for (const result of results) {
+      console.error(`\n--- Model: ${result.provider}/${result.model} ---`);
+      console.error('Status:', result.status);
+      if (result.error) {
+        console.error('Error Name:', result.error.name);
+        console.error('Error Message:', result.error.message);
+        if (result.error.cause) {
+          console.error('Error Cause:', result.error.cause);
+        }
+        if (result.error.stack) {
+          console.error('Stack Trace:', result.error.stack);
+        }
+      }
+      console.error('Metrics:', JSON.stringify(result.metrics, null, 2));
+    }
+    console.error('===========================================\n');
+
     throw new ArenaError('All models failed', errors);
   }
 
   return results;
 }
 
-// Retry Plugin for Arena
 class RetryPlugin extends AiPlugin {
   name = 'arena-retry';
   private attempts = 0;
@@ -205,7 +204,6 @@ class RetryPlugin extends AiPlugin {
       : true;
 
     if (isRetryable && this.attempts < this.options.maxAttempts) {
-      // Calculate delay
       const baseDelay = this.options.initialDelay || 1000;
       const delay =
         this.options.backoff === 'exponential'
@@ -213,9 +211,6 @@ class RetryPlugin extends AiPlugin {
           : Math.min(baseDelay * this.attempts, this.options.maxDelay || 10000);
 
       await new Promise((resolve) => setTimeout(resolve, delay));
-
-      // Note: Retry mechanism needs to be implemented at a higher level
-      // The plugin can only delay, not trigger actual retries
     }
   }
 }

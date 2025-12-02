@@ -1,0 +1,111 @@
+import { and, db, eq } from '@lmring/database';
+import { conversations, messages, modelResponses } from '@lmring/database/schema';
+import { NextResponse } from 'next/server';
+import { auth } from '@/libs/Auth';
+import { logError } from '@/libs/error-logging';
+import { modelResponseSchema } from '@/libs/validation';
+
+export async function POST(request: Request) {
+  try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const rawBody = (await request.json()) as {
+      messageId: string;
+      modelName: string;
+      providerName: string;
+      responseContent: string;
+      tokensUsed?: number;
+      responseTimeMs?: number;
+    };
+
+    const validationResult = modelResponseSchema.safeParse(rawBody);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validationResult.error.issues },
+        { status: 400 },
+      );
+    }
+
+    const body = validationResult.data;
+
+    const [message] = await db
+      .select({
+        id: messages.id,
+        conversationId: messages.conversationId,
+        userId: conversations.userId,
+      })
+      .from(messages)
+      .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+      .where(eq(messages.id, body.messageId))
+      .limit(1);
+
+    if (!message || message.userId !== userId) {
+      return NextResponse.json({ error: 'Message not found or unauthorized' }, { status: 404 });
+    }
+
+    const [newResponse] = await db
+      .insert(modelResponses)
+      .values({
+        messageId: body.messageId,
+        modelName: body.modelName,
+        providerName: body.providerName,
+        responseContent: body.responseContent,
+        tokensUsed: body.tokensUsed,
+        responseTimeMs: body.responseTimeMs,
+      })
+      .returning();
+
+    return NextResponse.json({ response: newResponse }, { status: 201 });
+  } catch (error) {
+    logError('Create model response error', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const messageId = searchParams.get('messageId');
+
+    if (!messageId) {
+      return NextResponse.json({ error: 'messageId is required' }, { status: 400 });
+    }
+
+    const responses = await db
+      .select({
+        id: modelResponses.id,
+        messageId: modelResponses.messageId,
+        modelName: modelResponses.modelName,
+        providerName: modelResponses.providerName,
+        responseContent: modelResponses.responseContent,
+        tokensUsed: modelResponses.tokensUsed,
+        responseTimeMs: modelResponses.responseTimeMs,
+        createdAt: modelResponses.createdAt,
+      })
+      .from(modelResponses)
+      .innerJoin(messages, eq(modelResponses.messageId, messages.id))
+      .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+      .where(and(eq(modelResponses.messageId, messageId), eq(conversations.userId, userId)));
+
+    return NextResponse.json({ responses }, { status: 200 });
+  } catch (error) {
+    logError('Get model responses error', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

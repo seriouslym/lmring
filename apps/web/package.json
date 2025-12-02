@@ -23,6 +23,7 @@
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.15",
     "@hookform/resolvers": "^5.2.2",
+    "@lmring/ai-hub": "workspace:*",
     "@lmring/auth": "workspace:*",
     "@lmring/database": "workspace:*",
     "@lmring/env": "workspace:*",
@@ -38,6 +39,7 @@
     "cmdk": "^1.1.1",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.546.0",
+    "nanoid": "^5.1.6",
     "next": "^15.5.6",
     "next-intl": "^4.3.12",
     "next-themes": "^0.4.6",
@@ -45,9 +47,11 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.65.0",
+    "sanitize-html": "^2.17.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
-    "vaul": "^1.1.2"
+    "vaul": "^1.1.2",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@chromatic-com/playwright": "^0.12.7",
