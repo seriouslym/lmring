@@ -10,12 +10,16 @@ export type SupportedProvider =
   | 'xai'
   | 'openrouter'
   | 'google'
+  | 'gemini'
+  | 'vertex'
   | 'cohere'
   | 'together'
   | 'perplexity';
 
 const COMPATIBLE_PROVIDERS: Record<string, string> = {
   google: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  vertex: 'https://generativelanguage.googleapis.com/v1beta/openai/',
   cohere: 'https://api.cohere.ai/v1',
   together: 'https://api.together.xyz/v1',
   perplexity: 'https://api.perplexity.ai',

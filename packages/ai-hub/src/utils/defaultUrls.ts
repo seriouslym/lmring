@@ -9,6 +9,7 @@ const OFFICIAL_PROVIDER_URLS: Record<string, string> = {
   anthropic: 'https://api.anthropic.com/v1',
   azure: '', // Requires resourceName configuration
   vertex: '', // Requires project configuration
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/',
   xai: 'https://api.x.ai/v1',
   deepseek: 'https://api.deepseek.com/v1',
   mistral: 'https://api.mistral.ai/v1',
