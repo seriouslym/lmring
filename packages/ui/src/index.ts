@@ -46,4 +46,16 @@ export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './popove
 export { Slider } from './slider';
 export { Switch } from './switch';
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './tooltip';
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './dialog';
 

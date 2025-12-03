@@ -201,6 +201,10 @@ export default function SettingsPage() {
     );
   };
 
+  const handleAddProvider = (provider: Provider) => {
+    setProviders((prev) => [provider, ...prev]);
+  };
+
   const renderSidebarItem = (id: Tab, label: string, icon: React.ReactNode) => (
     <button
       type="button"
@@ -245,7 +249,11 @@ export default function SettingsPage() {
       {/* Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden h-full">
         {activeTab === 'provider' ? (
-          <ProviderLayout providers={providers} onToggleProvider={handleToggleProvider} />
+          <ProviderLayout
+            providers={providers}
+            onToggleProvider={handleToggleProvider}
+            onAddProvider={handleAddProvider}
+          />
         ) : (
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-6xl p-8">

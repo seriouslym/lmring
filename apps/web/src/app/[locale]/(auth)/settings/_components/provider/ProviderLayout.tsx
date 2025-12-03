@@ -1,6 +1,7 @@
-import { Button, Input, Separator } from '@lmring/ui';
-import { BoxIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { Input, Separator } from '@lmring/ui';
+import { BoxIcon, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
+import { AddProviderDialog } from './AddProviderDialog';
 import { ProviderDetail } from './ProviderDetail';
 import { ProviderGrid } from './ProviderGrid';
 import type { Provider } from './types';
@@ -8,9 +9,14 @@ import type { Provider } from './types';
 interface ProviderLayoutProps {
   providers: Provider[];
   onToggleProvider: (id: string) => void;
+  onAddProvider: (provider: Provider) => void;
 }
 
-export function ProviderLayout({ providers, onToggleProvider }: ProviderLayoutProps) {
+export function ProviderLayout({
+  providers,
+  onToggleProvider,
+  onAddProvider,
+}: ProviderLayoutProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -20,6 +26,11 @@ export function ProviderLayout({ providers, onToggleProvider }: ProviderLayoutPr
 
   const selectedProvider = selectedId ? providers.find((p) => p.id === selectedId) : null;
 
+  const handleAddProvider = (provider: Provider) => {
+    onAddProvider(provider);
+    setSelectedId(provider.id);
+  };
+
   return (
     <div className="h-full flex items-stretch">
       <div className="w-64 flex-none border-r bg-muted/10 flex flex-col">
@@ -27,10 +38,13 @@ export function ProviderLayout({ providers, onToggleProvider }: ProviderLayoutPr
           <div className="relative">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              id="provider-search"
+              name="provider-search"
               placeholder="Search..."
               className="pl-8 bg-background"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              autoComplete="off"
             />
           </div>
         </div>
@@ -86,10 +100,7 @@ export function ProviderLayout({ providers, onToggleProvider }: ProviderLayoutPr
           </div>
         </div>
         <div className="p-4 bg-background/50 backdrop-blur-sm">
-          <Button variant="outline" className="w-full gap-2">
-            <PlusIcon className="h-4 w-4" />
-            <span>Add Provider</span>
-          </Button>
+          <AddProviderDialog onAdd={handleAddProvider} />
         </div>
       </div>
 

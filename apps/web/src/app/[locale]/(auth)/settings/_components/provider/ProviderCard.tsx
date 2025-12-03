@@ -1,6 +1,9 @@
 import { Card, Switch } from '@lmring/ui';
 import { OpenAI } from '@lobehub/icons';
+import { motion } from 'framer-motion';
 import type { Provider } from './types';
+
+const MotionCard = motion(Card);
 
 interface ProviderCardProps {
   provider: Provider;
@@ -11,8 +14,19 @@ interface ProviderCardProps {
 export function ProviderCard({ provider, onToggle, onSelect }: ProviderCardProps) {
   const Icon = provider.Icon;
   return (
-    <Card
-      className="cursor-pointer hover:shadow-md transition-all h-full flex flex-col"
+    <MotionCard
+      layout
+      initial={false}
+      animate={{
+        scale: provider.connected ? 1.02 : 1,
+        borderColor: provider.connected ? 'var(--primary)' : 'var(--border)',
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 30,
+      }}
+      className="cursor-pointer hover:shadow-md h-full flex flex-col"
       onClick={() => onSelect(provider.id)}
     >
       <div className="p-4 flex-1 flex flex-col">
@@ -54,6 +68,6 @@ export function ProviderCard({ provider, onToggle, onSelect }: ProviderCardProps
           />
         </div>
       </div>
-    </Card>
+    </MotionCard>
   );
 }
