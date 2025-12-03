@@ -8,7 +8,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
   Label,
   Separator,
   Switch,
@@ -21,24 +20,22 @@ import {
   ChevronRightIcon,
   DatabaseIcon,
   ExternalLinkIcon,
-  EyeIcon,
-  EyeOffIcon,
   GithubIcon,
   GlobeIcon,
   HelpCircleIcon,
   InfoIcon,
   LifeBuoyIcon,
   MailIcon,
-  PlusIcon,
-  SearchIcon,
   Settings2Icon,
   TwitterIcon,
   UsersIcon,
 } from 'lucide-react';
 import * as React from 'react';
+import { ProviderLayout } from './_components/provider/ProviderLayout';
+import type { Provider } from './_components/provider/types';
 
 // Mock Data for Providers
-const defaultProviders = [
+const defaultProviders: Provider[] = [
   {
     id: 'azure',
     name: 'Azure AI',
@@ -184,70 +181,13 @@ const systemModels = [
     description: 'Anthropic most intelligent model',
   },
   { id: 'gemini-pro', name: 'Gemini 1.5 Pro', description: 'Google most capable AI model' },
+  { id: 'moonshot', name: 'Moonshot V1', description: 'Moonshot AI Large Language Model' },
 ];
 
 type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
-interface ProviderCardProps {
-  provider: (typeof defaultProviders)[0];
-  onToggle: (id: string) => void;
-  onSelect: (id: string) => void;
-}
-
-function ProviderCard({ provider, onToggle, onSelect }: ProviderCardProps) {
-  const Icon = provider.Icon;
-  return (
-    <Card
-      className="cursor-pointer hover:shadow-md transition-all h-full flex flex-col"
-      onClick={() => onSelect(provider.id)}
-    >
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-muted/20 shrink-0">
-            {Icon ? (
-              <Icon size={24} className={provider.connected ? '' : 'grayscale'} />
-            ) : (
-              <span className="text-xl">{provider.name[0]}</span>
-            )}
-          </div>
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-base">{provider.name}</h3>
-              {provider.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[10px] text-muted-foreground flex items-center gap-1"
-                >
-                  {tag === 'OpenAI' && <OpenAI.Avatar size={12} />}
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 mb-2">
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-            {provider.description}
-          </p>
-        </div>
-
-        <div className="pt-3 border-t flex justify-end">
-          <Switch
-            checked={provider.connected}
-            onCheckedChange={() => onToggle(provider.id)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<Tab>('general');
-  const [selectedProviderId, setSelectedProviderId] = React.useState<string | null>(null);
-  const [showKey, setShowKey] = React.useState(false);
   const [providers, setProviders] = React.useState(defaultProviders);
   const [telemetryEnabled, setTelemetryEnabled] = React.useState(false);
 
@@ -261,14 +201,11 @@ export default function SettingsPage() {
     );
   };
 
-  const selectedProvider = providers.find((p) => p.id === selectedProviderId);
-
   const renderSidebarItem = (id: Tab, label: string, icon: React.ReactNode) => (
     <button
       type="button"
       onClick={() => {
         setActiveTab(id);
-        setSelectedProviderId(null); // Reset provider selection when switching tabs
       }}
       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         activeTab === id
@@ -282,7 +219,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="h-full flex bg-background">
+    <div className="h-full flex bg-background overflow-hidden">
       {/* Sidebar */}
       <div className="w-64 flex-none border-r border-border bg-muted/10 flex flex-col">
         <div className="p-4 pb-2">
@@ -291,7 +228,7 @@ export default function SettingsPage() {
         </div>
         <div className="px-3 space-y-1">
           {renderSidebarItem('general', 'General', <Settings2Icon className="h-4 w-4" />)}
-          {renderSidebarItem('provider', 'AI Service Provider', <BotIcon className="h-4 w-4" />)}
+          {renderSidebarItem('provider', 'AI Provider', <BotIcon className="h-4 w-4" />)}
           {renderSidebarItem('system-model', 'System Model', <BoxIcon className="h-4 w-4" />)}
           {renderSidebarItem('storage', 'Data Storage', <DatabaseIcon className="h-4 w-4" />)}
           {renderSidebarItem('help', 'Help & Support', <LifeBuoyIcon className="h-4 w-4" />)}
@@ -306,536 +243,394 @@ export default function SettingsPage() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl p-8">
-          <AnimatePresence mode="wait">
-            {/* General Settings */}
-            {activeTab === 'general' && (
-              <motion.div
-                key="general"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-              >
-                <div>
-                  <h2 className="text-lg font-medium mb-1">General Settings</h2>
-                </div>
+      <div className="flex-1 flex flex-col overflow-hidden h-full">
+        {activeTab === 'provider' ? (
+          <ProviderLayout providers={providers} onToggleProvider={handleToggleProvider} />
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-6xl p-8">
+              <AnimatePresence mode="wait">
+                {/* General Settings */}
+                {activeTab === 'general' && (
+                  <motion.div
+                    key="general"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h2 className="text-lg font-medium mb-1">General Settings</h2>
+                    </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Label className="text-base">Theme</Label>
-                    <div className="grid grid-cols-3 gap-4 max-w-md">
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
-                          <div className="bg-[#f4f4f5] h-16 rounded w-full relative">
-                            <div className="absolute top-2 left-2 w-8 h-2 bg-white rounded-sm shadow-sm" />
-                            <div className="absolute top-6 left-2 w-12 h-8 bg-white rounded-sm shadow-sm" />
-                          </div>
-                        </div>
-                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                          <span className="text-muted-foreground">☀</span> Light
-                        </div>
-                      </div>
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
-                          <div className="bg-[#18181b] h-16 rounded w-full relative">
-                            <div className="absolute top-2 left-2 w-8 h-2 bg-zinc-800 rounded-sm" />
-                            <div className="absolute top-6 left-2 w-12 h-8 bg-zinc-800 rounded-sm" />
-                          </div>
-                        </div>
-                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                          <span className="text-muted-foreground">🌙</span> Dark
-                        </div>
-                      </div>
-                      <div className="cursor-pointer group">
-                        <div className="border-2 border-primary rounded-lg p-1 mb-2 overflow-hidden">
-                          <div className="bg-gradient-to-br from-[#f4f4f5] to-[#18181b] h-16 rounded w-full flex relative">
-                            <div className="w-1/2 h-full relative">
-                              <div className="absolute top-2 left-2 w-4 h-2 bg-white rounded-sm shadow-sm" />
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <Label className="text-base">Theme</Label>
+                        <div className="grid grid-cols-3 gap-4 max-w-md">
+                          <div className="cursor-pointer group">
+                            <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
+                              <div className="bg-[#f4f4f5] h-16 rounded w-full relative">
+                                <div className="absolute top-2 left-2 w-8 h-2 bg-white rounded-sm shadow-sm" />
+                                <div className="absolute top-6 left-2 w-12 h-8 bg-white rounded-sm shadow-sm" />
+                              </div>
                             </div>
-                            <div className="w-1/2 h-full relative">
-                              <div className="absolute top-2 right-2 w-4 h-2 bg-zinc-800 rounded-sm" />
+                            <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                              <span className="text-muted-foreground">☀</span> Light
                             </div>
                           </div>
+                          <div className="cursor-pointer group">
+                            <div className="border-2 border-muted rounded-lg p-1 mb-2 group-hover:border-primary transition-colors overflow-hidden">
+                              <div className="bg-[#18181b] h-16 rounded w-full relative">
+                                <div className="absolute top-2 left-2 w-8 h-2 bg-zinc-800 rounded-sm" />
+                                <div className="absolute top-6 left-2 w-12 h-8 bg-zinc-800 rounded-sm" />
+                              </div>
+                            </div>
+                            <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                              <span className="text-muted-foreground">🌙</span> Dark
+                            </div>
+                          </div>
+                          <div className="cursor-pointer group">
+                            <div className="border-2 border-primary rounded-lg p-1 mb-2 overflow-hidden">
+                              <div className="bg-gradient-to-br from-[#f4f4f5] to-[#18181b] h-16 rounded w-full flex relative">
+                                <div className="w-1/2 h-full relative">
+                                  <div className="absolute top-2 left-2 w-4 h-2 bg-white rounded-sm shadow-sm" />
+                                </div>
+                                <div className="w-1/2 h-full relative">
+                                  <div className="absolute top-2 right-2 w-4 h-2 bg-zinc-800 rounded-sm" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
+                              <span className="text-muted-foreground">💻</span> Automatic
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                          <span className="text-muted-foreground">💻</span> Automatic
+                      </div>
+
+                      <div className="space-y-4">
+                        <Label className="text-base">Language</Label>
+                        <div className="max-w-md">
+                          <Button variant="outline" className="w-full justify-between font-normal">
+                            English
+                            <ChevronRightIcon className="h-4 w-4 opacity-50 rotate-90" />
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
+                )}
 
-                  <div className="space-y-4">
-                    <Label className="text-base">Language</Label>
-                    <div className="max-w-md">
-                      <Button variant="outline" className="w-full justify-between font-normal">
-                        English
-                        <ChevronRightIcon className="h-4 w-4 opacity-50 rotate-90" />
-                      </Button>
+                {/* System Model */}
+                {activeTab === 'system-model' && (
+                  <motion.div
+                    key="system-model"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-6"
+                  >
+                    <div>
+                      <h2 className="text-lg font-medium mb-1">System Models</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Default models provided by the system.
+                      </p>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
 
-            {/* Service Provider */}
-            {activeTab === 'provider' && (
-              <motion.div
-                key="provider"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-              >
-                {!selectedProvider ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1 max-w-sm">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search Providers..." className="pl-9 bg-muted/50" />
+                    <div className="grid gap-4">
+                      {systemModels.map((model) => (
+                        <Card key={model.id}>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base">{model.name}</CardTitle>
+                            <CardDescription>{model.description}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary">System Default</Badge>
+                              <Badge variant="outline">Chat</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Data Storage */}
+                {activeTab === 'storage' && (
+                  <motion.div
+                    key="storage"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h2 className="text-lg font-medium mb-1">Advanced Operations</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between py-4 border-b">
+                        <div className="space-y-0.5">
+                          <div className="font-medium">Import Data</div>
+                          <div className="text-sm text-muted-foreground">
+                            Import data from a local file
+                          </div>
+                        </div>
+                        <Button variant="outline" className="gap-2">
+                          <DatabaseIcon className="h-4 w-4" /> Import
+                        </Button>
                       </div>
-                      <Button variant="secondary" className="gap-2">
-                        <BoxIcon className="h-4 w-4" />
-                        All
-                      </Button>
-                      <Button size="icon" variant="outline">
-                        <PlusIcon className="h-4 w-4" />
-                      </Button>
+
+                      <div className="flex items-center justify-between py-4 border-b">
+                        <div className="space-y-0.5">
+                          <div className="font-medium">Clear All Session Messages</div>
+                          <div className="text-sm text-muted-foreground">
+                            This will clear all session data, including assistant, files, messages,
+                            plugins, etc.
+                          </div>
+                        </div>
+                        <Button variant="destructive">Clear Now</Button>
+                      </div>
+
+                      <div className="flex items-center justify-between py-4">
+                        <div className="space-y-0.5">
+                          <div className="font-medium">Reset All Settings</div>
+                          <div className="text-sm text-muted-foreground">
+                            Reset all settings to default values
+                          </div>
+                        </div>
+                        <Button variant="destructive">Reset Now</Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Help & Support */}
+                {activeTab === 'help' && (
+                  <motion.div
+                    key="help"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h2 className="text-lg font-medium mb-1">Help & Support</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Resources and support to help you get the most out of LMRing.
+                      </p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {/* Resources Section */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          Resources
+                        </h3>
+                        <div className="grid gap-4">
+                          <a
+                            href="https://lmring.ai/how-it-works"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Card className="cursor-pointer hover:shadow-md transition-all">
+                              <CardContent className="p-4 flex items-center gap-4">
+                                <HelpCircleIcon className="h-8 w-8 text-primary" />
+                                <div>
+                                  <h4 className="font-medium">How it Works</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Learn how LMRing works
+                                  </p>
+                                </div>
+                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                              </CardContent>
+                            </Card>
+                          </a>
+                          <a
+                            href="https://lmring.ai/help-center"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Card className="cursor-pointer hover:shadow-md transition-all">
+                              <CardContent className="p-4 flex items-center gap-4">
+                                <LifeBuoyIcon className="h-8 w-8 text-primary" />
+                                <div>
+                                  <h4 className="font-medium">Help Center</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Browse FAQs and guides
+                                  </p>
+                                </div>
+                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                              </CardContent>
+                            </Card>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* About Us Section */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          About Us
+                        </h3>
+                        <div className="grid gap-4">
+                          <a
+                            href="https://lmring.ai/about"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Card className="cursor-pointer hover:shadow-md transition-all">
+                              <CardContent className="p-4 flex items-center gap-4">
+                                <InfoIcon className="h-8 w-8 text-primary" />
+                                <div>
+                                  <h4 className="font-medium">About LMRing</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Learn about our mission
+                                  </p>
+                                </div>
+                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                              </CardContent>
+                            </Card>
+                          </a>
+                          <a
+                            href="https://lmring.ai/careers"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Card className="cursor-pointer hover:shadow-md transition-all">
+                              <CardContent className="p-4 flex items-center gap-4">
+                                <UsersIcon className="h-8 w-8 text-primary" />
+                                <div>
+                                  <h4 className="font-medium">Join the Team</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    View open positions
+                                  </p>
+                                </div>
+                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
+                              </CardContent>
+                            </Card>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* About */}
+                {activeTab === 'about' && (
+                  <motion.div
+                    key="about"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h2 className="text-lg font-medium mb-1">About LMRing</h2>
                     </div>
 
                     <div className="space-y-8">
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <h3 className="font-bold text-lg">Enabled</h3>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
-                          >
-                            {providers.filter((p) => p.type === 'enabled').length}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {providers
-                            .filter((p) => p.type === 'enabled')
-                            .map((provider) => (
-                              <ProviderCard
-                                key={provider.id}
-                                provider={provider}
-                                onToggle={handleToggleProvider}
-                                onSelect={setSelectedProviderId}
-                              />
-                            ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <h3 className="font-bold text-lg">Disabled</h3>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
-                          >
-                            {providers.filter((p) => p.type === 'disabled').length}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {providers
-                            .filter((p) => p.type === 'disabled')
-                            .map((provider) => (
-                              <ProviderCard
-                                key={provider.id}
-                                provider={provider}
-                                onToggle={handleToggleProvider}
-                                onSelect={setSelectedProviderId}
-                              />
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-6">
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 text-sm text-muted-foreground mb-4 cursor-pointer hover:text-foreground"
-                      onClick={() => setSelectedProviderId(null)}
-                    >
-                      <ChevronRightIcon className="h-4 w-4 rotate-180" /> Back to Providers
-                    </button>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 flex items-center justify-center rounded-2xl bg-muted/20 text-4xl">
-                          {selectedProvider.Icon ? (
-                            <selectedProvider.Icon size={40} />
-                          ) : (
-                            selectedProvider.name[0]
-                          )}
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-bold">{selectedProvider.name}</h2>
-                          <p className="text-muted-foreground">{selectedProvider.description}</p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={selectedProvider.connected}
-                        onCheckedChange={() => handleToggleProvider(selectedProvider.id)}
-                      />
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-4">
-                      <Label>API Key</Label>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Input
-                            type={showKey ? 'text' : 'password'}
-                            defaultValue={selectedProvider.connected ? 'sk-xxxxxxxxxxxxxxxx' : ''}
-                            placeholder="Enter API Key"
-                            className="pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowKey(!showKey)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showKey ? (
-                              <EyeOffIcon className="h-4 w-4" />
-                            ) : (
-                              <EyeIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                        <Button variant="secondary">Check</Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label>API Proxy URL</Label>
-                      <Input placeholder="https://api.openai.com/v1" />
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label>Model List</Label>
-                      <div className="border rounded-lg divide-y">
-                        {['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'].map((model) => (
-                          <div
-                            key={model}
-                            className="p-3 flex items-center justify-between hover:bg-muted/50"
-                          >
-                            <span className="font-medium">{model}</span>
-                            <Badge variant="outline">Chat</Badge>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
+                            🤯
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* System Model */}
-            {activeTab === 'system-model' && (
-              <motion.div
-                key="system-model"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h2 className="text-lg font-medium mb-1">System Models</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Default models provided by the system.
-                  </p>
-                </div>
-
-                <div className="grid gap-4">
-                  {systemModels.map((model) => (
-                    <Card key={model.id}>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">{model.name}</CardTitle>
-                        <CardDescription>{model.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">System Default</Badge>
-                          <Badge variant="outline">Chat</Badge>
+                          <div>
+                            <h3 className="font-bold text-lg">LMRing</h3>
+                            <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                        <Button variant="outline">Changelog</Button>
+                      </div>
 
-            {/* Data Storage */}
-            {activeTab === 'storage' && (
-              <motion.div
-                key="storage"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-              >
-                <div>
-                  <h2 className="text-lg font-medium mb-1">Advanced Operations</h2>
-                </div>
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          Contact Us
+                        </h3>
+                        <div className="space-y-2">
+                          <a
+                            href="https://lmring.ai"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm hover:underline"
+                          >
+                            <GlobeIcon className="h-4 w-4" /> Official Website{' '}
+                            <ExternalLinkIcon className="h-3 w-3" />
+                          </a>
+                          <a
+                            href="mailto:support@lmring.ai"
+                            className="flex items-center gap-2 text-sm hover:underline"
+                          >
+                            <MailIcon className="h-4 w-4" /> Email Support{' '}
+                            <ExternalLinkIcon className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </div>
 
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between py-4 border-b">
-                    <div className="space-y-0.5">
-                      <div className="font-medium">Import Data</div>
-                      <div className="text-sm text-muted-foreground">
-                        Import data from a local file
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          Community and News
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <Button variant="secondary" className="w-full justify-start gap-2">
+                            <GithubIcon className="h-4 w-4" /> GitHub
+                          </Button>
+                          <Button variant="secondary" className="w-full justify-start gap-2">
+                            <div className="h-4 w-4 bg-indigo-500 rounded-full" /> Discord
+                          </Button>
+                          <Button variant="secondary" className="w-full justify-start gap-2">
+                            <TwitterIcon className="h-4 w-4" /> X / Twitter
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          Legal Disclaimer
+                        </h3>
+                        <div className="space-y-2">
+                          <a
+                            href="https://lmring.ai/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm hover:underline"
+                          >
+                            Terms of Service <ExternalLinkIcon className="h-3 w-3" />
+                          </a>
+                          <a
+                            href="https://lmring.ai/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm hover:underline"
+                          >
+                            Privacy Policy <ExternalLinkIcon className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <div className="font-medium">Send Anonymous Usage Data</div>
+                          <div className="text-sm text-muted-foreground">
+                            By opting to send telemetry data, you can help us improve the overall
+                            user experience.
+                          </div>
+                        </div>
+                        <Switch checked={telemetryEnabled} onCheckedChange={setTelemetryEnabled} />
                       </div>
                     </div>
-                    <Button variant="outline" className="gap-2">
-                      <DatabaseIcon className="h-4 w-4" /> Import
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between py-4 border-b">
-                    <div className="space-y-0.5">
-                      <div className="font-medium">Clear All Session Messages</div>
-                      <div className="text-sm text-muted-foreground">
-                        This will clear all session data, including assistant, files, messages,
-                        plugins, etc.
-                      </div>
-                    </div>
-                    <Button variant="destructive">Clear Now</Button>
-                  </div>
-
-                  <div className="flex items-center justify-between py-4">
-                    <div className="space-y-0.5">
-                      <div className="font-medium">Reset All Settings</div>
-                      <div className="text-sm text-muted-foreground">
-                        Reset all settings to default values
-                      </div>
-                    </div>
-                    <Button variant="destructive">Reset Now</Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Help & Support */}
-            {activeTab === 'help' && (
-              <motion.div
-                key="help"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-              >
-                <div>
-                  <h2 className="text-lg font-medium mb-1">Help & Support</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Resources and support to help you get the most out of LMRing.
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Resources Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Resources
-                    </h3>
-                    <div className="grid gap-4">
-                      <a
-                        href="https://lmring.ai/how-it-works"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Card className="cursor-pointer hover:shadow-md transition-all">
-                          <CardContent className="p-4 flex items-center gap-4">
-                            <HelpCircleIcon className="h-8 w-8 text-primary" />
-                            <div>
-                              <h4 className="font-medium">How it Works</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Learn how LMRing works
-                              </p>
-                            </div>
-                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                          </CardContent>
-                        </Card>
-                      </a>
-                      <a
-                        href="https://lmring.ai/help-center"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Card className="cursor-pointer hover:shadow-md transition-all">
-                          <CardContent className="p-4 flex items-center gap-4">
-                            <LifeBuoyIcon className="h-8 w-8 text-primary" />
-                            <div>
-                              <h4 className="font-medium">Help Center</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Browse FAQs and guides
-                              </p>
-                            </div>
-                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                          </CardContent>
-                        </Card>
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* About Us Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      About Us
-                    </h3>
-                    <div className="grid gap-4">
-                      <a href="https://lmring.ai/about" target="_blank" rel="noopener noreferrer">
-                        <Card className="cursor-pointer hover:shadow-md transition-all">
-                          <CardContent className="p-4 flex items-center gap-4">
-                            <InfoIcon className="h-8 w-8 text-primary" />
-                            <div>
-                              <h4 className="font-medium">About LMRing</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Learn about our mission
-                              </p>
-                            </div>
-                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                          </CardContent>
-                        </Card>
-                      </a>
-                      <a href="https://lmring.ai/careers" target="_blank" rel="noopener noreferrer">
-                        <Card className="cursor-pointer hover:shadow-md transition-all">
-                          <CardContent className="p-4 flex items-center gap-4">
-                            <UsersIcon className="h-8 w-8 text-primary" />
-                            <div>
-                              <h4 className="font-medium">Join the Team</h4>
-                              <p className="text-sm text-muted-foreground">View open positions</p>
-                            </div>
-                            <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                          </CardContent>
-                        </Card>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* About */}
-            {activeTab === 'about' && (
-              <motion.div
-                key="about"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-              >
-                <div>
-                  <h2 className="text-lg font-medium mb-1">About LMRing</h2>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
-                        🤯
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg">LMRing</h3>
-                        <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Changelog</Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Contact Us
-                    </h3>
-                    <div className="space-y-2">
-                      <a
-                        href="https://lmring.ai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm hover:underline"
-                      >
-                        <GlobeIcon className="h-4 w-4" /> Official Website{' '}
-                        <ExternalLinkIcon className="h-3 w-3" />
-                      </a>
-                      <a
-                        href="mailto:support@lmring.ai"
-                        className="flex items-center gap-2 text-sm hover:underline"
-                      >
-                        <MailIcon className="h-4 w-4" /> Email Support{' '}
-                        <ExternalLinkIcon className="h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Community and News
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <Button variant="secondary" className="w-full justify-start gap-2">
-                        <GithubIcon className="h-4 w-4" /> GitHub
-                      </Button>
-                      <Button variant="secondary" className="w-full justify-start gap-2">
-                        <div className="h-4 w-4 bg-indigo-500 rounded-full" /> Discord
-                      </Button>
-                      <Button variant="secondary" className="w-full justify-start gap-2">
-                        <TwitterIcon className="h-4 w-4" /> X / Twitter
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Legal Disclaimer
-                    </h3>
-                    <div className="space-y-2">
-                      <a
-                        href="https://lmring.ai/terms"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm hover:underline"
-                      >
-                        Terms of Service <ExternalLinkIcon className="h-3 w-3" />
-                      </a>
-                      <a
-                        href="https://lmring.ai/privacy"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm hover:underline"
-                      >
-                        Privacy Policy <ExternalLinkIcon className="h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <div className="font-medium">Send Anonymous Usage Data</div>
-                      <div className="text-sm text-muted-foreground">
-                        By opting to send telemetry data, you can help us improve the overall user
-                        experience.
-                      </div>
-                    </div>
-                    <Switch checked={telemetryEnabled} onCheckedChange={setTelemetryEnabled} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

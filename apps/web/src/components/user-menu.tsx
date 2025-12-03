@@ -43,8 +43,8 @@ export function UserMenu({ user, collapsed = false }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors ring-offset-background apple-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 ${
-            collapsed ? 'justify-center' : 'w-full'
+          className={`flex items-center gap-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors ring-offset-background apple-transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 w-full ${
+            collapsed ? 'justify-center px-1' : 'px-3'
           }`}
         >
           <Avatar className="h-8 w-8 apple-shadow flex-shrink-0">
