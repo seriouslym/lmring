@@ -31,26 +31,22 @@ export function ModelSelector({
   const [searchQuery, setSearchQuery] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Filter and sort models based on search query
   const filteredModels = React.useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) {
-      return [...models].sort((a, b) => a.name.localeCompare(b.name));
+      return [...models];
     }
 
-    return models
-      .filter(
-        (model) =>
-          model.name.toLowerCase().includes(query) ||
-          model.provider.toLowerCase().includes(query) ||
-          model.id.toLowerCase().includes(query),
-      )
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return models.filter(
+      (model) =>
+        model.name.toLowerCase().includes(query) ||
+        model.provider.toLowerCase().includes(query) ||
+        model.id.toLowerCase().includes(query),
+    );
   }, [models, searchQuery]);
 
   const selectedModelInfo = models.find((m) => m.id === selectedModel);
 
-  // Focus input when popover opens
   React.useEffect(() => {
     if (open) {
       setTimeout(() => {

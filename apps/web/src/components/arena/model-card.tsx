@@ -122,9 +122,7 @@ export function ModelCard({
     >
       <Card className="h-full arena-card flex flex-col glass-effect">
         <CardHeader className="pb-3 flex-shrink-0 space-y-0">
-          {/* Top Controls */}
           <div className="flex items-center gap-2">
-            {/* Model Selector Dropdown */}
             <div className="relative flex-1">
               <button
                 type="button"
@@ -183,7 +181,6 @@ export function ModelCard({
               )}
             </div>
 
-            {/* Action Toolbar */}
             <div className="flex items-center gap-1">
               <TooltipProvider>
                 <Tooltip>
@@ -211,7 +208,6 @@ export function ModelCard({
                   </TooltipContent>
                 </Tooltip>
 
-                {/* Settings Popover */}
                 <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -230,7 +226,6 @@ export function ModelCard({
                       <h4 className="font-medium sr-only">Model Settings</h4>
 
                       <div className="space-y-3">
-                        {/* Max Tokens */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Max Output Tokens</Label>
@@ -249,7 +244,6 @@ export function ModelCard({
                           />
                         </div>
 
-                        {/* Temperature */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Temperature</Label>
@@ -268,7 +262,6 @@ export function ModelCard({
                           />
                         </div>
 
-                        {/* Top P */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Top P</Label>
@@ -287,7 +280,6 @@ export function ModelCard({
                           />
                         </div>
 
-                        {/* Frequency Penalty */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Frequency Penalty</Label>
@@ -309,7 +301,6 @@ export function ModelCard({
                           />
                         </div>
 
-                        {/* Presence Penalty */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Presence Penalty</Label>
@@ -332,7 +323,6 @@ export function ModelCard({
                   </PopoverContent>
                 </Popover>
 
-                {/* Add Card Button */}
                 {onAddCard && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -351,7 +341,6 @@ export function ModelCard({
                   </Tooltip>
                 )}
 
-                {/* More Actions Dropdown */}
                 <div className="relative">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -441,9 +430,7 @@ export function ModelCard({
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col space-y-0 overflow-hidden pb-4">
-          {/* Content Area */}
           {!response && !isLoading && selectedModel ? (
-            /* Centered Model Info Display */
             <div className="flex-1 flex items-center justify-center p-4">
               <div className="rounded-lg border bg-muted/30 p-4 space-y-3 max-w-xl w-full backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -454,7 +441,6 @@ export function ModelCard({
                   {selectedModel.description}
                 </p>
 
-                {/* Model Stats */}
                 {(selectedModel.context || selectedModel.inputPricing) && (
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-2">
                     {selectedModel.context && (
@@ -470,7 +456,6 @@ export function ModelCard({
                   </div>
                 )}
 
-                {/* Footer Links */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t">
                   <div className="flex gap-4">
                     <button
@@ -479,21 +464,13 @@ export function ModelCard({
                     >
                       Model Page <ExternalLinkIcon className="h-3 w-3" />
                     </button>
-                    <button
-                      type="button"
-                      className="hover:text-foreground transition-colors flex items-center gap-1"
-                    >
-                      Pricing <ExternalLinkIcon className="h-3 w-3" />
-                    </button>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            /* Response Display */
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               <div className="space-y-4 p-1">
-                {/* Metrics Badges */}
                 {(responseTime || tokenCount) && (
                   <div className="flex items-center gap-2">
                     {responseTime && (
@@ -506,7 +483,6 @@ export function ModelCard({
                   </div>
                 )}
 
-                {/* Loading State */}
                 {isLoading && (
                   <div className="space-y-3">
                     <motion.div
@@ -527,7 +503,6 @@ export function ModelCard({
                   </div>
                 )}
 
-                {/* Response Text */}
                 {response && !isLoading && (
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <p className="text-sm text-foreground whitespace-pre-wrap">{response}</p>
@@ -537,7 +512,6 @@ export function ModelCard({
             </div>
           )}
 
-          {/* Custom Prompt Input (when not synced) */}
           {!synced && (
             <div className="pt-3 flex-shrink-0">
               <input
@@ -550,7 +524,6 @@ export function ModelCard({
             </div>
           )}
 
-          {/* Action Footer (when response exists) */}
           {response && !isLoading && (
             <div className="flex items-center justify-between pt-4 border-t flex-shrink-0">
               <div className="flex items-center gap-1">

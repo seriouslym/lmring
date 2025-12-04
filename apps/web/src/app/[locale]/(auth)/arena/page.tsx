@@ -4,272 +4,8 @@ import { motion } from 'framer-motion';
 import * as React from 'react';
 import { ModelCard } from '@/components/arena/model-card';
 import { PromptInput } from '@/components/arena/prompt-input';
+import { useProviderMetadata } from '@/hooks/use-provider-metadata';
 import type { ModelConfig, ModelOption } from '@/types/arena';
-
-// Available models - sorted alphabetically by name
-const AVAILABLE_MODELS: ModelOption[] = [
-  // Anthropic
-  {
-    id: 'claude-opus-4.5',
-    name: 'Claude Opus 4.5',
-    provider: 'Anthropic',
-    providerId: 'anthropic',
-    description: 'Best model for coding, agents, and computer use',
-    context: '200,000 tokens',
-    inputPricing: '$5.00 / million tokens',
-    outputPricing: '$25.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-    isNew: true,
-    default: true,
-  },
-  {
-    id: 'claude-sonnet-4.5',
-    name: 'Claude Sonnet 4.5',
-    provider: 'Anthropic',
-    providerId: 'anthropic',
-    description: 'Excellent for coding and computer use tasks',
-    context: '200,000 tokens',
-    inputPricing: '$3.00 / million tokens',
-    outputPricing: '$15.00 / million tokens',
-    type: 'pro' as const,
-    isNew: true,
-  },
-  {
-    id: 'claude-haiku-4.5',
-    name: 'Claude Haiku 4.5',
-    provider: 'Anthropic',
-    providerId: 'anthropic',
-    description: 'Fast and cost-effective with near-frontier quality',
-    context: '200,000 tokens',
-    inputPricing: '$1.00 / million tokens',
-    outputPricing: '$5.00 / million tokens',
-    type: 'hobby' as const,
-    isNew: true,
-  },
-  {
-    id: 'claude-opus-4.1',
-    name: 'Claude Opus 4.1',
-    provider: 'Anthropic',
-    providerId: 'anthropic',
-    description: 'Focused on agentic tasks and reasoning',
-    context: '200,000 tokens',
-    inputPricing: '$15.00 / million tokens',
-    outputPricing: '$75.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-  },
-
-  // OpenAI
-  {
-    id: 'gpt-5.1',
-    name: 'GPT-5.1',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Latest flagship model from OpenAI',
-    context: '128,000 tokens',
-    inputPricing: '$5.00 / million tokens',
-    outputPricing: '$15.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-    isNew: true,
-  },
-  {
-    id: 'gpt-5.1-codex-max',
-    name: 'GPT-5.1 Codex Max',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Specialized coding model for autonomous work',
-    context: '128,000 tokens',
-    inputPricing: '$10.00 / million tokens',
-    outputPricing: '$30.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-    isNew: true,
-  },
-  {
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Multimodal model with vision and audio',
-    context: '128,000 tokens',
-    inputPricing: '$2.50 / million tokens',
-    outputPricing: '$10.00 / million tokens',
-    type: 'pro' as const,
-  },
-  {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Fast and affordable for everyday tasks',
-    context: '128,000 tokens',
-    inputPricing: '$0.15 / million tokens',
-    outputPricing: '$0.60 / million tokens',
-    type: 'hobby' as const,
-  },
-  {
-    id: 'o1',
-    name: 'o1',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Advanced reasoning model for complex problems',
-    context: '200,000 tokens',
-    inputPricing: '$15.00 / million tokens',
-    outputPricing: '$60.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-  },
-  {
-    id: 'o3-mini',
-    name: 'o3 Mini',
-    provider: 'OpenAI',
-    providerId: 'openai',
-    description: 'Efficient reasoning model with adjustable thinking',
-    context: '200,000 tokens',
-    inputPricing: '$1.10 / million tokens',
-    outputPricing: '$4.40 / million tokens',
-    type: 'pro' as const,
-  },
-
-  // Google
-  {
-    id: 'gemini-3-pro',
-    name: 'Gemini 3 Pro',
-    provider: 'Google',
-    providerId: 'google',
-    description: 'Latest Gemini flagship with advanced capabilities',
-    context: '2,000,000 tokens',
-    inputPricing: '$1.50 / million tokens',
-    outputPricing: '$6.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-    isNew: true,
-  },
-  {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    provider: 'Google',
-    providerId: 'google',
-    description: 'Fast multimodal model with native tool use',
-    context: '1,000,000 tokens',
-    inputPricing: '$0.075 / million tokens',
-    outputPricing: '$0.30 / million tokens',
-    type: 'hobby' as const,
-  },
-  {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    provider: 'Google',
-    providerId: 'google',
-    description: 'Powerful multimodal model with long context',
-    context: '2,000,000 tokens',
-    inputPricing: '$1.25 / million tokens',
-    outputPricing: '$5.00 / million tokens',
-    type: 'pro' as const,
-  },
-
-  // Meta
-  {
-    id: 'llama-3.3-70b',
-    name: 'Llama 3.3 70B',
-    provider: 'Meta',
-    providerId: 'meta',
-    description: 'Latest Llama with improved multilingual support',
-    context: '128,000 tokens',
-    inputPricing: '$0.50 / million tokens',
-    outputPricing: '$0.75 / million tokens',
-    type: 'hobby' as const,
-  },
-  {
-    id: 'llama-3.1-405b',
-    name: 'Llama 3.1 405B',
-    provider: 'Meta',
-    providerId: 'meta',
-    description: 'Largest open model with frontier capabilities',
-    context: '128,000 tokens',
-    inputPricing: '$3.00 / million tokens',
-    outputPricing: '$3.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-  },
-
-  // Mistral
-  {
-    id: 'mistral-large-2',
-    name: 'Mistral Large 2',
-    provider: 'Mistral',
-    providerId: 'mistral',
-    description: 'Flagship model with 128K context and strong coding',
-    context: '128,000 tokens',
-    inputPricing: '$2.00 / million tokens',
-    outputPricing: '$6.00 / million tokens',
-    type: 'pro' as const,
-  },
-  {
-    id: 'codestral',
-    name: 'Codestral',
-    provider: 'Mistral',
-    providerId: 'mistral',
-    description: 'Specialized model for code generation',
-    context: '32,000 tokens',
-    inputPricing: '$0.30 / million tokens',
-    outputPricing: '$0.90 / million tokens',
-    type: 'hobby' as const,
-  },
-
-  // DeepSeek
-  {
-    id: 'deepseek-v3',
-    name: 'DeepSeek V3',
-    provider: 'DeepSeek',
-    providerId: 'deepseek',
-    description: 'Powerful open model rivaling frontier models',
-    context: '64,000 tokens',
-    inputPricing: '$0.27 / million tokens',
-    outputPricing: '$1.10 / million tokens',
-    type: 'pro' as const,
-  },
-  {
-    id: 'deepseek-r1',
-    name: 'DeepSeek R1',
-    provider: 'DeepSeek',
-    providerId: 'deepseek',
-    description: 'Reasoning model with transparent chain-of-thought',
-    context: '64,000 tokens',
-    inputPricing: '$0.55 / million tokens',
-    outputPricing: '$2.19 / million tokens',
-    type: 'pro' as const,
-  },
-
-  // xAI
-  {
-    id: 'grok-2',
-    name: 'Grok 2',
-    provider: 'xAI',
-    providerId: 'xai',
-    description: 'Frontier model with real-time knowledge',
-    context: '128,000 tokens',
-    inputPricing: '$2.00 / million tokens',
-    outputPricing: '$10.00 / million tokens',
-    type: 'pro' as const,
-    isPremium: true,
-  },
-
-  // Qwen
-  {
-    id: 'qwen-2.5-72b',
-    name: 'Qwen 2.5 72B',
-    provider: 'Alibaba',
-    providerId: 'qwen',
-    description: 'Multilingual model with strong reasoning',
-    context: '128,000 tokens',
-    inputPricing: '$0.35 / million tokens',
-    outputPricing: '$0.35 / million tokens',
-    type: 'hobby' as const,
-  },
-].sort((a, b) => a.name.localeCompare(b.name));
 
 const DEFAULT_CONFIG: ModelConfig = {
   maxTokens: 2048,
@@ -292,37 +28,74 @@ interface ModelComparison {
 }
 
 export default function ArenaPage() {
+  const providerMetadata = useProviderMetadata();
   const [globalPrompt, setGlobalPrompt] = React.useState('');
 
-  // Get the default model ID
-  const defaultModelId =
-    AVAILABLE_MODELS.find((m) => m.default)?.id || AVAILABLE_MODELS[0]?.id || '';
+  const availableModels = React.useMemo(() => {
+    const models: ModelOption[] = [];
 
-  const secondDefaultModelId =
-    AVAILABLE_MODELS.find((m) => m.id === 'gpt-5.1')?.id ||
-    AVAILABLE_MODELS.find((m) => m.id !== defaultModelId)?.id ||
-    defaultModelId;
+    for (const provider of providerMetadata) {
+      if (provider.models) {
+        for (const model of provider.models) {
+          models.push({
+            id: model.id,
+            name: model.name,
+            provider: provider.name,
+            providerId: provider.id,
+            description: provider.description || `${model.name} from ${provider.name}`,
+            context: model.contextLength
+              ? `${model.contextLength.toLocaleString()} tokens`
+              : undefined,
+            inputPricing: model.inputPricePerMillion
+              ? `$${model.inputPricePerMillion} / million tokens`
+              : undefined,
+            outputPricing: model.outputPricePerMillion
+              ? `$${model.outputPricePerMillion} / million tokens`
+              : undefined,
+            type: 'pro',
+            isNew: false,
+          });
+        }
+      }
+    }
 
-  const [comparisons, setComparisons] = React.useState<ModelComparison[]>([
-    {
-      id: '1',
-      modelId: defaultModelId,
-      response: '',
-      isLoading: false,
-      synced: true,
-      customPrompt: '',
-      config: { ...DEFAULT_CONFIG },
-    },
-    {
-      id: '2',
-      modelId: secondDefaultModelId,
-      response: '',
-      isLoading: false,
-      synced: true,
-      customPrompt: '',
-      config: { ...DEFAULT_CONFIG },
-    },
-  ]);
+    return models;
+  }, [providerMetadata]);
+
+  const [comparisons, setComparisons] = React.useState<ModelComparison[]>([]);
+  const [initialized, setInitialized] = React.useState(false);
+
+  React.useEffect(() => {
+    if (availableModels.length > 0 && !initialized) {
+      const defaultModelId = availableModels[0]?.id || '';
+      const secondDefaultModelId =
+        availableModels.find((m) => m.id === 'gpt-5.1')?.id ||
+        availableModels.find((m) => m.id !== defaultModelId)?.id ||
+        defaultModelId;
+
+      setComparisons([
+        {
+          id: '1',
+          modelId: defaultModelId,
+          response: '',
+          isLoading: false,
+          synced: true,
+          customPrompt: '',
+          config: { ...DEFAULT_CONFIG },
+        },
+        {
+          id: '2',
+          modelId: secondDefaultModelId,
+          response: '',
+          isLoading: false,
+          synced: true,
+          customPrompt: '',
+          config: { ...DEFAULT_CONFIG },
+        },
+      ]);
+      setInitialized(true);
+    }
+  }, [availableModels, initialized]);
 
   const timeoutRefs = React.useRef<Map<number, NodeJS.Timeout>>(new Map());
 
@@ -336,10 +109,9 @@ export default function ArenaPage() {
 
   const handleAddModel = () => {
     if (comparisons.length < 4) {
-      // Find a model that isn't already in use
       const usedModelIds = comparisons.map((c) => c.modelId);
-      const availableModel = AVAILABLE_MODELS.find((m) => !usedModelIds.includes(m.id));
-      const newModelId = availableModel?.id || AVAILABLE_MODELS[0]?.id || '';
+      const availableModel = availableModels.find((m) => !usedModelIds.includes(m.id));
+      const newModelId = availableModel?.id || availableModels[0]?.id || '';
 
       setComparisons([
         ...comparisons,
@@ -419,17 +191,15 @@ export default function ArenaPage() {
     const promptToUse = comparison.synced ? globalPrompt : comparison.customPrompt;
     if (!promptToUse.trim()) return;
 
-    // Set loading state
     setComparisons(
       comparisons.map((comp, i) =>
         i === index ? { ...comp, isLoading: true, response: '' } : comp,
       ),
     );
 
-    // Simulate API call
     const timeoutId = setTimeout(
       () => {
-        const model = AVAILABLE_MODELS.find((m) => m.id === comparison.modelId);
+        const model = availableModels.find((m) => m.id === comparison.modelId);
         const mockResponse = `This is a mock response from ${model?.name || 'Unknown Model'} for the prompt: "${promptToUse}"
 
 The response would include detailed information, analysis, and insights based on the model's capabilities. This is just a demonstration of the arena comparison feature.
@@ -464,7 +234,6 @@ The actual implementation would stream real responses from the AI models using t
   const handleSubmit = async () => {
     if (!globalPrompt.trim()) return;
 
-    // Filter comparisons that have a model selected and are synced
     const activeComparisons = comparisons
       .map((comp, index) => ({ ...comp, index }))
       .filter((comp) => comp.modelId && comp.synced);
@@ -474,15 +243,21 @@ The actual implementation would stream real responses from the AI models using t
       return;
     }
 
-    // Trigger refresh for all synced comparisons
     activeComparisons.forEach((comp) => {
       handleRefresh(comp.index);
     });
   };
 
+  if (!initialized) {
+    return (
+      <div className="flex items-center justify-center h-full bg-background">
+        <div className="text-muted-foreground">Loading models...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
-      {/* Main Content Area - Grid Layout */}
       <div className="flex-1 overflow-hidden p-4">
         <div
           className="h-full gap-4"
@@ -495,7 +270,7 @@ The actual implementation would stream real responses from the AI models using t
             <motion.div key={comparison.id} layout className="h-full min-w-0">
               <ModelCard
                 modelId={comparison.modelId}
-                models={AVAILABLE_MODELS}
+                models={availableModels}
                 response={comparison.response}
                 isLoading={comparison.isLoading}
                 responseTime={comparison.responseTime}
@@ -525,7 +300,6 @@ The actual implementation would stream real responses from the AI models using t
         </div>
       </div>
 
-      {/* Bottom Controls */}
       <div className="border-t bg-background/95 backdrop-blur-sm flex-shrink-0">
         <div className="p-4 space-y-4">
           <PromptInput
