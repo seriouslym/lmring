@@ -5,10 +5,13 @@ import { createVertex } from '@ai-sdk/google-vertex';
 import { createMistral } from '@ai-sdk/mistral';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createXai } from '@ai-sdk/xai';
-import { getProviderMetadata, OFFICIAL_PROVIDER_METADATA } from '@lmring/model-depot/providers';
+import {
+  getProviderMetadata,
+  OFFICIAL_PROVIDER_METADATA,
+  PROVIDER_ENDPOINTS,
+} from '@lmring/model-depot/providers';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { ProviderConfig, ProviderInstance, ProviderOptions } from '../../types/provider';
-import { PROVIDER_ENDPOINTS } from './endpoints';
 
 type ProviderLike = {
   languageModel: ProviderInstance['languageModel'];
@@ -28,7 +31,6 @@ function wrapProvider<T extends ProviderLike>(
   };
 }
 
-// Official SDK creators
 const SDK_CREATORS: Record<string, (options: ProviderOptions) => ProviderInstance> = {
   openai: wrapProvider('openai', createOpenAI),
   anthropic: wrapProvider('anthropic', createAnthropic),
@@ -40,7 +42,6 @@ const SDK_CREATORS: Record<string, (options: ProviderOptions) => ProviderInstanc
   openrouter: wrapProvider('openrouter', createOpenRouter),
 };
 
-// Build official providers
 export const OFFICIAL_PROVIDERS: ProviderConfig[] = OFFICIAL_PROVIDER_METADATA.map((metadata) => {
   const creator = SDK_CREATORS[metadata.id];
   const endpoint = PROVIDER_ENDPOINTS[metadata.id];
@@ -58,7 +59,6 @@ export const OFFICIAL_PROVIDERS: ProviderConfig[] = OFFICIAL_PROVIDER_METADATA.m
   };
 });
 
-// International compatible providers
 const INTERNATIONAL_COMPATIBLE_IDS = [
   'groq',
   'perplexity',

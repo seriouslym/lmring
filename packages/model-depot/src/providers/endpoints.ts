@@ -1,18 +1,34 @@
-/**
- * Endpoint configuration for compatible providers
- * Official providers use their SDK defaults
- */
 export interface EndpointConfig {
   baseURL: string;
   alternativeBaseURL?: string;
   defaultHeaders?: Record<string, string>;
 }
 
-/**
- * Endpoint configurations for all compatible providers
- */
 export const PROVIDER_ENDPOINTS: Record<string, EndpointConfig> = {
+  // Official Providers (for UI display purposes)
+  openai: {
+    baseURL: 'https://api.openai.com/v1',
+  },
+  anthropic: {
+    baseURL: 'https://api.anthropic.com',
+  },
+  google: {
+    baseURL: 'https://generativelanguage.googleapis.com',
+  },
+  mistral: {
+    baseURL: 'https://api.mistral.ai',
+  },
+  xai: {
+    baseURL: 'https://api.x.ai/v1',
+  },
+  deepseek: {
+    baseURL: 'https://api.deepseek.com',
+  },
+
   // International Compatible Providers
+  openrouter: {
+    baseURL: 'https://openrouter.ai/api/v1',
+  },
   groq: {
     baseURL: 'https://api.groq.com/openai/v1',
   },
@@ -150,9 +166,6 @@ export const PROVIDER_ENDPOINTS: Record<string, EndpointConfig> = {
   },
 };
 
-/**
- * Get endpoint configuration for a provider
- */
 export function getEndpointConfig(providerId: string): EndpointConfig | undefined {
   return PROVIDER_ENDPOINTS[providerId];
 }
