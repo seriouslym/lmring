@@ -93,6 +93,11 @@ export const modelEnableSchema = z.object({
     .max(100),
 });
 
+export const customModelSchema = z.object({
+  modelId: z.string().min(1).max(200),
+  displayName: z.string().max(200).optional(),
+});
+
 export const userPreferencesSchema = z.object({
   theme: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
@@ -143,6 +148,7 @@ export type ApiKeyInput = z.infer<typeof apiKeySchema>;
 export type ApiKeyPatchInput = z.infer<typeof apiKeyPatchSchema>;
 export type ConnectionCheckInput = z.infer<typeof connectionCheckSchema>;
 export type ModelEnableInput = z.infer<typeof modelEnableSchema>;
+export type CustomModelInput = z.infer<typeof customModelSchema>;
 export type UserPreferencesInput = z.infer<typeof userPreferencesSchema>;
 export type ShareInput = z.infer<typeof shareSchema>;
 export type ArenaModelInput = z.infer<typeof arenaModelSchema>;

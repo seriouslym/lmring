@@ -36,6 +36,7 @@ import {
   RadioIcon,
   RotateCwIcon,
   SearchIcon,
+  Trash2Icon,
   VolumeIcon,
   WrenchIcon,
   ZapIcon,
@@ -134,6 +135,38 @@ export function ProviderDetail({ provider, onToggle, onSave }: ProviderDetailPro
 
     fetchModelStates();
   }, [provider.apiKeyId]);
+
+  // Fetch custom models from database
+  useEffect(() => {
+    const fetchCustomModels = async () => {
+      if (!provider.apiKeyId) {
+        setCustomModels([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/settings/api-keys/${provider.apiKeyId}/custom-models`);
+        if (response.ok) {
+          const data = await response.json();
+          const models = (data.models || []).map(
+            (m: { modelId: string; displayName?: string }) => ({
+              id: m.modelId,
+              displayName: m.displayName || m.modelId,
+              type: 'chat' as const,
+              abilities: {},
+              providerId: provider.id.toLowerCase(),
+              source: 'custom' as const,
+            }),
+          );
+          setCustomModels(models);
+        }
+      } catch (error) {
+        console.error('Failed to fetch custom models:', error);
+      }
+    };
+
+    fetchCustomModels();
+  }, [provider.apiKeyId, provider.id]);
 
   const models = useMemo(() => {
     const staticModels = getModelsForProvider(provider.id.toLowerCase());
@@ -365,21 +398,79 @@ export function ProviderDetail({ provider, onToggle, onSave }: ProviderDetailPro
 
   const handleAddModel = useCallback(
     async (model: { id: string; name: string }) => {
-      setCustomModels((prev) => [
-        ...prev,
-        {
-          id: model.id,
-          displayName: model.name,
-          type: 'chat' as const,
-          abilities: {},
-          providerId: provider.id.toLowerCase(),
-          source: 'custom' as const,
-        },
-      ]);
-      await handleModelToggle(model.id, true);
-      toast.success('Model Added');
+      if (!provider.apiKeyId) {
+        toast.error('Please save your API key first');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/settings/api-keys/${provider.apiKeyId}/custom-models`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            modelId: model.id,
+            displayName: model.name,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to add model');
+        }
+
+        setCustomModels((prev) => [
+          ...prev,
+          {
+            id: model.id,
+            displayName: model.name,
+            type: 'chat' as const,
+            abilities: {},
+            providerId: provider.id.toLowerCase(),
+            source: 'custom' as const,
+          },
+        ]);
+        setModelEnabledStates((prev) => ({ ...prev, [model.id]: true }));
+        toast.success('Model Added');
+      } catch (error) {
+        toast.error('Failed to add model', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
     },
-    [handleModelToggle, provider.id],
+    [provider.apiKeyId, provider.id],
+  );
+
+  const handleDeleteCustomModel = useCallback(
+    async (modelId: string) => {
+      if (!provider.apiKeyId) return;
+
+      try {
+        const response = await fetch(
+          `/api/settings/api-keys/${provider.apiKeyId}/custom-models/${encodeURIComponent(modelId)}`,
+          { method: 'DELETE' },
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to delete model');
+        }
+
+        // Remove from local state
+        setCustomModels((prev) => prev.filter((m) => m.id !== modelId));
+        setModelEnabledStates((prev) => {
+          const newState = { ...prev };
+          delete newState[modelId];
+          return newState;
+        });
+
+        toast.success('Model Deleted');
+      } catch (error) {
+        toast.error('Failed to delete model', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    },
+    [provider.apiKeyId],
   );
 
   const handleShowKey = useCallback(async () => {
@@ -717,6 +808,16 @@ export function ProviderDetail({ provider, onToggle, onSave }: ProviderDetailPro
                         </div>
                         <div className="flex items-center gap-4">
                           {model.abilities && renderAbilityIcons(model.abilities)}
+                          {customModels.some((cm) => cm.id === model.id) && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:border-destructive"
+                              onClick={() => handleDeleteCustomModel(model.id)}
+                            >
+                              <Trash2Icon className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Switch
                             checked={isEnabled}
                             onCheckedChange={(checked) => handleModelToggle(model.id, checked)}

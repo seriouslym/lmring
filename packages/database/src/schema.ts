@@ -125,6 +125,28 @@ export const userEnabledModels = pgTable(
   ],
 );
 
+export const userCustomModels = pgTable(
+  'user_custom_models',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    apiKeyId: uuid('api_key_id')
+      .references(() => apiKeys.id, { onDelete: 'cascade' })
+      .notNull(),
+    modelId: text('model_id').notNull(),
+    displayName: text('display_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('user_custom_models_user_id_idx').on(table.userId),
+    index('user_custom_models_api_key_id_idx').on(table.apiKeyId),
+    unique('user_custom_models_api_key_model_unique').on(table.apiKeyId, table.modelId),
+  ],
+);
+
 // Conversations
 export const conversations = pgTable(
   'conversations',
@@ -338,6 +360,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   preferences: one(userPreferences),
   apiKeys: many(apiKeys),
   enabledModels: many(userEnabledModels),
+  customModels: many(userCustomModels),
   conversations: many(conversations),
   votes: many(userVotes),
   files: many(files),
@@ -358,6 +381,7 @@ export const apiKeysRelations = relations(apiKeys, ({ one, many }) => ({
     references: [users.id],
   }),
   enabledModels: many(userEnabledModels),
+  customModels: many(userCustomModels),
 }));
 
 export const userEnabledModelsRelations = relations(userEnabledModels, ({ one }) => ({
@@ -367,6 +391,17 @@ export const userEnabledModelsRelations = relations(userEnabledModels, ({ one })
   }),
   apiKey: one(apiKeys, {
     fields: [userEnabledModels.apiKeyId],
+    references: [apiKeys.id],
+  }),
+}));
+
+export const userCustomModelsRelations = relations(userCustomModels, ({ one }) => ({
+  user: one(users, {
+    fields: [userCustomModels.userId],
+    references: [users.id],
+  }),
+  apiKey: one(apiKeys, {
+    fields: [userCustomModels.apiKeyId],
     references: [apiKeys.id],
   }),
 }));
@@ -462,3 +497,5 @@ export type Verification = typeof verification.$inferSelect;
 export type NewVerification = typeof verification.$inferInsert;
 export type UserEnabledModel = typeof userEnabledModels.$inferSelect;
 export type NewUserEnabledModel = typeof userEnabledModels.$inferInsert;
+export type UserCustomModel = typeof userCustomModels.$inferSelect;
+export type NewUserCustomModel = typeof userCustomModels.$inferInsert;
