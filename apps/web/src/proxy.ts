@@ -32,9 +32,9 @@ const aj = arcjet.withRule(
     // Block all bots except the following
     allow: [
       // See https://docs.arcjet.com/bot-protection/identifying-bots
-      'CATEGORY:SEARCH_ENGINE', // Allow search engines
-      'CATEGORY:PREVIEW', // Allow preview links to show OG images
-      'CATEGORY:MONITOR', // Allow uptime monitoring services
+      'CATEGORY:SEARCH_ENGINE',
+      'CATEGORY:PREVIEW',
+      'CATEGORY:MONITOR',
     ],
   }),
 );
@@ -60,12 +60,9 @@ export default async function proxy(request: NextRequest, _event: NextFetchEvent
 
   const user = session?.user;
 
-  // Check user status if session exists
   if (user) {
-    // Type assertion to access custom user fields
     const authUser = user as unknown as AuthUser;
 
-    // Check if user is disabled
     if (isDisabled(authUser)) {
       logger.warn('Disabled user attempted to access resource', {
         userId: authUser.id,
@@ -82,7 +79,6 @@ export default async function proxy(request: NextRequest, _event: NextFetchEvent
       }
     }
 
-    // Check if user is pending
     if (isPending(authUser)) {
       logger.warn('Pending user attempted to access resource', {
         userId: authUser.id,
@@ -99,7 +95,6 @@ export default async function proxy(request: NextRequest, _event: NextFetchEvent
       }
     }
 
-    // If user is on account disabled page but is actually active, redirect to home
     const normalizedPath = stripLocalePrefix(pathname);
     if (normalizedPath === ACCOUNT_DISABLED_PATH && authUser.status === UserStatus.ACTIVE) {
       const homeUrl = new URL(locale ? `/${locale}` : '/', request.url);
@@ -107,14 +102,12 @@ export default async function proxy(request: NextRequest, _event: NextFetchEvent
     }
   }
 
-  // Redirect to sign-in if accessing protected paths without authentication
   if (matchesAnyPath(pathname, PROTECTED_PATHS) && !user) {
     const signInUrl = new URL(locale ? `/${locale}/sign-in` : '/sign-in', request.url);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  // Redirect to arena if accessing auth paths while authenticated
   if (matchesAnyPath(pathname, AUTH_PATHS) && user) {
     const arenaUrl = new URL(locale ? `/${locale}/arena` : '/arena', request.url);
     return NextResponse.redirect(arenaUrl);
