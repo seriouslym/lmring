@@ -661,9 +661,7 @@ const googleImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const googleModels = {
+export default {
   chat: googleChatModels,
   image: googleImageModels,
 };
-
-export default googleChatModels;

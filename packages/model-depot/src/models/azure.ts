@@ -465,9 +465,7 @@ const azureImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const azureModels = {
+export default {
   chat: azureChatModels,
   image: azureImageModels,
 };
-
-export default azureChatModels;

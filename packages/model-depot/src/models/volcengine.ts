@@ -559,9 +559,7 @@ const volcengineImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const volcengineModels = {
+export default {
   chat: volcengineChatModels,
   image: volcengineImageModels,
 };
-
-export default volcengineChatModels;

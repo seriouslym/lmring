@@ -997,7 +997,7 @@ const openaiRealtimeModels: RealtimeModelCard[] = [
 // Exports
 // ============================================================================
 
-export const openaiModels = {
+export default {
   chat: openaiChatModels,
   embedding: openaiEmbeddingModels,
   tts: openaiTTSModels,
@@ -1005,5 +1005,3 @@ export const openaiModels = {
   image: openaiImageModels,
   realtime: openaiRealtimeModels,
 };
-
-export default openaiChatModels;

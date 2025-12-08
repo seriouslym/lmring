@@ -668,9 +668,7 @@ const ollamaEmbeddingModels: EmbeddingModelCard[] = [
 // Exports
 // ============================================================================
 
-export const ollamaModels = {
+export default {
   chat: ollamaChatModels,
   embedding: ollamaEmbeddingModels,
 };
-
-export default ollamaChatModels;

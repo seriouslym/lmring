@@ -1479,9 +1479,7 @@ const dashscopeImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const dashscopeModels = {
+export default {
   chat: dashscopeChatModels,
   image: dashscopeImageModels,
 };
-
-export default dashscopeChatModels;

@@ -1055,9 +1055,7 @@ const openrouterImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const openrouterModels = {
+export default {
   chat: openrouterChatModels,
   image: openrouterImageModels,
 };
-
-export default openrouterChatModels;

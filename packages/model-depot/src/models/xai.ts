@@ -258,9 +258,7 @@ const xaiImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const xaiModels = {
+export default {
   chat: xaiChatModels,
   image: xaiImageModels,
 };
-
-export default xaiChatModels;

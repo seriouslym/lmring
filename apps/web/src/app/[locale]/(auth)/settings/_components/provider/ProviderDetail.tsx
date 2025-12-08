@@ -848,7 +848,7 @@ export function ProviderDetail({ provider, onToggle, onSave }: ProviderDetailPro
       </div>
 
       <AlertDialog open={!!modelToDelete} onOpenChange={(open) => !open && setModelToDelete(null)}>
-        <AlertDialogContent open={!!modelToDelete}>
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Custom Model</AlertDialogTitle>
             <AlertDialogDescription>

@@ -350,9 +350,7 @@ const vertexaiImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const vertexaiModels = {
+export default {
   chat: vertexaiChatModels,
   image: vertexaiImageModels,
 };
-
-export default vertexaiChatModels;

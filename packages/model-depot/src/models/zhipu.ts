@@ -502,9 +502,7 @@ const zhipuImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const zhipuModels = {
+export default {
   chat: zhipuChatModels,
   image: zhipuImageModels,
 };
-
-export default zhipuChatModels;

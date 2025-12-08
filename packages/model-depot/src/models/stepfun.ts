@@ -263,9 +263,7 @@ const stepfunImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const stepfunModels = {
+export default {
   chat: stepfunChatModels,
   image: stepfunImageModels,
 };
-
-export default stepfunChatModels;

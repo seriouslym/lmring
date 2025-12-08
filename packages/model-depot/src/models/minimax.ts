@@ -113,9 +113,7 @@ const minimaxImageModels: ImageModelCard[] = [
 // Exports
 // ============================================================================
 
-export const minimaxModels = {
+export default {
   chat: minimaxChatModels,
   image: minimaxImageModels,
 };
-
-export default minimaxChatModels;

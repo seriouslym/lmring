@@ -7,7 +7,21 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from './utils';
 import { buttonVariants } from './button';
 
-const AlertDialog = AlertDialogPrimitive.Root;
+// Context to share open state for animations
+const AlertDialogAnimationContext = React.createContext<{ open: boolean }>({ open: false });
+
+// Wrap Root to provide animation context
+const AlertDialog = ({
+  open,
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Root>) => (
+  <AlertDialogAnimationContext.Provider value={{ open: !!open }}>
+    <AlertDialogPrimitive.Root open={open} {...props}>
+      {children}
+    </AlertDialogPrimitive.Root>
+  </AlertDialogAnimationContext.Provider>
+);
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
@@ -28,50 +42,49 @@ const AlertDialogOverlay = React.forwardRef<
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
-interface AlertDialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> {
-  open?: boolean;
-}
-
 const AlertDialogContent = React.forwardRef<
   React.ComponentRef<typeof AlertDialogPrimitive.Content>,
-  AlertDialogContentProps
->(({ className, open, children, ...props }, ref) => (
-  <AnimatePresence>
-    {open && (
-      <AlertDialogPortal forceMount>
-        <AlertDialogPrimitive.Overlay asChild forceMount>
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/80"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          />
-        </AlertDialogPrimitive.Overlay>
-        <AlertDialogPrimitive.Content ref={ref} asChild forceMount {...props}>
-          <motion.div
-            className={cn(
-              'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg',
-              className
-            )}
-            initial={{ opacity: 0, scale: 0.95, x: '-50%', y: '-48%' }}
-            animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
-            exit={{ opacity: 0, scale: 0.95, x: '-50%', y: '-48%' }}
-            transition={{ 
-              type: "spring",
-              damping: 25,
-              stiffness: 300,
-              opacity: { duration: 0.2 }
-            }}
-          >
-            {children}
-          </motion.div>
-        </AlertDialogPrimitive.Content>
-      </AlertDialogPortal>
-    )}
-  </AnimatePresence>
-));
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => {
+  const { open } = React.useContext(AlertDialogAnimationContext);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <AlertDialogPortal forceMount>
+          <AlertDialogPrimitive.Overlay asChild forceMount>
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/80"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+          </AlertDialogPrimitive.Overlay>
+          <AlertDialogPrimitive.Content ref={ref} asChild forceMount {...props}>
+            <motion.div
+              className={cn(
+                'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg',
+                className
+              )}
+              initial={{ opacity: 0, scale: 0.95, x: '-50%', y: '-48%' }}
+              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, scale: 0.95, x: '-50%', y: '-48%' }}
+              transition={{
+                type: 'spring',
+                damping: 25,
+                stiffness: 300,
+                opacity: { duration: 0.2 },
+              }}
+            >
+              {children}
+            </motion.div>
+          </AlertDialogPrimitive.Content>
+        </AlertDialogPortal>
+      )}
+    </AnimatePresence>
+  );
+});
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
 const AlertDialogHeader = ({

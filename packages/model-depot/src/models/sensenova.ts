@@ -111,7 +111,7 @@ const sensenovaModels: ChatModelCard[] = [
     description:
       'DeepSeek-R1-Distill 模型是在开源模型的基础上通过微调训练得到的，训练过程中使用了由 DeepSeek-R1 生成的样本数据。',
     type: 'chat',
-    contextWindowTokens: 32_768,
+    contextWindowTokens: 131_072,
     abilities: {
       reasoning: true,
     },
@@ -127,7 +127,7 @@ const sensenovaModels: ChatModelCard[] = [
     description:
       'DeepSeek-R1-Distill 模型是在开源模型的基础上通过微调训练得到的，训练过程中使用了由 DeepSeek-R1 生成的样本数据。',
     type: 'chat',
-    contextWindowTokens: 8_192,
+    contextWindowTokens: 131_072,
     abilities: {
       reasoning: true,
     },
