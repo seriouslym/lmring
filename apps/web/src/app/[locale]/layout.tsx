@@ -1,4 +1,5 @@
 import { type Locale, routing } from '@lmring/i18n';
+import { Toaster } from '@lmring/ui';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
@@ -56,6 +57,7 @@ export default async function RootLayout(props: {
           <NextIntlClientProvider>
             <PostHogProvider>{props.children}</PostHogProvider>
           </NextIntlClientProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

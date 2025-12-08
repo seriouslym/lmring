@@ -14,9 +14,9 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
-      "description": "Pin Next.js to version 15.x (prevent upgrade to v16)",
+      "description": "Pin Next.js to version 16.x",
       "matchPackageNames": ["next", "@next/bundle-analyzer"],
-      "allowedVersions": "15.x"
+      "allowedVersions": "16.x"
     },
     {
       "description": "Group workspace packages together",

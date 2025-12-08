@@ -17,7 +17,6 @@
     "format:root": "biome format --write .",
     "check:types": "turbo run check:types",
     "check:deps": "knip",
-    "check:i18n": "turbo run check:i18n",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "db:generate": "turbo run db:generate",
