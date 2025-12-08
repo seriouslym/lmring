@@ -102,7 +102,7 @@ export const ProviderDisplayNames: Record<ModelProvider, string> = {
 
   // Chinese/Domestic Providers
   [ModelProvider.SiliconFlow]: 'SiliconFlow',
-  [ModelProvider.Dashscope]: 'Alibaba Cloud Dashscope',
+  [ModelProvider.Dashscope]: 'Aliyun Bailian',
   [ModelProvider.Zhipu]: 'Zhipu AI',
   [ModelProvider.Baichuan]: 'Baichuan AI',
   [ModelProvider.Moonshot]: 'Moonshot AI',

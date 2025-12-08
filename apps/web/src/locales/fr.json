@@ -44,7 +44,7 @@
     "mistral_description": "Mistral AI fournit des modèles open-weight efficaces et puissants.",
     "openrouter_description": "OpenRouter est une interface unifiée pour les meilleurs LLMs.",
     "silicon_description": "SiliconFlow fournit des services d'inférence haute performance.",
-    "dashscope_description": "Alibaba Cloud DashScope fournit le Model-as-a-Service (MaaS).",
+    "dashscope_description": "Aliyun Bailian fournit le Model-as-a-Service (MaaS).",
     "zhipu_description": "Zhipu AI fournit la série de modèles ChatGLM.",
     "baichuan_description": "Baichuan Intelligence fournit des LLMs chinois puissants.",
     "moonshot_description": "Moonshot AI fournit la série de modèles Kimi.",

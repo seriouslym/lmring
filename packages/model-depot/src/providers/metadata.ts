@@ -275,7 +275,7 @@ export const COMPATIBLE_PROVIDER_METADATA: ProviderMetadata[] = [
   },
   {
     id: 'dashscope',
-    name: 'Alibaba Cloud Dashscope',
+    name: 'Aliyun Bailian',
     type: 'compatible',
     supportsStreaming: true,
     supportsStructuredOutput: true,
