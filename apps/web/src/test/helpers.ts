@@ -1,4 +1,5 @@
 import type { Session } from '@lmring/auth';
+import type { Mock } from 'vitest';
 import { beforeEach, vi } from 'vitest';
 
 export const mockSession: Session = {
@@ -22,7 +23,13 @@ export const mockSession: Session = {
   },
 };
 
-export function mockAuth(session: Session | null = mockSession) {
+interface MockAuth {
+  api: {
+    getSession: Mock;
+  };
+}
+
+export function mockAuth(session: Session | null = mockSession): MockAuth {
   return {
     api: {
       getSession: vi.fn().mockResolvedValue(session),
@@ -30,7 +37,25 @@ export function mockAuth(session: Session | null = mockSession) {
   };
 }
 
-export function mockDb() {
+interface MockDbMethods {
+  select: Mock;
+  from: Mock;
+  where: Mock;
+  limit: Mock;
+  offset: Mock;
+  orderBy: Mock;
+  innerJoin: Mock;
+  groupBy: Mock;
+  insert: Mock;
+  values: Mock;
+  returning: Mock;
+  update: Mock;
+  set: Mock;
+  delete: Mock;
+  onConflictDoUpdate: Mock;
+}
+
+export function mockDb(): MockDbMethods {
   return {
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
