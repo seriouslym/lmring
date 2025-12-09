@@ -9,116 +9,188 @@
   ],
   "prConcurrentLimit": 5,
   "timezone": "UTC",
-  "schedule": ["before 5am on Monday"],
-  "labels": ["dependencies"],
+  "schedule": [
+    "before 5am on Monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "rangeStrategy": "bump",
   "packageRules": [
     {
       "description": "Pin Next.js to version 16.x",
-      "matchPackageNames": ["next", "@next/bundle-analyzer"],
+      "matchPackageNames": [
+        "next",
+        "@next/bundle-analyzer"
+      ],
       "allowedVersions": "16.x"
     },
     {
       "description": "Group workspace packages together",
-      "matchPackagePrefixes": ["@lmring/"],
       "groupName": "workspace packages",
-      "schedule": ["at any time"]
+      "schedule": [
+        "at any time"
+      ],
+      "matchPackageNames": [
+        "@lmring/{/,}**"
+      ]
     },
     {
       "description": "Group React ecosystem updates",
-      "matchPackageNames": ["react", "react-dom"],
-      "matchPackagePrefixes": ["@types/react"],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react{/,}**"
+      ],
       "groupName": "React ecosystem",
-      "schedule": ["at any time"]
+      "schedule": [
+        "at any time"
+      ]
     },
     {
       "description": "Group Drizzle ORM packages",
-      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
+      "matchPackageNames": [
+        "drizzle-orm",
+        "drizzle-kit"
+      ],
       "groupName": "Drizzle ORM"
     },
     {
       "description": "Group AI SDK packages",
-      "matchPackagePrefixes": ["@ai-sdk/"],
-      "matchPackageNames": ["ai"],
+      "matchPackageNames": [
+        "ai",
+        "@ai-sdk/{/,}**"
+      ],
       "groupName": "AI SDK packages"
     },
     {
       "description": "Group Supabase packages",
-      "matchPackagePrefixes": ["@supabase/"],
-      "groupName": "Supabase packages"
+      "groupName": "Supabase packages",
+      "matchPackageNames": [
+        "@supabase/{/,}**"
+      ]
     },
     {
       "description": "Group Sentry packages",
-      "matchPackagePrefixes": ["@sentry/"],
-      "groupName": "Sentry packages"
+      "groupName": "Sentry packages",
+      "matchPackageNames": [
+        "@sentry/{/,}**"
+      ]
     },
     {
       "description": "Group Arcjet packages",
-      "matchPackagePrefixes": ["@arcjet/"],
-      "groupName": "Arcjet packages"
+      "groupName": "Arcjet packages",
+      "matchPackageNames": [
+        "@arcjet/{/,}**"
+      ]
     },
     {
       "description": "Group Playwright packages",
-      "matchPackagePrefixes": ["@playwright/"],
-      "groupName": "Playwright packages"
+      "groupName": "Playwright packages",
+      "matchPackageNames": [
+        "@playwright/{/,}**"
+      ]
     },
     {
       "description": "Group Tailwind CSS packages",
-      "matchPackageNames": ["tailwindcss", "postcss"],
-      "matchPackagePrefixes": ["@tailwindcss/"],
+      "matchPackageNames": [
+        "tailwindcss",
+        "postcss",
+        "@tailwindcss/{/,}**"
+      ],
       "groupName": "Tailwind CSS"
     },
     {
       "description": "Group Vitest packages",
-      "matchPackageNames": ["vitest", "vite"],
-      "matchPackagePrefixes": ["@vitest/", "@vitejs/"],
+      "matchPackageNames": [
+        "vitest",
+        "vite",
+        "@vitest/{/,}**",
+        "@vitejs/{/,}**"
+      ],
       "groupName": "Vitest ecosystem"
     },
     {
       "description": "Group Biome packages",
-      "matchPackagePrefixes": ["@biomejs/"],
-      "groupName": "Biome"
+      "groupName": "Biome",
+      "matchPackageNames": [
+        "@biomejs/{/,}**"
+      ]
     },
     {
       "description": "Group TypeScript and related types",
-      "matchPackageNames": ["typescript"],
-      "matchPackagePrefixes": ["@types/"],
+      "matchPackageNames": [
+        "typescript",
+        "@types/{/,}**"
+      ],
       "groupName": "TypeScript and types",
-      "schedule": ["at any time"]
+      "schedule": [
+        "at any time"
+      ]
     },
     {
       "description": "Automerge patch and minor updates for devDependencies",
-      "matchUpdateTypes": ["patch", "minor"],
-      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "automerge": true,
       "automergeType": "pr",
-      "excludePackageNames": ["typescript", "next", "@next/bundle-analyzer"]
+      "matchPackageNames": [
+        "!typescript",
+        "!next",
+        "!@next/bundle-analyzer"
+      ]
     },
     {
       "description": "More frequent checks for security updates",
-      "matchUpdateTypes": ["patch"],
-      "matchDepTypes": ["dependencies"],
-      "schedule": ["at any time"],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
+      "schedule": [
+        "at any time"
+      ],
       "automerge": true,
       "automergeType": "pr"
     },
     {
       "description": "Group major updates separately with manual review",
-      "matchUpdateTypes": ["major"],
-      "labels": ["major-update", "dependencies"],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "labels": [
+        "major-update",
+        "dependencies"
+      ],
       "automerge": false,
-      "schedule": ["before 5am on the first day of the month"]
+      "schedule": [
+        "before 5am on the first day of the month"
+      ]
     },
     {
       "description": "Pin engines.node to >=20",
-      "matchDepTypes": ["engines"],
-      "matchPackageNames": ["node"],
+      "matchDepTypes": [
+        "engines"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
       "allowedVersions": ">=20"
     }
   ],
   "vulnerabilityAlerts": {
-    "labels": ["security"],
-    "schedule": ["at any time"]
+    "labels": [
+      "security"
+    ],
+    "schedule": [
+      "at any time"
+    ]
   },
   "ignoreDeps": [],
   "prCreation": "not-pending",
