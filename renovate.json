@@ -18,6 +18,12 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
+      "description": "Ignore framer-motion deprecation replacement",
+      "matchPackageNames": ["framer-motion"],
+      "matchUpdateTypes": ["replacement"],
+      "enabled": false
+    },
+    {
       "description": "Pin Next.js to version 16.x",
       "matchPackageNames": [
         "next",
@@ -174,14 +180,14 @@
       ]
     },
     {
-      "description": "Pin engines.node to >=20",
+      "description": "Disable Node.js engine version updates",
       "matchDepTypes": [
         "engines"
       ],
       "matchPackageNames": [
         "node"
       ],
-      "allowedVersions": ">=20"
+      "enabled": false
     }
   ],
   "vulnerabilityAlerts": {
