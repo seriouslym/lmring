@@ -19,24 +19,24 @@
   },
   "dependencies": {
     "@lmring/model-depot": "workspace:*",
-    "@ai-sdk/amazon-bedrock": "^3.0.62",
-    "@ai-sdk/anthropic": "^2.0.50",
-    "@ai-sdk/azure": "^2.0.76",
-    "@ai-sdk/deepseek": "^1.0.30",
-    "@ai-sdk/google-vertex": "^3.0.81",
+    "@ai-sdk/amazon-bedrock": "^3.0.67",
+    "@ai-sdk/anthropic": "^2.0.53",
+    "@ai-sdk/azure": "^2.0.82",
+    "@ai-sdk/deepseek": "^1.0.31",
+    "@ai-sdk/google-vertex": "^3.0.87",
     "@ai-sdk/mistral": "^2.0.25",
-    "@ai-sdk/openai": "^2.0.74",
+    "@ai-sdk/openai": "^2.0.80",
     "@ai-sdk/openai-compatible": "^1.0.28",
     "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/provider-utils": "^3.0.18",
     "@ai-sdk/xai": "^2.0.39",
-    "@openrouter/ai-sdk-provider": "^1.2.5",
-    "ai": "^5.0.104",
+    "@openrouter/ai-sdk-provider": "^1.4.1",
+    "ai": "^5.0.108",
     "zod": "^4.1.13"
   },
   "devDependencies": {
     "@lmring/typescript-config": "workspace:*",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.2",
     "typescript": "^5.9.3"
   }
 }
