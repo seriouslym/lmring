@@ -5,33 +5,36 @@ import * as React from 'react';
 import { ModelCard } from '@/components/arena/model-card';
 import { PromptInput } from '@/components/arena/prompt-input';
 import { useProviderMetadata } from '@/hooks/use-provider-metadata';
-import type { ModelConfig, ModelOption } from '@/types/arena';
-
-const DEFAULT_CONFIG: ModelConfig = {
-  maxTokens: 2048,
-  temperature: 0.7,
-  topP: 0.9,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
-};
-
-interface ModelComparison {
-  id: string;
-  modelId: string;
-  response: string;
-  responseTime?: number;
-  tokenCount?: number;
-  isLoading: boolean;
-  synced: boolean;
-  customPrompt: string;
-  config: ModelConfig;
-}
+import { arenaSelectors, useArenaStore } from '@/stores/arena-store';
+import type { ModelOption } from '@/types/arena';
 
 export default function ArenaPage() {
   const providerMetadata = useProviderMetadata();
-  const [globalPrompt, setGlobalPrompt] = React.useState('');
 
-  const availableModels = React.useMemo(() => {
+  // Zustand store selectors
+  const comparisons = useArenaStore(arenaSelectors.comparisons);
+  const globalPrompt = useArenaStore(arenaSelectors.globalPrompt);
+  const initialized = useArenaStore(arenaSelectors.initialized);
+  const isAnyLoading = useArenaStore(arenaSelectors.isAnyLoading);
+
+  // Zustand store actions
+  const setGlobalPrompt = useArenaStore((state) => state.setGlobalPrompt);
+  const initializeComparisons = useArenaStore((state) => state.initializeComparisons);
+  const addComparison = useArenaStore((state) => state.addComparison);
+  const selectModel = useArenaStore((state) => state.selectModel);
+  const toggleSync = useArenaStore((state) => state.toggleSync);
+  const updateConfig = useArenaStore((state) => state.updateConfig);
+  const setCustomPrompt = useArenaStore((state) => state.setCustomPrompt);
+  const moveLeft = useArenaStore((state) => state.moveLeft);
+  const moveRight = useArenaStore((state) => state.moveRight);
+  const clearComparison = useArenaStore((state) => state.clearComparison);
+  const removeComparison = useArenaStore((state) => state.removeComparison);
+  const setLoading = useArenaStore((state) => state.setLoading);
+  const setResponse = useArenaStore((state) => state.setResponse);
+  const availableModels = useArenaStore(arenaSelectors.availableModels);
+
+  // Compute available models from provider metadata
+  const computedModels = React.useMemo(() => {
     const models: ModelOption[] = [];
 
     for (const provider of providerMetadata) {
@@ -63,41 +66,17 @@ export default function ArenaPage() {
     return models;
   }, [providerMetadata]);
 
-  const [comparisons, setComparisons] = React.useState<ModelComparison[]>([]);
-  const [initialized, setInitialized] = React.useState(false);
-
+  // Initialize comparisons when models are available
   React.useEffect(() => {
-    if (availableModels.length > 0 && !initialized) {
-      const defaultModelId = availableModels[0]?.id || '';
-      const secondDefaultModelId =
-        availableModels.find((m) => m.id === 'gpt-5.1')?.id ||
-        availableModels.find((m) => m.id !== defaultModelId)?.id ||
-        defaultModelId;
-
-      setComparisons([
-        {
-          id: '1',
-          modelId: defaultModelId,
-          response: '',
-          isLoading: false,
-          synced: true,
-          customPrompt: '',
-          config: { ...DEFAULT_CONFIG },
-        },
-        {
-          id: '2',
-          modelId: secondDefaultModelId,
-          response: '',
-          isLoading: false,
-          synced: true,
-          customPrompt: '',
-          config: { ...DEFAULT_CONFIG },
-        },
-      ]);
-      setInitialized(true);
+    if (computedModels.length > 0 && !initialized) {
+      initializeComparisons(computedModels);
     }
-  }, [availableModels, initialized]);
+  }, [computedModels, initialized, initializeComparisons]);
 
+  // Use computed models if store models are not yet available
+  const displayModels = availableModels.length > 0 ? availableModels : computedModels;
+
+  // Timeout refs for mock responses
   const timeoutRefs = React.useRef<Map<number, NodeJS.Timeout>>(new Map());
 
   React.useEffect(() => {
@@ -108,100 +87,20 @@ export default function ArenaPage() {
     };
   }, []);
 
-  const handleAddModel = () => {
-    if (comparisons.length < 4) {
-      const usedModelIds = comparisons.map((c) => c.modelId);
-      const availableModel = availableModels.find((m) => !usedModelIds.includes(m.id));
-      const newModelId = availableModel?.id || availableModels[0]?.id || '';
+  const handleRefresh = React.useCallback(
+    async (index: number) => {
+      const comparison = comparisons[index];
+      if (!comparison || !comparison.modelId) return;
 
-      setComparisons([
-        ...comparisons,
-        {
-          id: Date.now().toString(),
-          modelId: newModelId,
-          response: '',
-          isLoading: false,
-          synced: true,
-          customPrompt: '',
-          config: { ...DEFAULT_CONFIG },
-        },
-      ]);
-    }
-  };
+      const promptToUse = comparison.synced ? globalPrompt : comparison.customPrompt;
+      if (!promptToUse.trim()) return;
 
-  const handleModelSelect = (index: number, modelId: string) => {
-    setComparisons(comparisons.map((comp, i) => (i === index ? { ...comp, modelId } : comp)));
-  };
+      setLoading(index, true);
 
-  const handleSyncToggle = (index: number, synced: boolean) => {
-    setComparisons(comparisons.map((comp, i) => (i === index ? { ...comp, synced } : comp)));
-  };
-
-  const handleConfigChange = (index: number, config: ModelConfig) => {
-    setComparisons(comparisons.map((comp, i) => (i === index ? { ...comp, config } : comp)));
-  };
-
-  const handleCustomPromptChange = (index: number, customPrompt: string) => {
-    setComparisons(comparisons.map((comp, i) => (i === index ? { ...comp, customPrompt } : comp)));
-  };
-
-  const handleMoveLeft = (index: number) => {
-    if (index > 0) {
-      const newComparisons = [...comparisons];
-      const temp = newComparisons[index];
-      const prev = newComparisons[index - 1];
-      if (temp && prev) {
-        newComparisons[index] = prev;
-        newComparisons[index - 1] = temp;
-        setComparisons(newComparisons);
-      }
-    }
-  };
-
-  const handleMoveRight = (index: number) => {
-    if (index < comparisons.length - 1) {
-      const newComparisons = [...comparisons];
-      const temp = newComparisons[index];
-      const next = newComparisons[index + 1];
-      if (temp && next) {
-        newComparisons[index] = next;
-        newComparisons[index + 1] = temp;
-        setComparisons(newComparisons);
-      }
-    }
-  };
-
-  const handleClear = (index: number) => {
-    setComparisons(
-      comparisons.map((comp, i) =>
-        i === index ? { ...comp, response: '', isLoading: false } : comp,
-      ),
-    );
-  };
-
-  const handleDelete = (index: number) => {
-    if (comparisons.length > 1) {
-      setComparisons(comparisons.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleRefresh = async (index: number) => {
-    const comparison = comparisons[index];
-    if (!comparison || !comparison.modelId) return;
-
-    const promptToUse = comparison.synced ? globalPrompt : comparison.customPrompt;
-    if (!promptToUse.trim()) return;
-
-    setComparisons(
-      comparisons.map((comp, i) =>
-        i === index ? { ...comp, isLoading: true, response: '' } : comp,
-      ),
-    );
-
-    const timeoutId = setTimeout(
-      () => {
-        const model = availableModels.find((m) => m.id === comparison.modelId);
-        const mockResponse = `This is a mock response from ${model?.name || 'Unknown Model'} for the prompt: "${promptToUse}"
+      const timeoutId = setTimeout(
+        () => {
+          const model = displayModels.find((m) => m.id === comparison.modelId);
+          const mockResponse = `This is a mock response from ${model?.name || 'Unknown Model'} for the prompt: "${promptToUse}"
 
 The response would include detailed information, analysis, and insights based on the model's capabilities. This is just a demonstration of the arena comparison feature.
 
@@ -212,27 +111,22 @@ Key points:
 
 The actual implementation would stream real responses from the AI models using the @lmring/ai package.`;
 
-        setComparisons((prev) =>
-          prev.map((c, i) =>
-            i === index
-              ? {
-                  ...c,
-                  response: mockResponse,
-                  isLoading: false,
-                  responseTime: Math.floor(Math.random() * 2000) + 500,
-                  tokenCount: Math.floor(Math.random() * 200) + 100,
-                }
-              : c,
-          ),
-        );
-        timeoutRefs.current.delete(index);
-      },
-      Math.random() * 3000 + 1000,
-    );
-    timeoutRefs.current.set(index, timeoutId);
-  };
+          setResponse(
+            index,
+            mockResponse,
+            Math.floor(Math.random() * 2000) + 500,
+            Math.floor(Math.random() * 200) + 100,
+          );
+          timeoutRefs.current.delete(index);
+        },
+        Math.random() * 3000 + 1000,
+      );
+      timeoutRefs.current.set(index, timeoutId);
+    },
+    [comparisons, globalPrompt, displayModels, setLoading, setResponse],
+  );
 
-  const handleSubmit = async () => {
+  const handleSubmit = React.useCallback(async () => {
     if (!globalPrompt.trim()) return;
 
     const activeComparisons = comparisons
@@ -244,10 +138,10 @@ The actual implementation would stream real responses from the AI models using t
       return;
     }
 
-    activeComparisons.forEach((comp) => {
+    for (const comp of activeComparisons) {
       handleRefresh(comp.index);
-    });
-  };
+    }
+  }, [globalPrompt, comparisons, handleRefresh]);
 
   if (!initialized) {
     return (
@@ -271,7 +165,7 @@ The actual implementation would stream real responses from the AI models using t
             <motion.div key={comparison.id} layout className="h-full min-w-0">
               <ModelCard
                 modelId={comparison.modelId}
-                models={availableModels}
+                models={displayModels}
                 response={comparison.response}
                 isLoading={comparison.isLoading}
                 responseTime={comparison.responseTime}
@@ -282,17 +176,17 @@ The actual implementation would stream real responses from the AI models using t
                 index={index}
                 canMoveLeft={index > 0}
                 canMoveRight={index < comparisons.length - 1}
-                onModelSelect={(modelId) => handleModelSelect(index, modelId)}
-                onSyncToggle={(synced) => handleSyncToggle(index, synced)}
-                onConfigChange={(config) => handleConfigChange(index, config)}
-                onCustomPromptChange={(prompt) => handleCustomPromptChange(index, prompt)}
-                onClear={() => handleClear(index)}
-                onDelete={() => handleDelete(index)}
-                onMoveLeft={() => handleMoveLeft(index)}
-                onMoveRight={() => handleMoveRight(index)}
+                onModelSelect={(modelId) => selectModel(index, modelId)}
+                onSyncToggle={(synced) => toggleSync(index, synced)}
+                onConfigChange={(config) => updateConfig(index, config)}
+                onCustomPromptChange={(prompt) => setCustomPrompt(index, prompt)}
+                onClear={() => clearComparison(index)}
+                onDelete={() => removeComparison(index)}
+                onMoveLeft={() => moveLeft(index)}
+                onMoveRight={() => moveRight(index)}
                 onAddCard={
                   index === comparisons.length - 1 && comparisons.length < 4
-                    ? handleAddModel
+                    ? addComparison
                     : undefined
                 }
               />
@@ -307,7 +201,7 @@ The actual implementation would stream real responses from the AI models using t
             value={globalPrompt}
             onChange={setGlobalPrompt}
             onSubmit={handleSubmit}
-            isLoading={comparisons.some((c) => c.isLoading)}
+            isLoading={isAnyLoading}
             placeholder="Ask anything to compare model responses..."
           />
         </div>

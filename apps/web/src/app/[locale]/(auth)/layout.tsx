@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { Sidebar } from '@/components/sidebar';
 import { auth } from '@/libs/Auth';
+import { StoreProviders } from '@/providers/store-providers';
 
 export default async function AuthLayout(props: {
   children: React.ReactNode;
@@ -32,15 +33,17 @@ export default async function AuthLayout(props: {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Left Sidebar - Full Height */}
-      <Sidebar locale={locale} user={userData} />
+    <StoreProviders>
+      <div className="flex h-screen bg-background">
+        {/* Left Sidebar - Full Height */}
+        <Sidebar locale={locale} user={userData} />
 
-      {/* Right Content Area */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">{props.children}</main>
+        {/* Right Content Area */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto">{props.children}</main>
+        </div>
       </div>
-    </div>
+    </StoreProviders>
   );
 }

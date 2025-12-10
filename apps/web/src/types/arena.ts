@@ -25,3 +25,24 @@ export interface ModelConfig {
   frequencyPenalty: number;
   presencePenalty: number;
 }
+
+export const DEFAULT_MODEL_CONFIG: ModelConfig = {
+  maxTokens: 2048,
+  temperature: 0.7,
+  topP: 0.9,
+  frequencyPenalty: 0,
+  presencePenalty: 0,
+};
+
+export interface ModelComparison {
+  id: string;
+  modelId: string;
+  response: string;
+  responseTime?: number;
+  tokenCount?: number;
+  isLoading: boolean;
+  synced: boolean;
+  customPrompt: string;
+  config: ModelConfig;
+  error?: string;
+}
