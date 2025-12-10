@@ -37,6 +37,7 @@ export type ArenaActions = {
     responseTime?: number,
     tokenCount?: number,
   ) => void;
+  setError: (index: number, error: string) => void;
   setAvailableModels: (models: ModelOption[]) => void;
 };
 
@@ -242,12 +243,24 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
                       responseTime,
                       tokenCount,
                       isLoading: false,
+                      error: undefined,
                     }
                   : c,
               ),
             }),
             false,
             'arena/setResponse',
+          ),
+
+        setError: (index, error) =>
+          set(
+            (state) => ({
+              comparisons: state.comparisons.map((c, i) =>
+                i === index ? { ...c, error, isLoading: false } : c,
+              ),
+            }),
+            false,
+            'arena/setError',
           ),
 
         setAvailableModels: (models) =>

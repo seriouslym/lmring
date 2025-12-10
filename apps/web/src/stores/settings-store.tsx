@@ -33,7 +33,7 @@ export type SettingsActions = {
   setSavedApiKeys: (keys: ApiKeyRecord[]) => void;
   addApiKey: (key: ApiKeyRecord) => void;
   updateApiKey: (id: string, update: Partial<ApiKeyRecord>) => void;
-  removeApiKey: (providerName: string) => void;
+  removeApiKey: (id: string) => void;
   loadApiKeys: () => Promise<void>;
 };
 
@@ -96,12 +96,10 @@ export const createSettingsStore = (initState: Partial<SettingsState> = {}) => {
               'settings/updateApiKey',
             ),
 
-          removeApiKey: (providerName) =>
+          removeApiKey: (id) =>
             set(
               (state) => ({
-                savedApiKeys: state.savedApiKeys.filter(
-                  (k) => k.providerName.toLowerCase() !== providerName.toLowerCase(),
-                ),
+                savedApiKeys: state.savedApiKeys.filter((k) => k.id !== id),
               }),
               false,
               'settings/removeApiKey',
