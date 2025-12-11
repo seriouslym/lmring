@@ -91,6 +91,9 @@ export async function* streamWorkflow(
 
 /**
  * Helper to build a WorkflowStreamRequest from workflow state
+ *
+ * Note: modelId may include provider prefix (e.g., "openai:gpt-4").
+ * This function extracts just the model name for the API.
  */
 export function buildWorkflowStreamRequest(
   workflowId: string,
@@ -100,14 +103,16 @@ export function buildWorkflowStreamRequest(
   config: {
     temperature: number;
     maxTokens: number;
-    topP: number;
+    topP?: number;
     frequencyPenalty?: number;
     presencePenalty?: number;
   },
 ): WorkflowStreamRequest {
+  const modelName = modelId.includes(':') ? modelId.split(':').slice(1).join(':') : modelId;
+
   return {
     workflowId,
-    modelId,
+    modelId: modelName,
     keyId,
     messages,
     config,

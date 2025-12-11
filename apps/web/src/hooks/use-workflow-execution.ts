@@ -47,9 +47,9 @@ export function useWorkflowExecution() {
       const request = buildWorkflowStreamRequest(id, modelId, keyId, allMessages, {
         temperature: config.temperature,
         maxTokens: config.maxTokens,
-        topP: config.topP,
-        frequencyPenalty: config.frequencyPenalty,
-        presencePenalty: config.presencePenalty,
+        ...(config.topP != null && { topP: config.topP }),
+        ...(config.frequencyPenalty != null && { frequencyPenalty: config.frequencyPenalty }),
+        ...(config.presencePenalty != null && { presencePenalty: config.presencePenalty }),
       });
 
       let metrics: WorkflowMetrics | undefined;

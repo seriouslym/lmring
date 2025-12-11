@@ -89,5 +89,17 @@
     "vllm_description": "vLLM est un moteur d'inférence à haut débit pour les LLMs.",
     "xinference_description": "Xinference est un framework d'inférence distribué pour divers modèles d'IA.",
     "higress_description": "Higress est une passerelle IA pour gérer et router les requêtes de modèles."
+  },
+  "Arena": {
+    "loading_models": "Chargement des modèles...",
+    "configure_api_keys_title": "Veuillez d'abord configurer les clés API",
+    "configure_api_keys_description": "Vous devez configurer au moins une clé API de fournisseur dans les paramètres pour utiliser cette fonctionnalité",
+    "go_to_settings": "Aller aux paramètres",
+    "select_model_title": "Veuillez sélectionner au moins un modèle",
+    "select_model_description": "Assurez-vous qu'au moins un modèle a la synchronisation activée",
+    "missing_api_key_title": "Configuration de clé API manquante",
+    "missing_api_key_description": "Les fournisseurs suivants n'ont pas de clés API configurées : {providers}",
+    "prompt_placeholder": "Posez une question pour comparer les réponses des modèles...",
+    "custom_model": "Personnalisé"
   }
 }

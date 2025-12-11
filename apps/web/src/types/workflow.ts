@@ -54,9 +54,6 @@ export interface WorkflowConfig extends ModelConfig {}
 export const DEFAULT_WORKFLOW_CONFIG: WorkflowConfig = {
   temperature: 0.7,
   maxTokens: 2048,
-  topP: 0.9,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
 };
 
 /**
@@ -142,7 +139,7 @@ export interface WorkflowStreamRequest {
   config: {
     temperature: number;
     maxTokens: number;
-    topP: number;
+    topP?: number;
     frequencyPenalty?: number;
     presencePenalty?: number;
   };

@@ -14,6 +14,7 @@ import {
 } from '@lmring/ui';
 import {
   Ai21,
+  AiMass,
   AlibabaCloud,
   Anthropic,
   Aws,
@@ -148,6 +149,7 @@ const ICON_MAP: Record<string, any> = {
   vllm: Vllm,
   xinference: Xinference,
   higress: Higress,
+  taichu: AiMass,
 };
 
 const systemModels = [
@@ -225,7 +227,6 @@ export default function SettingsPage() {
       };
     });
 
-    // Custom providers from savedApiKeys that don't match built-in providers
     const builtInIds = new Set(providerMetadata.map((p) => p.id.toLowerCase()));
     const customProviders = savedApiKeys
       .filter((key) => key.isCustom && !builtInIds.has(key.providerName.toLowerCase()))
@@ -305,10 +306,8 @@ export default function SettingsPage() {
   }, []);
 
   const handleAddProvider = React.useCallback((provider: Provider) => {
-    // Add to providers list
     setProviders((prev) => [provider, ...prev]);
 
-    // Also update savedApiKeys to track the new provider
     if (provider.apiKeyId) {
       setSavedApiKeys((prev) => [
         ...prev,

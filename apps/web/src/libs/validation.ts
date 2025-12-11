@@ -132,7 +132,7 @@ export const workflowStreamSchema = z.object({
   config: z.object({
     temperature: z.number().min(0).max(2).default(0.7),
     maxTokens: z.number().int().min(1).max(100000).default(2048),
-    topP: z.number().min(0).max(1).default(0.9),
+    topP: z.number().min(0).max(1).optional(),
     frequencyPenalty: z.number().min(-2).max(2).optional(),
     presencePenalty: z.number().min(-2).max(2).optional(),
   }),

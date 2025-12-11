@@ -73,4 +73,14 @@ export {
 } from './alert-dialog';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Toaster, toast } from './sonner';
-
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from './command';

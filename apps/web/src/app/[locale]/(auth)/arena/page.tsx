@@ -1,24 +1,31 @@
 'use client';
 
+import { toast } from '@lmring/ui';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { ModelCard } from '@/components/arena/model-card';
 import { PromptInput } from '@/components/arena/prompt-input';
 import { useProviderMetadata } from '@/hooks/use-provider-metadata';
-import { arenaSelectors, useArenaStore } from '@/stores/arena-store';
+import { useWorkflowExecution } from '@/hooks/use-workflow-execution';
+import {
+  arenaSelectors,
+  settingsSelectors,
+  useArenaStore,
+  useSettingsStore,
+  useWorkflowStore,
+  workflowSelectors,
+} from '@/stores';
 import type { ModelOption } from '@/types/arena';
 
 export default function ArenaPage() {
+  const router = useRouter();
+  const t = useTranslations('Arena');
   const providerMetadata = useProviderMetadata();
 
-  // Zustand store selectors
   const comparisons = useArenaStore(arenaSelectors.comparisons);
-  const globalPrompt = useArenaStore(arenaSelectors.globalPrompt);
   const initialized = useArenaStore(arenaSelectors.initialized);
-  const isAnyLoading = useArenaStore(arenaSelectors.isAnyLoading);
-
-  // Zustand store actions
-  const setGlobalPrompt = useArenaStore((state) => state.setGlobalPrompt);
   const initializeComparisons = useArenaStore((state) => state.initializeComparisons);
   const addComparison = useArenaStore((state) => state.addComparison);
   const selectModel = useArenaStore((state) => state.selectModel);
@@ -27,126 +34,399 @@ export default function ArenaPage() {
   const setCustomPrompt = useArenaStore((state) => state.setCustomPrompt);
   const moveLeft = useArenaStore((state) => state.moveLeft);
   const moveRight = useArenaStore((state) => state.moveRight);
-  const clearComparison = useArenaStore((state) => state.clearComparison);
   const removeComparison = useArenaStore((state) => state.removeComparison);
-  const setLoading = useArenaStore((state) => state.setLoading);
-  const setResponse = useArenaStore((state) => state.setResponse);
   const availableModels = useArenaStore(arenaSelectors.availableModels);
+  const setAvailableModels = useArenaStore((state) => state.setAvailableModels);
 
-  // Compute available models from provider metadata
+  const savedApiKeys = useSettingsStore(settingsSelectors.savedApiKeys);
+  const loadApiKeys = useSettingsStore((state) => state.loadApiKeys);
+  const apiKeysLoaded = useSettingsStore(settingsSelectors.apiKeysLoaded);
+
+  const workflows = useWorkflowStore(workflowSelectors.workflows);
+  const createWorkflow = useWorkflowStore((state) => state.createWorkflow);
+  const deleteWorkflow = useWorkflowStore((state) => state.deleteWorkflow);
+  const setWorkflowGlobalPrompt = useWorkflowStore((state) => state.setGlobalPrompt);
+  const workflowGlobalPrompt = useWorkflowStore(workflowSelectors.globalPrompt);
+  const isAnyRunning = useWorkflowStore(workflowSelectors.isAnyRunning);
+  const toggleWorkflowSync = useWorkflowStore((state) => state.toggleWorkflowSync);
+  const setWorkflowConfig = useWorkflowStore((state) => state.setWorkflowConfig);
+  const setWorkflowCustomPrompt = useWorkflowStore((state) => state.setCustomPrompt);
+  const clearWorkflowHistory = useWorkflowStore((state) => state.clearWorkflowHistory);
+
+  const { startAllSyncedWorkflows, cancelAllWorkflows } = useWorkflowExecution();
+
+  const comparisonWorkflowMap = React.useRef<Map<string, string>>(new Map());
+  const [enabledModelsMap, setEnabledModelsMap] = React.useState<Map<string, Set<string>>>(
+    new Map(),
+  );
+  const [enabledModelsLoaded, setEnabledModelsLoaded] = React.useState(false);
+  const [customModelsMap, setCustomModelsMap] = React.useState<
+    Map<string, Array<{ modelId: string; displayName: string }>>
+  >(new Map());
+
+  React.useEffect(() => {
+    if (!apiKeysLoaded) {
+      loadApiKeys();
+    }
+  }, [apiKeysLoaded, loadApiKeys]);
+
+  const hasConfiguredProviders = React.useMemo(() => {
+    return savedApiKeys.some((k) => k.enabled);
+  }, [savedApiKeys]);
+
+  React.useEffect(() => {
+    const fetchEnabledModels = async () => {
+      if (!apiKeysLoaded) return;
+
+      const enabledProviders = savedApiKeys.filter((k) => k.enabled && k.id);
+      if (enabledProviders.length === 0) {
+        setEnabledModelsLoaded(true);
+        return;
+      }
+
+      const newEnabledModelsMap = new Map<string, Set<string>>();
+      const newCustomModelsMap = new Map<string, Array<{ modelId: string; displayName: string }>>();
+
+      await Promise.all(
+        enabledProviders.map(async (provider) => {
+          try {
+            // Fetch enabled models and custom models in parallel
+            const [enabledResponse, customResponse] = await Promise.all([
+              fetch(`/api/settings/api-keys/${provider.id}/enabled-models`),
+              fetch(`/api/settings/api-keys/${provider.id}/custom-models`),
+            ]);
+
+            if (enabledResponse.ok) {
+              const data = await enabledResponse.json();
+              const enabledModelIds = new Set<string>();
+              for (const model of data.models || []) {
+                if (model.enabled) {
+                  enabledModelIds.add(model.modelId);
+                }
+              }
+              newEnabledModelsMap.set(provider.providerName.toLowerCase(), enabledModelIds);
+            }
+
+            if (customResponse.ok) {
+              const data = await customResponse.json();
+              const customModels = (data.models || []).map(
+                (m: { modelId: string; displayName?: string }) => ({
+                  modelId: m.modelId,
+                  displayName: m.displayName || m.modelId,
+                }),
+              );
+              if (customModels.length > 0) {
+                newCustomModelsMap.set(provider.providerName.toLowerCase(), customModels);
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch models for ${provider.providerName}:`, error);
+          }
+        }),
+      );
+
+      setEnabledModelsMap(newEnabledModelsMap);
+      setCustomModelsMap(newCustomModelsMap);
+      setEnabledModelsLoaded(true);
+    };
+
+    fetchEnabledModels();
+  }, [apiKeysLoaded, savedApiKeys]);
+
+  const filteredProviders = React.useMemo(() => {
+    if (hasConfiguredProviders) {
+      const configuredProviderIds = savedApiKeys
+        .filter((k) => k.enabled)
+        .map((k) => k.providerName.toLowerCase());
+      return providerMetadata.filter((p) => configuredProviderIds.includes(p.id.toLowerCase()));
+    }
+    return providerMetadata;
+  }, [savedApiKeys, providerMetadata, hasConfiguredProviders]);
+
   const computedModels = React.useMemo(() => {
     const models: ModelOption[] = [];
+    const addedModelIds = new Set<string>();
 
-    for (const provider of providerMetadata) {
+    for (const provider of filteredProviders) {
       if (provider.models) {
+        const providerEnabledModels = enabledModelsMap.get(provider.id.toLowerCase());
+
         for (const model of provider.models) {
-          models.push({
-            id: `${provider.id}:${model.id}`,
-            name: model.displayName || model.id,
-            provider: provider.name,
-            providerId: provider.id,
-            description:
-              provider.description || `${model.displayName || model.id} from ${provider.name}`,
-            context: model.contextWindowTokens
-              ? `${model.contextWindowTokens.toLocaleString()} tokens`
-              : undefined,
-            inputPricing: model.pricing?.input
-              ? `$${model.pricing.input} / million tokens`
-              : undefined,
-            outputPricing: model.pricing?.output
-              ? `$${model.pricing.output} / million tokens`
-              : undefined,
-            type: 'pro',
-            isNew: false,
-          });
+          const shouldInclude =
+            !hasConfiguredProviders ||
+            !enabledModelsLoaded ||
+            !providerEnabledModels ||
+            providerEnabledModels.size === 0 ||
+            providerEnabledModels.has(model.id);
+
+          if (shouldInclude) {
+            const modelId = `${provider.id}:${model.id}`;
+            models.push({
+              id: modelId,
+              name: model.displayName || model.id,
+              provider: provider.name,
+              providerId: provider.id,
+              description:
+                provider.description || `${model.displayName || model.id} from ${provider.name}`,
+              context: model.contextWindowTokens
+                ? `${model.contextWindowTokens.toLocaleString()} tokens`
+                : undefined,
+              inputPricing: model.pricing?.input
+                ? `$${model.pricing.input} / million tokens`
+                : undefined,
+              outputPricing: model.pricing?.output
+                ? `$${model.pricing.output} / million tokens`
+                : undefined,
+              type: 'pro',
+              isNew: false,
+              isCustom: false,
+            });
+            addedModelIds.add(modelId);
+          }
+        }
+      }
+
+      // Add custom models for this provider
+      const providerCustomModels = customModelsMap.get(provider.id.toLowerCase());
+      if (providerCustomModels) {
+        for (const customModel of providerCustomModels) {
+          const modelId = `${provider.id}:${customModel.modelId}`;
+          if (!addedModelIds.has(modelId)) {
+            models.push({
+              id: modelId,
+              name: customModel.displayName,
+              provider: provider.name,
+              providerId: provider.id,
+              description: `${customModel.displayName} from ${provider.name}`,
+              type: 'pro',
+              isNew: false,
+              isCustom: true,
+            });
+            addedModelIds.add(modelId);
+          }
         }
       }
     }
 
     return models;
-  }, [providerMetadata]);
+  }, [
+    filteredProviders,
+    enabledModelsMap,
+    customModelsMap,
+    hasConfiguredProviders,
+    enabledModelsLoaded,
+  ]);
 
-  // Initialize comparisons when models are available
+  React.useEffect(() => {
+    if (computedModels.length > 0 && enabledModelsLoaded) {
+      setAvailableModels(computedModels);
+    }
+  }, [computedModels, enabledModelsLoaded, setAvailableModels]);
+
   React.useEffect(() => {
     if (computedModels.length > 0 && !initialized) {
       initializeComparisons(computedModels);
     }
   }, [computedModels, initialized, initializeComparisons]);
 
-  // Use computed models if store models are not yet available
   const displayModels = availableModels.length > 0 ? availableModels : computedModels;
 
-  // Timeout refs for mock responses
-  const timeoutRefs = React.useRef<Map<number, NodeJS.Timeout>>(new Map());
-
-  React.useEffect(() => {
-    return () => {
-      timeoutRefs.current.forEach((timeout) => {
-        clearTimeout(timeout);
-      });
-    };
-  }, []);
-
-  const handleRefresh = React.useCallback(
-    async (index: number) => {
-      const comparison = comparisons[index];
-      if (!comparison || !comparison.modelId) return;
-
-      const promptToUse = comparison.synced ? globalPrompt : comparison.customPrompt;
-      if (!promptToUse.trim()) return;
-
-      setLoading(index, true);
-
-      const timeoutId = setTimeout(
-        () => {
-          const model = displayModels.find((m) => m.id === comparison.modelId);
-          const mockResponse = `This is a mock response from ${model?.name || 'Unknown Model'} for the prompt: "${promptToUse}"
-
-The response would include detailed information, analysis, and insights based on the model's capabilities. This is just a demonstration of the arena comparison feature.
-
-Key points:
-• Point 1: Detailed analysis
-• Point 2: Specific insights
-• Point 3: Actionable recommendations
-
-The actual implementation would stream real responses from the AI models using the @lmring/ai package.`;
-
-          setResponse(
-            index,
-            mockResponse,
-            Math.floor(Math.random() * 2000) + 500,
-            Math.floor(Math.random() * 200) + 100,
-          );
-          timeoutRefs.current.delete(index);
-        },
-        Math.random() * 3000 + 1000,
+  const getKeyIdForModel = React.useCallback(
+    (modelId: string): string | undefined => {
+      const providerId = modelId.split(':')[0] || '';
+      if (!providerId) return undefined;
+      const key = savedApiKeys.find(
+        (k) => k.providerName.toLowerCase() === providerId.toLowerCase() && k.enabled,
       );
-      timeoutRefs.current.set(index, timeoutId);
+      return key?.id;
     },
-    [comparisons, globalPrompt, displayModels, setLoading, setResponse],
+    [savedApiKeys],
+  );
+
+  const getOrCreateWorkflow = React.useCallback(
+    (comparisonId: string, modelId: string, synced: boolean): string | undefined => {
+      const existingWorkflowId = comparisonWorkflowMap.current.get(comparisonId);
+      if (existingWorkflowId) {
+        const existingWorkflow = workflows.get(existingWorkflowId);
+        if (existingWorkflow && existingWorkflow.modelId === modelId) {
+          return existingWorkflowId;
+        }
+        deleteWorkflow(existingWorkflowId);
+        comparisonWorkflowMap.current.delete(comparisonId);
+      }
+
+      const keyId = getKeyIdForModel(modelId);
+      if (!keyId) {
+        return undefined;
+      }
+
+      const workflowId = createWorkflow(modelId, keyId, synced);
+      comparisonWorkflowMap.current.set(comparisonId, workflowId);
+      return workflowId;
+    },
+    [workflows, deleteWorkflow, createWorkflow, getKeyIdForModel],
+  );
+
+  const getWorkflowForComparison = React.useCallback(
+    (comparisonId: string) => {
+      const workflowId = comparisonWorkflowMap.current.get(comparisonId);
+      if (!workflowId) return undefined;
+      return workflows.get(workflowId);
+    },
+    [workflows],
   );
 
   const handleSubmit = React.useCallback(async () => {
-    if (!globalPrompt.trim()) return;
+    if (!workflowGlobalPrompt.trim()) return;
 
-    const activeComparisons = comparisons
-      .map((comp, index) => ({ ...comp, index }))
-      .filter((comp) => comp.modelId && comp.synced);
-
-    if (activeComparisons.length === 0) {
-      alert('Please select at least one model with sync enabled');
+    if (!hasConfiguredProviders) {
+      toast.warning(t('configure_api_keys_title'), {
+        description: t('configure_api_keys_description'),
+        action: {
+          label: t('go_to_settings'),
+          onClick: () => router.push('/settings?tab=provider'),
+        },
+      });
       return;
     }
 
-    for (const comp of activeComparisons) {
-      handleRefresh(comp.index);
+    const syncedComparisons = comparisons.filter((comp) => comp.modelId && comp.synced);
+
+    if (syncedComparisons.length === 0) {
+      toast.warning(t('select_model_title'), {
+        description: t('select_model_description'),
+      });
+      return;
     }
-  }, [globalPrompt, comparisons, handleRefresh]);
+
+    const missingKeys: string[] = [];
+    for (const comp of syncedComparisons) {
+      const workflowId = getOrCreateWorkflow(comp.id, comp.modelId, comp.synced);
+      if (!workflowId) {
+        const providerId = comp.modelId.split(':')[0] || 'unknown';
+        if (!missingKeys.includes(providerId)) {
+          missingKeys.push(providerId);
+        }
+      }
+    }
+
+    if (missingKeys.length > 0) {
+      toast.error(t('missing_api_key_title'), {
+        description: t('missing_api_key_description', { providers: missingKeys.join(', ') }),
+        action: {
+          label: t('go_to_settings'),
+          onClick: () => router.push('/settings?tab=provider'),
+        },
+      });
+      return;
+    }
+
+    await startAllSyncedWorkflows();
+  }, [
+    workflowGlobalPrompt,
+    comparisons,
+    getOrCreateWorkflow,
+    startAllSyncedWorkflows,
+    hasConfiguredProviders,
+    router,
+    t,
+  ]);
+
+  const handleModelSelect = React.useCallback(
+    (index: number, modelId: string) => {
+      selectModel(index, modelId);
+
+      const comparison = comparisons[index];
+      if (comparison) {
+        getOrCreateWorkflow(comparison.id, modelId, comparison.synced);
+      }
+    },
+    [selectModel, comparisons, getOrCreateWorkflow],
+  );
+
+  const handleSyncToggle = React.useCallback(
+    (index: number, synced: boolean) => {
+      toggleSync(index, synced);
+
+      const comparison = comparisons[index];
+      if (comparison) {
+        const workflowId = comparisonWorkflowMap.current.get(comparison.id);
+        if (workflowId) {
+          toggleWorkflowSync(workflowId, synced);
+        }
+      }
+    },
+    [toggleSync, comparisons, toggleWorkflowSync],
+  );
+
+  const handleConfigChange = React.useCallback(
+    (index: number, config: Parameters<typeof updateConfig>[1]) => {
+      updateConfig(index, config);
+
+      const comparison = comparisons[index];
+      if (comparison) {
+        const workflowId = comparisonWorkflowMap.current.get(comparison.id);
+        if (workflowId) {
+          setWorkflowConfig(workflowId, config);
+        }
+      }
+    },
+    [updateConfig, comparisons, setWorkflowConfig],
+  );
+
+  const handleCustomPromptChange = React.useCallback(
+    (index: number, prompt: string) => {
+      setCustomPrompt(index, prompt);
+
+      const comparison = comparisons[index];
+      if (comparison) {
+        const workflowId = comparisonWorkflowMap.current.get(comparison.id);
+        if (workflowId) {
+          setWorkflowCustomPrompt(workflowId, prompt);
+        }
+      }
+    },
+    [setCustomPrompt, comparisons, setWorkflowCustomPrompt],
+  );
+
+  const handleClear = React.useCallback(
+    (index: number) => {
+      const comparison = comparisons[index];
+      if (comparison) {
+        const workflowId = comparisonWorkflowMap.current.get(comparison.id);
+        if (workflowId) {
+          clearWorkflowHistory(workflowId);
+        }
+      }
+    },
+    [comparisons, clearWorkflowHistory],
+  );
+
+  const handleDelete = React.useCallback(
+    (index: number) => {
+      const comparison = comparisons[index];
+      if (comparison) {
+        const workflowId = comparisonWorkflowMap.current.get(comparison.id);
+        if (workflowId) {
+          deleteWorkflow(workflowId);
+          comparisonWorkflowMap.current.delete(comparison.id);
+        }
+      }
+      removeComparison(index);
+    },
+    [comparisons, deleteWorkflow, removeComparison],
+  );
+
+  React.useEffect(() => {
+    return () => {
+      cancelAllWorkflows();
+    };
+  }, [cancelAllWorkflows]);
 
   if (!initialized) {
     return (
       <div className="flex items-center justify-center h-full bg-background">
-        <div className="text-muted-foreground">Loading models...</div>
+        <div className="text-muted-foreground">{t('loading_models')}</div>
       </div>
     );
   }
@@ -161,48 +441,62 @@ The actual implementation would stream real responses from the AI models using t
             gridTemplateColumns: `repeat(${comparisons.length}, 1fr)`,
           }}
         >
-          {comparisons.map((comparison, index) => (
-            <motion.div key={comparison.id} layout className="h-full min-w-0">
-              <ModelCard
-                modelId={comparison.modelId}
-                models={displayModels}
-                response={comparison.response}
-                isLoading={comparison.isLoading}
-                responseTime={comparison.responseTime}
-                tokenCount={comparison.tokenCount}
-                synced={comparison.synced}
-                customPrompt={comparison.customPrompt}
-                config={comparison.config}
-                index={index}
-                canMoveLeft={index > 0}
-                canMoveRight={index < comparisons.length - 1}
-                onModelSelect={(modelId) => selectModel(index, modelId)}
-                onSyncToggle={(synced) => toggleSync(index, synced)}
-                onConfigChange={(config) => updateConfig(index, config)}
-                onCustomPromptChange={(prompt) => setCustomPrompt(index, prompt)}
-                onClear={() => clearComparison(index)}
-                onDelete={() => removeComparison(index)}
-                onMoveLeft={() => moveLeft(index)}
-                onMoveRight={() => moveRight(index)}
-                onAddCard={
-                  index === comparisons.length - 1 && comparisons.length < 4
-                    ? addComparison
-                    : undefined
-                }
-              />
-            </motion.div>
-          ))}
+          {comparisons.map((comparison, index) => {
+            const workflow = getWorkflowForComparison(comparison.id);
+            const lastAssistantMessage = workflow?.messages
+              .filter((m) => m.role === 'assistant')
+              .pop();
+            const response =
+              workflow?.pendingResponse?.content || lastAssistantMessage?.content || '';
+            const isLoading = workflow?.status === 'running';
+            const responseTime =
+              workflow?.metrics?.totalTime || lastAssistantMessage?.metrics?.responseTime;
+            const tokenCount =
+              workflow?.metrics?.totalTokens || lastAssistantMessage?.metrics?.tokenCount;
+
+            return (
+              <motion.div key={comparison.id} layout className="h-full min-w-0">
+                <ModelCard
+                  modelId={comparison.modelId}
+                  models={displayModels}
+                  response={response}
+                  isLoading={isLoading}
+                  responseTime={responseTime}
+                  tokenCount={tokenCount}
+                  synced={comparison.synced}
+                  customPrompt={comparison.customPrompt}
+                  config={comparison.config}
+                  index={index}
+                  canMoveLeft={index > 0}
+                  canMoveRight={index < comparisons.length - 1}
+                  onModelSelect={(modelId) => handleModelSelect(index, modelId)}
+                  onSyncToggle={(synced) => handleSyncToggle(index, synced)}
+                  onConfigChange={(config) => handleConfigChange(index, config)}
+                  onCustomPromptChange={(prompt) => handleCustomPromptChange(index, prompt)}
+                  onClear={() => handleClear(index)}
+                  onDelete={() => handleDelete(index)}
+                  onMoveLeft={() => moveLeft(index)}
+                  onMoveRight={() => moveRight(index)}
+                  onAddCard={
+                    index === comparisons.length - 1 && comparisons.length < 4
+                      ? addComparison
+                      : undefined
+                  }
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
       <div className="border-t bg-background/95 backdrop-blur-sm flex-shrink-0">
         <div className="p-4 space-y-4">
           <PromptInput
-            value={globalPrompt}
-            onChange={setGlobalPrompt}
+            value={workflowGlobalPrompt}
+            onChange={setWorkflowGlobalPrompt}
             onSubmit={handleSubmit}
-            isLoading={isAnyLoading}
-            placeholder="Ask anything to compare model responses..."
+            isLoading={isAnyRunning}
+            placeholder={t('prompt_placeholder')}
           />
         </div>
       </div>

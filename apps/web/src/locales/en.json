@@ -89,5 +89,17 @@
     "vllm_description": "vLLM is a high-throughput inference engine for LLMs.",
     "xinference_description": "Xinference is a distributed inference framework for various AI models.",
     "higress_description": "Higress is an AI gateway for managing and routing model requests."
+  },
+  "Arena": {
+    "loading_models": "Loading models...",
+    "configure_api_keys_title": "Please configure API Keys first",
+    "configure_api_keys_description": "You need to configure at least one Provider API Key in the settings page to use this feature",
+    "go_to_settings": "Go to Settings",
+    "select_model_title": "Please select at least one model",
+    "select_model_description": "Please ensure at least one model has sync enabled",
+    "missing_api_key_title": "Missing API Key configuration",
+    "missing_api_key_description": "The following Providers do not have API Keys configured: {providers}",
+    "prompt_placeholder": "Ask anything to compare model responses...",
+    "custom_model": "Custom"
   }
 }

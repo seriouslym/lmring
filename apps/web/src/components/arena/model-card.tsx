@@ -20,7 +20,6 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ChevronDownIcon,
   ClockIcon,
   EraserIcon,
   ExternalLinkIcon,
@@ -35,6 +34,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { ModelSelectorOverlay, ModelSelectorTrigger } from '@/components/arena/model-selector';
 import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelConfig, ModelOption } from '@/types/arena';
 
@@ -67,9 +67,6 @@ interface ModelCardProps {
 const DEFAULT_CONFIG: ModelConfig = {
   maxTokens: 2048,
   temperature: 0.7,
-  topP: 0.9,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
 };
 
 export function ModelCard({
@@ -99,7 +96,7 @@ export function ModelCard({
 }: ModelCardProps) {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
-  const [modelMenuOpen, setModelMenuOpen] = React.useState(false);
+  const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
 
   const selectedModel = models.find((m) => m.id === modelId);
 
@@ -120,65 +117,15 @@ export function ModelCard({
       }}
       className="w-full h-full"
     >
-      <Card className="h-full arena-card flex flex-col glass-effect">
+      <Card className="h-full arena-card flex flex-col glass-effect relative">
         <CardHeader className="pb-3 flex-shrink-0 space-y-0">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <button
-                type="button"
-                onClick={() => setModelMenuOpen(!modelMenuOpen)}
-                className="w-full flex items-center justify-between h-9 px-3 rounded-lg border border-border/50 hover:border-border transition-colors bg-background/50"
-              >
-                {selectedModel ? (
-                  <div className="flex items-center gap-2">
-                    <ProviderIcon providerId={selectedModel.providerId} size={16} />
-                    <span className="font-medium text-sm">{selectedModel.name}</span>
-                    {selectedModel.isNew && (
-                      <Badge variant="default" className="text-xs px-1.5 py-0">
-                        NEW
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Select a model...</span>
-                )}
-                <ChevronDownIcon className="h-4 w-4 opacity-50" />
-              </button>
-
-              {modelMenuOpen && (
-                <>
-                  <button
-                    type="button"
-                    className="fixed inset-0 z-10"
-                    onClick={() => setModelMenuOpen(false)}
-                    onKeyDown={(e) => e.key === 'Escape' && setModelMenuOpen(false)}
-                    aria-label="Close model selector"
-                  />
-                  <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-popover border rounded-xl shadow-lg max-h-[300px] overflow-y-auto">
-                    {models.map((model) => (
-                      <button
-                        key={model.id}
-                        type="button"
-                        onClick={() => {
-                          onModelSelect?.(model.id);
-                          setModelMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 py-3 px-3 hover:bg-accent transition-colors text-left"
-                      >
-                        <ProviderIcon providerId={model.providerId} size={16} />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm">{model.name}</div>
-                        </div>
-                        {model.isNew && (
-                          <Badge variant="default" className="text-xs px-1.5 py-0">
-                            NEW
-                          </Badge>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+              <ModelSelectorTrigger
+                models={models}
+                selectedModel={selectedModel?.id}
+                onClick={() => setModelSelectorOpen(true)}
+              />
             </div>
 
             <div className="flex items-center gap-1">
@@ -266,14 +213,12 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Top P</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.topP.toFixed(2)}
+                              {config.topP != null ? config.topP.toFixed(2) : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.topP]}
-                            onValueChange={([value]) =>
-                              handleConfigChange('topP', value ?? config.topP)
-                            }
+                            value={[config.topP ?? 0.9]}
+                            onValueChange={([value]) => handleConfigChange('topP', value)}
                             min={0}
                             max={1}
                             step={0.01}
@@ -284,16 +229,15 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Frequency Penalty</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.frequencyPenalty.toFixed(2)}
+                              {config.frequencyPenalty != null
+                                ? config.frequencyPenalty.toFixed(2)
+                                : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.frequencyPenalty]}
+                            value={[config.frequencyPenalty ?? 0]}
                             onValueChange={([value]) =>
-                              handleConfigChange(
-                                'frequencyPenalty',
-                                value ?? config.frequencyPenalty,
-                              )
+                              handleConfigChange('frequencyPenalty', value)
                             }
                             min={0}
                             max={2}
@@ -305,13 +249,15 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Presence Penalty</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.presencePenalty.toFixed(2)}
+                              {config.presencePenalty != null
+                                ? config.presencePenalty.toFixed(2)
+                                : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.presencePenalty]}
+                            value={[config.presencePenalty ?? 0]}
                             onValueChange={([value]) =>
-                              handleConfigChange('presencePenalty', value ?? config.presencePenalty)
+                              handleConfigChange('presencePenalty', value)
                             }
                             min={0}
                             max={2}
@@ -547,6 +493,14 @@ export function ModelCard({
             </div>
           )}
         </CardContent>
+
+        <ModelSelectorOverlay
+          models={models}
+          selectedModel={selectedModel?.id}
+          isOpen={modelSelectorOpen}
+          onClose={() => setModelSelectorOpen(false)}
+          onModelSelect={(modelId) => onModelSelect?.(modelId)}
+        />
       </Card>
     </motion.div>
   );

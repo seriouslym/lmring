@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         let firstTokenTime: number | undefined;
 
         try {
-          const result = await streamText({
+          const result = streamText({
             model: provider.languageModel(modelId),
             messages: messages.map((m) => ({
               role: m.role,
@@ -80,9 +80,10 @@ export async function POST(request: Request) {
             })),
             temperature: config.temperature,
             maxOutputTokens: config.maxTokens,
-            topP: config.topP,
-            frequencyPenalty: config.frequencyPenalty,
-            presencePenalty: config.presencePenalty,
+            // Only pass optional params when they have values (avoids Anthropic conflict)
+            ...(config.topP != null && { topP: config.topP }),
+            ...(config.frequencyPenalty != null && { frequencyPenalty: config.frequencyPenalty }),
+            ...(config.presencePenalty != null && { presencePenalty: config.presencePenalty }),
           });
 
           for await (const chunk of result.textStream) {

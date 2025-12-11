@@ -89,5 +89,17 @@
     "vllm_description": "vLLM 是高吞吐量的大语言模型推理引擎。",
     "xinference_description": "Xinference 是支持多种 AI 模型的分布式推理框架。",
     "higress_description": "Higress 是用于管理和路由模型请求的 AI 网关。"
+  },
+  "Arena": {
+    "loading_models": "正在加载模型...",
+    "configure_api_keys_title": "请先配置 API Keys",
+    "configure_api_keys_description": "您需要在设置页面配置至少一个 Provider 的 API Key 才能使用",
+    "go_to_settings": "前往设置",
+    "select_model_title": "请选择至少一个模型",
+    "select_model_description": "请确保至少有一个模型的同步开关已开启",
+    "missing_api_key_title": "缺少 API Key 配置",
+    "missing_api_key_description": "以下 Provider 未配置 API Key: {providers}",
+    "prompt_placeholder": "输入任意问题来对比模型响应...",
+    "custom_model": "自定义"
   }
 }
