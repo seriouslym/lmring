@@ -76,14 +76,12 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
           if (state.initialized || availableModels.length === 0) return;
 
           const defaultModelId = availableModels[0]?.id || '';
-          const secondDefaultModelId =
-            availableModels.find((m) => m.id !== defaultModelId)?.id || defaultModelId;
 
           set(
             {
               comparisons: [
                 createEmptyComparison('1', defaultModelId),
-                createEmptyComparison('2', secondDefaultModelId),
+                createEmptyComparison('2', defaultModelId),
               ],
               initialized: true,
               availableModels,

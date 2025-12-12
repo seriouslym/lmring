@@ -51,7 +51,7 @@ export function Message({ message, isStreaming = false, providerId }: MessagePro
                 <ReasoningContent>{message.reasoning}</ReasoningContent>
               </Reasoning>
             )}
-            <div className="rounded-2xl border bg-muted/30 px-4 py-3 text-foreground backdrop-blur-sm">
+            <div className="w-fit rounded-2xl border bg-muted/30 px-3 py-1.5 text-foreground backdrop-blur-sm flex items-center">
               <ResponseViewer content={message.content} isStreaming={isStreaming} />
             </div>
             {!isStreaming && message.metrics && (

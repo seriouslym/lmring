@@ -80,6 +80,19 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --animate-shimmer: shimmer var(--shimmer-duration, 2s) linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
 :root {
   --radius: 0.625rem;
 
@@ -144,17 +157,6 @@
   --sidebar-border: oklch(0.922 0 0);
 
   --sidebar-ring: oklch(0.708 0 0);
-
-  --animate-shimmer: shimmer 2s linear infinite;
-
-  @keyframes shimmer {
-    from {
-      background-position: 0 0;
-    }
-    to {
-      background-position: -200% 0;
-    }
-  }
 }
 
 .dark {

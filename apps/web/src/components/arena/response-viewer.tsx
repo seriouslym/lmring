@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import * as React from 'react';
+import { Shimmer } from './chat/shimmer';
 
 interface ResponseViewerProps {
   content: string;
@@ -27,7 +28,11 @@ export function ResponseViewer({
   }, [isStreaming, content]);
 
   if (!content) {
-    return <div className="text-sm text-muted-foreground italic">Waiting for response...</div>;
+    return (
+      <Shimmer duration={2.5} className="text-sm italic">
+        Waiting for response...
+      </Shimmer>
+    );
   }
 
   if (format === 'code') {
