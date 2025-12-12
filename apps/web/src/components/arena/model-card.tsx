@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -20,7 +19,6 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ClockIcon,
   EraserIcon,
   ExternalLinkIcon,
   MoreHorizontalIcon,
@@ -37,14 +35,17 @@ import * as React from 'react';
 import { ModelSelectorOverlay, ModelSelectorTrigger } from '@/components/arena/model-selector';
 import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelConfig, ModelOption } from '@/types/arena';
+import type { PendingResponse, WorkflowMessage } from '@/types/workflow';
+import { ChatList } from './chat/chat-list';
 
 interface ModelCardProps {
   modelId?: string;
   models: ModelOption[];
+  // Deprecated: use messages instead
   response?: string;
+  messages?: WorkflowMessage[];
+  pendingResponse?: PendingResponse;
   isLoading?: boolean;
-  responseTime?: number;
-  tokenCount?: number;
   synced?: boolean;
   customPrompt?: string;
   config?: ModelConfig;
@@ -72,10 +73,10 @@ const DEFAULT_CONFIG: ModelConfig = {
 export function ModelCard({
   modelId,
   models,
+  messages,
+  pendingResponse,
   response = '',
   isLoading = false,
-  responseTime,
-  tokenCount,
   synced = true,
   customPrompt = '',
   config = DEFAULT_CONFIG,
@@ -106,6 +107,8 @@ export function ModelCard({
     }
   };
 
+  const hasContent = (messages && messages.length > 0) || !!pendingResponse || !!response;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -117,10 +120,10 @@ export function ModelCard({
       }}
       className="w-full h-full"
     >
-      <Card className="h-full arena-card flex flex-col glass-effect relative">
+      <Card className="h-full min-h-0 arena-card flex flex-col glass-effect relative overflow-hidden">
         <CardHeader className="pb-3 flex-shrink-0 space-y-0">
           <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <ModelSelectorTrigger
                 models={models}
                 selectedModel={selectedModel?.id}
@@ -376,7 +379,7 @@ export function ModelCard({
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col space-y-0 overflow-hidden pb-4">
-          {!response && !isLoading && selectedModel ? (
+          {!hasContent && !isLoading && selectedModel ? (
             <div className="flex-1 flex items-center justify-center p-4">
               <div className="rounded-lg border bg-muted/30 p-4 space-y-3 max-w-xl w-full backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -415,45 +418,14 @@ export function ModelCard({
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="space-y-4 p-1">
-                {(responseTime || tokenCount) && (
-                  <div className="flex items-center gap-2">
-                    {responseTime && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <ClockIcon className="h-3 w-3" />
-                        {responseTime}ms
-                      </Badge>
-                    )}
-                    {tokenCount && <Badge variant="secondary">{tokenCount} tokens</Badge>}
-                  </div>
-                )}
-
-                {isLoading && (
-                  <div className="space-y-3">
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    />
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse w-5/6"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                    />
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse w-4/6"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                    />
-                  </div>
-                )}
-
-                {response && !isLoading && (
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{response}</p>
-                  </div>
-                )}
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 min-h-0">
+                <ChatList
+                  messages={messages || []}
+                  pendingResponse={pendingResponse}
+                  isLoading={isLoading}
+                  providerId={selectedModel?.providerId}
+                />
               </div>
             </div>
           )}
@@ -470,7 +442,7 @@ export function ModelCard({
             </div>
           )}
 
-          {response && !isLoading && (
+          {hasContent && !isLoading && (
             <div className="flex items-center justify-between pt-4 border-t flex-shrink-0">
               <div className="flex items-center gap-1">
                 <button

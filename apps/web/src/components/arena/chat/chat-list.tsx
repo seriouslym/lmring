@@ -1,0 +1,52 @@
+'use client';
+
+import { ScrollArea } from '@lmring/ui';
+import { useEffect, useRef } from 'react';
+import type { PendingResponse, WorkflowMessage } from '@/types/workflow';
+import { Message } from './message';
+
+interface ChatListProps {
+  messages: WorkflowMessage[];
+  pendingResponse?: PendingResponse;
+  isLoading?: boolean;
+  providerId?: string;
+}
+
+export function ChatList({ messages, pendingResponse, isLoading, providerId }: ChatListProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive or content changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally trigger scroll when messages/pendingResponse/isLoading change
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, pendingResponse, isLoading]);
+
+  return (
+    <ScrollArea className="h-full" ref={scrollRef}>
+      <div className="flex flex-col gap-4 pb-4 pt-4 px-2">
+        {messages.map((message) => (
+          <Message key={message.id} message={message} providerId={providerId} isStreaming={false} />
+        ))}
+
+        {pendingResponse && (
+          <Message
+            message={{
+              id: 'pending',
+              role: 'assistant',
+              content: pendingResponse.content,
+              reasoning: pendingResponse.reasoning,
+              timestamp: new Date(pendingResponse.startTime),
+            }}
+            providerId={providerId}
+            isStreaming={true}
+          />
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+    </ScrollArea>
+  );
+}

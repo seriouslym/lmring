@@ -6,7 +6,13 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { ModelCard } from '@/components/arena/model-card';
-import { PromptInput } from '@/components/arena/prompt-input';
+import {
+  PromptInput,
+  PromptInputActions,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from '@/components/arena/prompt-input';
 import { useProviderMetadata } from '@/hooks/use-provider-metadata';
 import { useWorkflowExecution } from '@/hooks/use-workflow-execution';
 import {
@@ -208,6 +214,32 @@ export default function ArenaPage() {
       }
     }
 
+    // Handle custom providers (created via "Add Provider" dialog)
+    // These providers are not in ALL_PROVIDER_METADATA, so they won't appear in filteredProviders
+    const customProviders = savedApiKeys.filter((k) => k.isCustom && k.enabled);
+    for (const customProvider of customProviders) {
+      const providerCustomModels = customModelsMap.get(customProvider.providerName.toLowerCase());
+      if (providerCustomModels) {
+        for (const customModel of providerCustomModels) {
+          const modelId = `${customProvider.providerName}:${customModel.modelId}`;
+          if (!addedModelIds.has(modelId)) {
+            const iconProviderId = customProvider.providerType || customProvider.providerName;
+            models.push({
+              id: modelId,
+              name: customModel.displayName,
+              provider: customProvider.providerName,
+              providerId: iconProviderId,
+              description: `${customModel.displayName} (Custom Provider)`,
+              type: 'pro',
+              isNew: false,
+              isCustom: true,
+            });
+            addedModelIds.add(modelId);
+          }
+        }
+      }
+    }
+
     return models;
   }, [
     filteredProviders,
@@ -215,6 +247,7 @@ export default function ArenaPage() {
     customModelsMap,
     hasConfiguredProviders,
     enabledModelsLoaded,
+    savedApiKeys,
   ]);
 
   React.useEffect(() => {
@@ -322,6 +355,7 @@ export default function ArenaPage() {
     }
 
     await startAllSyncedWorkflows();
+    setWorkflowGlobalPrompt('');
   }, [
     workflowGlobalPrompt,
     comparisons,
@@ -330,6 +364,7 @@ export default function ArenaPage() {
     hasConfiguredProviders,
     router,
     t,
+    setWorkflowGlobalPrompt,
   ]);
 
   const handleModelSelect = React.useCallback(
@@ -435,10 +470,11 @@ export default function ArenaPage() {
     <div className="flex flex-col h-full bg-background overflow-hidden">
       <div className="flex-1 overflow-hidden p-4">
         <div
-          className="h-full gap-4"
+          className="h-full gap-4 overflow-hidden"
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${comparisons.length}, 1fr)`,
+            gridTemplateRows: '1fr',
           }}
         >
           {comparisons.map((comparison, index) => {
@@ -449,20 +485,20 @@ export default function ArenaPage() {
             const response =
               workflow?.pendingResponse?.content || lastAssistantMessage?.content || '';
             const isLoading = workflow?.status === 'running';
-            const responseTime =
-              workflow?.metrics?.totalTime || lastAssistantMessage?.metrics?.responseTime;
-            const tokenCount =
-              workflow?.metrics?.totalTokens || lastAssistantMessage?.metrics?.tokenCount;
 
             return (
-              <motion.div key={comparison.id} layout className="h-full min-w-0">
+              <motion.div
+                key={comparison.id}
+                layout
+                className="h-full min-h-0 min-w-0 overflow-hidden"
+              >
                 <ModelCard
                   modelId={comparison.modelId}
                   models={displayModels}
+                  messages={workflow?.messages}
+                  pendingResponse={workflow?.pendingResponse}
                   response={response}
                   isLoading={isLoading}
-                  responseTime={responseTime}
-                  tokenCount={tokenCount}
                   synced={comparison.synced}
                   customPrompt={comparison.customPrompt}
                   config={comparison.config}
@@ -482,6 +518,8 @@ export default function ArenaPage() {
                       ? addComparison
                       : undefined
                   }
+                  onThumbsUp={() => {}}
+                  onThumbsDown={() => {}}
                 />
               </motion.div>
             );
@@ -495,9 +533,16 @@ export default function ArenaPage() {
             value={workflowGlobalPrompt}
             onChange={setWorkflowGlobalPrompt}
             onSubmit={handleSubmit}
+            onStop={cancelAllWorkflows}
             isLoading={isAnyRunning}
-            placeholder={t('prompt_placeholder')}
-          />
+            className="border-input"
+          >
+            <PromptInputTextarea placeholder={t('prompt_placeholder')} />
+            <PromptInputFooter>
+              <PromptInputActions />
+              <PromptInputSubmit />
+            </PromptInputFooter>
+          </PromptInput>
         </div>
       </div>
     </div>

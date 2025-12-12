@@ -17,6 +17,7 @@ export function useWorkflowExecution() {
   const addUserMessage = useWorkflowStore((s) => s.addUserMessage);
   const startPendingResponse = useWorkflowStore((s) => s.startPendingResponse);
   const appendPendingResponse = useWorkflowStore((s) => s.appendPendingResponse);
+  const appendPendingReasoning = useWorkflowStore((s) => s.appendPendingReasoning);
   const completePendingResponse = useWorkflowStore((s) => s.completePendingResponse);
   const setWorkflowStatus = useWorkflowStore((s) => s.setWorkflowStatus);
   const setAbortController = useWorkflowStore((s) => s.setAbortController);
@@ -58,6 +59,8 @@ export function useWorkflowExecution() {
         for await (const event of streamWorkflow(request, abortController.signal)) {
           if (event.type === 'chunk' && event.chunk) {
             appendPendingResponse(id, event.chunk);
+          } else if (event.type === 'reasoning' && event.reasoning) {
+            appendPendingReasoning(id, event.reasoning);
           } else if (event.type === 'complete') {
             metrics = event.metrics;
           } else if (event.type === 'error') {
@@ -83,6 +86,7 @@ export function useWorkflowExecution() {
       addUserMessage,
       startPendingResponse,
       appendPendingResponse,
+      appendPendingReasoning,
       completePendingResponse,
       setWorkflowStatus,
       setAbortController,

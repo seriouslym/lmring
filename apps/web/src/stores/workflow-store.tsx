@@ -46,11 +46,17 @@ export type WorkflowActions = {
 
   // Message management
   addUserMessage: (id: string, content: string) => string;
-  addAssistantMessage: (id: string, content: string, metrics?: WorkflowMetrics) => string;
+  addAssistantMessage: (
+    id: string,
+    content: string,
+    metrics?: WorkflowMetrics,
+    reasoning?: string,
+  ) => string;
 
   // Streaming response management
   startPendingResponse: (id: string) => void;
   appendPendingResponse: (id: string, chunk: string) => void;
+  appendPendingReasoning: (id: string, chunk: string) => void;
   completePendingResponse: (id: string, metrics?: WorkflowMetrics) => void;
 
   // Abort controller management (for cancellation)
@@ -313,7 +319,7 @@ export const createWorkflowStore = (initState: Partial<WorkflowState> = {}) => {
           return messageId;
         },
 
-        addAssistantMessage: (id, content, metrics) => {
+        addAssistantMessage: (id, content, metrics, reasoning) => {
           const messageId = generateId();
           set(
             (state) => {
@@ -324,6 +330,7 @@ export const createWorkflowStore = (initState: Partial<WorkflowState> = {}) => {
                 id: messageId,
                 role: 'assistant',
                 content,
+                reasoning,
                 timestamp: new Date(),
                 metrics: metrics
                   ? {
@@ -400,12 +407,39 @@ export const createWorkflowStore = (initState: Partial<WorkflowState> = {}) => {
           );
         },
 
+        appendPendingReasoning: (id, chunk) => {
+          set(
+            (state) => {
+              const workflow = state.workflows.get(id);
+              if (!workflow || !workflow.pendingResponse) return state;
+
+              const newMap = new Map(state.workflows);
+              newMap.set(id, {
+                ...workflow,
+                pendingResponse: {
+                  ...workflow.pendingResponse,
+                  reasoning: (workflow.pendingResponse.reasoning || '') + chunk,
+                },
+                updatedAt: new Date(),
+              });
+              return { workflows: newMap };
+            },
+            false,
+            'workflow/appendPendingReasoning',
+          );
+        },
+
         completePendingResponse: (id, metrics) => {
           const state = get();
           const workflow = state.workflows.get(id);
           if (!workflow || !workflow.pendingResponse) return;
 
-          get().addAssistantMessage(id, workflow.pendingResponse.content, metrics);
+          get().addAssistantMessage(
+            id,
+            workflow.pendingResponse.content,
+            metrics,
+            workflow.pendingResponse.reasoning,
+          );
 
           set(
             (s) => {

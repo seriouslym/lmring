@@ -27,6 +27,7 @@ export interface WorkflowMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  reasoning?: string;
   timestamp: Date;
   metrics?: WorkflowMessageMetrics;
 }
@@ -61,6 +62,7 @@ export const DEFAULT_WORKFLOW_CONFIG: WorkflowConfig = {
  */
 export interface PendingResponse {
   content: string;
+  reasoning?: string;
   startTime: number;
 }
 
@@ -112,7 +114,7 @@ export interface ArenaWorkflow {
 /**
  * SSE Event types for workflow streaming
  */
-export type WorkflowStreamEventType = 'ttft' | 'chunk' | 'complete' | 'error';
+export type WorkflowStreamEventType = 'ttft' | 'chunk' | 'reasoning' | 'complete' | 'error';
 
 /**
  * Workflow stream event structure
@@ -121,6 +123,7 @@ export interface WorkflowStreamEvent {
   type: WorkflowStreamEventType;
   workflowId: string;
   chunk?: string;
+  reasoning?: string;
   metrics?: WorkflowMetrics;
   error?: string;
 }

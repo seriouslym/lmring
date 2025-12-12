@@ -84,3 +84,6 @@ export {
   CommandShortcut,
   CommandSeparator,
 } from './command';
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './collapsible';
+export { useControllableState } from './use-controllable-state';
+export { ScrollArea, ScrollBar } from './scroll-area';

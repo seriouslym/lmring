@@ -48,9 +48,9 @@ export function ModelSelectorTrigger({
           role="combobox"
           onClick={onClick}
           disabled={disabled}
-          className="w-full h-9 justify-between font-normal rounded-lg"
+          className="w-full h-9 justify-between font-normal rounded-lg overflow-hidden"
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 truncate min-w-0">
             {selectedModelInfo ? (
               <>
                 <ProviderIcon providerId={selectedModelInfo.providerId} size={16} />
