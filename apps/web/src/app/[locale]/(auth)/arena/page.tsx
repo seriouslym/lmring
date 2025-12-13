@@ -516,6 +516,7 @@ export default function ArenaPage() {
                   pendingResponse={workflow?.pendingResponse}
                   response={response}
                   isLoading={isLoading}
+                  status={workflow?.status}
                   synced={comparison.synced}
                   customPrompt={comparison.customPrompt}
                   config={comparison.config}

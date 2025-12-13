@@ -35,7 +35,7 @@ import * as React from 'react';
 import { ModelSelectorOverlay, ModelSelectorTrigger } from '@/components/arena/model-selector';
 import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelConfig, ModelOption } from '@/types/arena';
-import type { PendingResponse, WorkflowMessage } from '@/types/workflow';
+import type { PendingResponse, WorkflowMessage, WorkflowStatus } from '@/types/workflow';
 import { ChatList } from './chat/chat-list';
 
 interface ModelCardProps {
@@ -46,6 +46,7 @@ interface ModelCardProps {
   messages?: WorkflowMessage[];
   pendingResponse?: PendingResponse;
   isLoading?: boolean;
+  status?: WorkflowStatus;
   synced?: boolean;
   customPrompt?: string;
   config?: ModelConfig;
@@ -77,6 +78,7 @@ export function ModelCard({
   pendingResponse,
   response = '',
   isLoading = false,
+  status,
   synced = true,
   customPrompt = '',
   config = DEFAULT_CONFIG,
@@ -424,6 +426,7 @@ export function ModelCard({
                   messages={messages || []}
                   pendingResponse={pendingResponse}
                   isLoading={isLoading}
+                  status={status}
                   providerId={selectedModel?.providerId}
                 />
               </div>

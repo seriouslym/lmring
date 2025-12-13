@@ -1,12 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { StopCircle } from 'lucide-react';
 import * as React from 'react';
+import type { WorkflowStatus } from '@/types/workflow';
 import { Shimmer } from './chat/shimmer';
 
 interface ResponseViewerProps {
   content: string;
   isStreaming?: boolean;
+  status?: WorkflowStatus;
   format?: 'text' | 'code';
   language?: string;
 }
@@ -14,6 +17,7 @@ interface ResponseViewerProps {
 export function ResponseViewer({
   content,
   isStreaming = false,
+  status,
   format = 'text',
   language = 'plaintext',
 }: ResponseViewerProps) {
@@ -27,6 +31,16 @@ export function ResponseViewer({
     }
   }, [isStreaming, content]);
 
+  if (!content && status === 'cancelled') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
+        <StopCircle className="h-4 w-4" />
+        <span>Stopped by user</span>
+      </div>
+    );
+  }
+
+  // Loading state
   if (!content) {
     return (
       <Shimmer duration={2.5} className="text-sm italic">
@@ -63,6 +77,12 @@ export function ResponseViewer({
           animate={{ opacity: [1, 0] }}
           transition={{ duration: 0.5, repeat: Infinity }}
         />
+      )}
+      {status === 'cancelled' && (
+        <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500">
+          <StopCircle className="h-3 w-3" />
+          <span>Stopped by user</span>
+        </div>
       )}
     </div>
   );

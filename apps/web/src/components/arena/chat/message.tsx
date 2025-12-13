@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage, cn } from '@lmring/ui';
 import { UserIcon } from 'lucide-react';
 import { useSession } from '@/libs/AuthClient';
-import type { WorkflowMessage } from '@/types/workflow';
+import type { WorkflowMessage, WorkflowStatus } from '@/types/workflow';
 import { ProviderIcon } from '../provider-icon';
 import { ResponseViewer } from '../response-viewer';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from './reasoning';
@@ -11,10 +11,11 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from './reasoning';
 interface MessageProps {
   message: WorkflowMessage;
   isStreaming?: boolean;
+  status?: WorkflowStatus;
   providerId?: string;
 }
 
-export function Message({ message, isStreaming = false, providerId }: MessageProps) {
+export function Message({ message, isStreaming = false, status, providerId }: MessageProps) {
   const { data: session } = useSession();
   const user = session?.user;
   const isUser = message.role === 'user';
@@ -52,7 +53,7 @@ export function Message({ message, isStreaming = false, providerId }: MessagePro
               </Reasoning>
             )}
             <div className="w-fit rounded-2xl border bg-muted/30 px-3 py-1.5 text-foreground backdrop-blur-sm flex items-center">
-              <ResponseViewer content={message.content} isStreaming={isStreaming} />
+              <ResponseViewer content={message.content} isStreaming={isStreaming} status={status} />
             </div>
             {!isStreaming && message.metrics && (
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">

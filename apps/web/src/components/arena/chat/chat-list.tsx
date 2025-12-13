@@ -2,17 +2,24 @@
 
 import { ScrollArea } from '@lmring/ui';
 import { useEffect, useRef } from 'react';
-import type { PendingResponse, WorkflowMessage } from '@/types/workflow';
+import type { PendingResponse, WorkflowMessage, WorkflowStatus } from '@/types/workflow';
 import { Message } from './message';
 
 interface ChatListProps {
   messages: WorkflowMessage[];
   pendingResponse?: PendingResponse;
   isLoading?: boolean;
+  status?: WorkflowStatus;
   providerId?: string;
 }
 
-export function ChatList({ messages, pendingResponse, isLoading, providerId }: ChatListProps) {
+export function ChatList({
+  messages,
+  pendingResponse,
+  isLoading,
+  status,
+  providerId,
+}: ChatListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +48,8 @@ export function ChatList({ messages, pendingResponse, isLoading, providerId }: C
               timestamp: new Date(pendingResponse.startTime),
             }}
             providerId={providerId}
-            isStreaming={true}
+            isStreaming={status === 'running'}
+            status={status}
           />
         )}
 
