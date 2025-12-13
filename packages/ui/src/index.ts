@@ -87,3 +87,6 @@ export {
 export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './collapsible';
 export { useControllableState } from './use-controllable-state';
 export { ScrollArea, ScrollBar } from './scroll-area';
+export { ResponseViewer, type ResponseViewerStatus } from './response-viewer';
+export { Shimmer } from './shimmer';
+export { StreamingCursor } from './streaming-cursor';

@@ -97,6 +97,8 @@
     "go_to_settings": "Aller aux paramètres",
     "select_model_title": "Veuillez sélectionner au moins un modèle",
     "select_model_description": "Assurez-vous qu'au moins un modèle a la synchronisation activée",
+    "select_model_for_all_cards_title": "Veuillez sélectionner un modèle pour toutes les cartes",
+    "select_model_for_all_cards_description": "Toutes les cartes synchronisées doivent avoir un modèle sélectionné avant de soumettre",
     "missing_api_key_title": "Configuration de clé API manquante",
     "missing_api_key_description": "Les fournisseurs suivants n'ont pas de clés API configurées : {providers}",
     "prompt_placeholder": "Posez une question pour comparer les réponses des modèles...",

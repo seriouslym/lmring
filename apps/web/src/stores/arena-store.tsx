@@ -95,9 +95,8 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
           const state = get();
           if (state.comparisons.length >= 4) return;
 
-          const usedModelIds = state.comparisons.map((c) => c.modelId);
-          const availableModel = state.availableModels.find((m) => !usedModelIds.includes(m.id));
-          const newModelId = availableModel?.id || state.availableModels[0]?.id || '';
+          // Always use the first available model as default
+          const newModelId = state.availableModels[0]?.id || '';
 
           set(
             {

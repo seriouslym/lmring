@@ -1,7 +1,8 @@
 'use client';
 
-import { toast } from '@lmring/ui';
+import { Button, ResponseViewer, ScrollArea, toast } from '@lmring/ui';
 import { motion } from 'framer-motion';
+import { XIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
@@ -59,7 +60,8 @@ export default function ArenaPage() {
   const setWorkflowCustomPrompt = useWorkflowStore((state) => state.setCustomPrompt);
   const clearWorkflowHistory = useWorkflowStore((state) => state.clearWorkflowHistory);
 
-  const { startAllSyncedWorkflows, cancelAllWorkflows } = useWorkflowExecution();
+  const { startAllSyncedWorkflows, cancelAllWorkflows, regenerateLastResponse } =
+    useWorkflowExecution();
 
   const comparisonWorkflowMap = React.useRef<Map<string, string>>(new Map());
   const [enabledModelsMap, setEnabledModelsMap] = React.useState<Map<string, Set<string>>>(
@@ -69,6 +71,7 @@ export default function ArenaPage() {
   const [customModelsMap, setCustomModelsMap] = React.useState<
     Map<string, Array<{ modelId: string; displayName: string }>>
   >(new Map());
+  const [maximizedContent, setMaximizedContent] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!apiKeysLoaded) {
@@ -340,7 +343,16 @@ export default function ArenaPage() {
       return;
     }
 
-    const syncedComparisons = comparisons.filter((comp) => comp.modelId && comp.synced);
+    const syncedComparisons = comparisons.filter((comp) => comp.synced);
+
+    // Check if all synced cards have a model selected
+    const missingModelCards = syncedComparisons.filter((comp) => !comp.modelId);
+    if (missingModelCards.length > 0) {
+      toast.warning(t('select_model_for_all_cards_title'), {
+        description: t('select_model_for_all_cards_description'),
+      });
+      return;
+    }
 
     if (syncedComparisons.length === 0) {
       toast.warning(t('select_model_title'), {
@@ -469,6 +481,20 @@ export default function ArenaPage() {
     [comparisons, deleteWorkflow, removeComparison],
   );
 
+  const handleRetry = React.useCallback(
+    (comparisonId: string, _messageId: string) => {
+      const workflowId = comparisonWorkflowMap.current.get(comparisonId);
+      if (workflowId) {
+        regenerateLastResponse(workflowId);
+      }
+    },
+    [regenerateLastResponse],
+  );
+
+  const handleMaximize = React.useCallback((content: string) => {
+    setMaximizedContent(content);
+  }, []);
+
   React.useEffect(() => {
     return () => {
       cancelAllWorkflows();
@@ -538,6 +564,8 @@ export default function ArenaPage() {
                   }
                   onThumbsUp={() => {}}
                   onThumbsDown={() => {}}
+                  onRetry={(messageId) => handleRetry(comparison.id, messageId)}
+                  onMaximize={handleMaximize}
                 />
               </motion.div>
             );
@@ -563,6 +591,21 @@ export default function ArenaPage() {
           </PromptInput>
         </div>
       </div>
+
+      {maximizedContent && (
+        <div className="fixed inset-0 z-20 bg-background flex flex-col animate-in fade-in duration-200">
+          <div className="flex items-center justify-end p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+            <Button variant="ghost" size="icon" onClick={() => setMaximizedContent(null)}>
+              <XIcon className="size-5" />
+            </Button>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="max-w-4xl mx-auto p-8 pb-20">
+              <ResponseViewer content={maximizedContent} isStreaming={false} />
+            </div>
+          </ScrollArea>
+        </div>
+      )}
     </div>
   );
 }

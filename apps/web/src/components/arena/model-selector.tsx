@@ -54,7 +54,7 @@ export function ModelSelectorTrigger({
             {selectedModelInfo ? (
               <>
                 <ProviderIcon providerId={selectedModelInfo.providerId} size={16} />
-                <span className="text-sm truncate">{selectedModelInfo.name}</span>
+                <span className="text-sm font-medium truncate">{selectedModelInfo.name}</span>
                 {selectedModelInfo.isCustom && (
                   <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
                     {t('custom_model')}

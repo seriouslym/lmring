@@ -118,7 +118,13 @@ export const shareSchema = z.object({
  */
 export const workflowStreamSchema = z.object({
   workflowId: z.uuid('Invalid workflow ID'),
-  modelId: z.string().min(1).max(200),
+  modelId: z
+    .string()
+    .min(1)
+    .max(200)
+    .refine((val) => val.trim().length > 0, {
+      message: 'Model ID cannot be empty or whitespace only',
+    }),
   keyId: z.uuid('Invalid API key ID'),
   messages: z
     .array(

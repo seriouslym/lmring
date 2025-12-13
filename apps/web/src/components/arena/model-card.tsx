@@ -64,6 +64,8 @@ interface ModelCardProps {
   onAddCard?: () => void;
   onThumbsUp?: () => void;
   onThumbsDown?: () => void;
+  onRetry?: (messageId: string) => void;
+  onMaximize?: (content: string) => void;
 }
 
 const DEFAULT_CONFIG: ModelConfig = {
@@ -96,6 +98,8 @@ export function ModelCard({
   onAddCard,
   onThumbsUp,
   onThumbsDown,
+  onRetry,
+  onMaximize,
 }: ModelCardProps) {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
@@ -428,6 +432,8 @@ export function ModelCard({
                   isLoading={isLoading}
                   status={status}
                   providerId={selectedModel?.providerId}
+                  onRetry={onRetry}
+                  onMaximize={onMaximize}
                 />
               </div>
             </div>

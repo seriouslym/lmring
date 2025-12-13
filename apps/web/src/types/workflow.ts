@@ -21,6 +21,16 @@ export interface WorkflowMessageMetrics {
 }
 
 /**
+ * File attachment in a message
+ */
+export interface FileAttachment {
+  type: 'file';
+  url: string;
+  mediaType: string; // e.g., 'image/jpeg', 'application/pdf'
+  filename: string;
+}
+
+/**
  * Single message in a workflow conversation
  */
 export interface WorkflowMessage {
@@ -30,6 +40,7 @@ export interface WorkflowMessage {
   reasoning?: string;
   timestamp: Date;
   metrics?: WorkflowMessageMetrics;
+  attachments?: FileAttachment[];
 }
 
 /**

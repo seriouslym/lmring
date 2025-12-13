@@ -11,6 +11,8 @@ interface ChatListProps {
   isLoading?: boolean;
   status?: WorkflowStatus;
   providerId?: string;
+  onRetry?: (messageId: string) => void;
+  onMaximize?: (content: string) => void;
 }
 
 export function ChatList({
@@ -19,23 +21,37 @@ export function ChatList({
   isLoading,
   status,
   providerId,
+  onRetry,
+  onMaximize,
 }: ChatListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive or content changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally trigger scroll when messages/pendingResponse/isLoading change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on content change
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, pendingResponse, isLoading]);
 
+  const lastAssistantIndex = messages.findLastIndex((m) => m.role === 'assistant');
+
   return (
     <ScrollArea className="h-full" ref={scrollRef}>
       <div className="flex flex-col gap-4 pb-4 pt-4 px-2">
-        {messages.map((message) => (
-          <Message key={message.id} message={message} providerId={providerId} isStreaming={false} />
+        {messages.map((message, index) => (
+          <Message
+            key={message.id}
+            message={message}
+            providerId={providerId}
+            isStreaming={false}
+            onRetry={
+              onRetry && message.role === 'assistant' && index === lastAssistantIndex
+                ? () => onRetry(message.id)
+                : undefined
+            }
+            onMaximize={message.role === 'assistant' ? onMaximize : undefined}
+          />
         ))}
 
         {pendingResponse && (

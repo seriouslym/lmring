@@ -1,11 +1,12 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage, cn } from '@lmring/ui';
+import { Avatar, AvatarFallback, AvatarImage, cn, ResponseViewer } from '@lmring/ui';
 import { UserIcon } from 'lucide-react';
 import { useSession } from '@/libs/AuthClient';
 import type { WorkflowMessage, WorkflowStatus } from '@/types/workflow';
 import { ProviderIcon } from '../provider-icon';
-import { ResponseViewer } from '../response-viewer';
+import { MessageActions } from './message-actions';
+import { MessageAttachments } from './message-attachment';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from './reasoning';
 
 interface MessageProps {
@@ -13,17 +14,27 @@ interface MessageProps {
   isStreaming?: boolean;
   status?: WorkflowStatus;
   providerId?: string;
+  onRetry?: () => void;
+  onMaximize?: (content: string) => void;
 }
 
-export function Message({ message, isStreaming = false, status, providerId }: MessageProps) {
+export function Message({
+  message,
+  isStreaming = false,
+  status,
+  providerId,
+  onRetry,
+  onMaximize,
+}: MessageProps) {
   const { data: session } = useSession();
   const user = session?.user;
   const isUser = message.role === 'user';
+  const isAssistant = message.role === 'assistant';
 
   return (
     <div className={cn('flex w-full gap-4 p-4', isUser ? 'flex-row-reverse' : 'flex-row')}>
       {isUser ? (
-        <Avatar className="size-8 border shadow-sm">
+        <Avatar className="size-8 border shadow-sm flex-shrink-0">
           <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
           <AvatarFallback className="bg-muted">
             <UserIcon className="size-4 text-muted-foreground" />
@@ -39,10 +50,19 @@ export function Message({ message, isStreaming = false, status, providerId }: Me
         </div>
       )}
 
-      <div className={cn('flex max-w-[80%] flex-col gap-2', isUser ? 'items-end' : 'items-start')}>
+      <div className={cn('flex max-w-[90%] flex-col gap-2', isUser ? 'items-end' : 'items-start')}>
+        {isUser && message.attachments && message.attachments.length > 0 && (
+          <MessageAttachments attachments={message.attachments} className="mb-1" />
+        )}
+
         {isUser ? (
-          <div className="rounded-2xl bg-primary px-4 py-2 text-primary-foreground">
+          <div className="group relative rounded-2xl bg-primary px-4 py-2 text-primary-foreground">
             <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+            <MessageActions
+              content={message.content}
+              showRetry={false}
+              className="absolute top-1/2 -left-10 -translate-y-1/2 text-muted-foreground"
+            />
           </div>
         ) : (
           <div className="w-full space-y-2">
@@ -52,9 +72,26 @@ export function Message({ message, isStreaming = false, status, providerId }: Me
                 <ReasoningContent>{message.reasoning}</ReasoningContent>
               </Reasoning>
             )}
-            <div className="w-fit rounded-2xl border bg-muted/30 px-3 py-1.5 text-foreground backdrop-blur-sm flex items-center">
-              <ResponseViewer content={message.content} isStreaming={isStreaming} status={status} />
+            <div className="group relative w-fit max-w-full rounded-2xl border bg-muted/30 p-3 text-foreground backdrop-blur-sm">
+              <ResponseViewer
+                content={message.content}
+                isStreaming={isStreaming}
+                status={status}
+                className="overflow-x-auto custom-scrollbar"
+              />
+              {isAssistant && !isStreaming && (
+                <MessageActions
+                  content={message.content}
+                  onRetry={onRetry}
+                  onMaximize={onMaximize ? () => onMaximize(message.content) : undefined}
+                  showRetry={!!onRetry}
+                  className="absolute -top-7 right-0 text-muted-foreground"
+                />
+              )}
             </div>
+            {message.attachments && message.attachments.length > 0 && (
+              <MessageAttachments attachments={message.attachments} className="mt-2" />
+            )}
             {!isStreaming && message.metrics && (
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
                 {message.metrics.responseTime && <span>{message.metrics.responseTime}ms</span>}

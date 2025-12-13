@@ -5,12 +5,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
   cn,
+  Shimmer,
   useControllableState,
 } from '@lmring/ui';
 import { BrainIcon, ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { createContext, memo, useContext, useEffect, useState } from 'react';
-import { Shimmer } from './shimmer';
 
 type ReasoningContextValue = {
   isStreaming: boolean;
@@ -75,7 +75,6 @@ export const Reasoning = memo(
       }
     }, [isStreaming, startTime, setDuration]);
 
-    // Auto-open when streaming starts, auto-close when streaming ends (once only)
     useEffect(() => {
       if (defaultOpen && !isStreaming && isOpen && !hasAutoClosed) {
         const timer = setTimeout(() => {

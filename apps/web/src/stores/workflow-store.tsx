@@ -66,6 +66,7 @@ export type WorkflowActions = {
   // History management
   clearWorkflowHistory: (id: string) => void;
   clearAllWorkflowHistory: () => void;
+  removeLastAssistantMessage: (id: string) => string | undefined;
 
   // Bulk operations
   getWorkflow: (id: string) => ArenaWorkflow | undefined;
@@ -530,6 +531,47 @@ export const createWorkflowStore = (initState: Partial<WorkflowState> = {}) => {
             false,
             'workflow/clearAllHistory',
           );
+        },
+
+        removeLastAssistantMessage: (id) => {
+          const state = get();
+          const workflow = state.workflows.get(id);
+          if (!workflow) return undefined;
+
+          // Find the last assistant message index
+          const lastAssistantIndex = workflow.messages.findLastIndex((m) => m.role === 'assistant');
+          if (lastAssistantIndex === -1) return undefined;
+
+          // Get the user message content that preceded this assistant message
+          const userMessageIndex = lastAssistantIndex - 1;
+          const userMessage =
+            userMessageIndex >= 0 ? workflow.messages[userMessageIndex] : undefined;
+          const userContent = userMessage?.role === 'user' ? userMessage.content : undefined;
+
+          set(
+            (s) => {
+              const w = s.workflows.get(id);
+              if (!w) return s;
+
+              // Remove the last assistant message
+              const newMessages = w.messages.slice(0, lastAssistantIndex);
+
+              const newMap = new Map(s.workflows);
+              newMap.set(id, {
+                ...w,
+                messages: newMessages,
+                pendingResponse: undefined,
+                status: 'pending',
+                error: undefined,
+                updatedAt: new Date(),
+              });
+              return { workflows: newMap };
+            },
+            false,
+            'workflow/removeLastAssistantMessage',
+          );
+
+          return userContent;
         },
 
         // ============ Bulk Operations ============

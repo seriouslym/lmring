@@ -97,6 +97,8 @@
     "go_to_settings": "前往设置",
     "select_model_title": "请选择至少一个模型",
     "select_model_description": "请确保至少有一个模型的同步开关已开启",
+    "select_model_for_all_cards_title": "请为所有卡片选择模型",
+    "select_model_for_all_cards_description": "提交前所有同步的卡片都需要选择模型",
     "missing_api_key_title": "缺少 API Key 配置",
     "missing_api_key_description": "以下 Provider 未配置 API Key: {providers}",
     "prompt_placeholder": "输入任意问题来对比模型响应...",

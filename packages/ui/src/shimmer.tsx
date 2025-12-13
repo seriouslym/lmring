@@ -1,4 +1,4 @@
-import { cn } from '@lmring/ui';
+import { cn } from './utils';
 import type { ComponentProps, CSSProperties } from 'react';
 
 interface ShimmerProps extends ComponentProps<'div'> {
@@ -23,3 +23,4 @@ export function Shimmer({ duration = 2, className, children, ...props }: Shimmer
     </div>
   );
 }
+

@@ -26,6 +26,7 @@ export function useWorkflowExecution() {
   const getSyncedWorkflows = useWorkflowStore((s) => s.getSyncedWorkflows);
   const globalPrompt = useWorkflowStore((s) => s.globalPrompt);
   const clearWorkflowHistory = useWorkflowStore((s) => s.clearWorkflowHistory);
+  const removeLastAssistantMessage = useWorkflowStore((s) => s.removeLastAssistantMessage);
 
   /**
    * Execute streaming for a single workflow
@@ -193,6 +194,39 @@ export function useWorkflowExecution() {
   );
 
   /**
+   * Regenerate the last assistant response for a workflow
+   * Removes the last assistant message and re-executes with the same user message
+   */
+  const regenerateLastResponse = useCallback(
+    async (workflowId: string) => {
+      const workflow = getWorkflow(workflowId);
+      if (!workflow) {
+        console.error('Workflow not found:', workflowId);
+        return;
+      }
+
+      if (workflow.status === 'running') {
+        console.warn('Workflow is currently running:', workflowId);
+        return;
+      }
+
+      // Remove the last assistant message and get the user message content
+      const userContent = removeLastAssistantMessage(workflowId);
+      if (!userContent) {
+        console.warn('No user message found to regenerate response');
+        return;
+      }
+
+      // Get the fresh workflow state after removing the assistant message
+      const freshWorkflow = getWorkflow(workflowId);
+      if (freshWorkflow) {
+        await executeWorkflowStream(freshWorkflow, userContent);
+      }
+    },
+    [getWorkflow, removeLastAssistantMessage, executeWorkflowStream],
+  );
+
+  /**
    * Start all synced workflows with the global prompt
    */
   const startAllSyncedWorkflows = useCallback(async () => {
@@ -252,6 +286,7 @@ export function useWorkflowExecution() {
     continueWorkflow,
     cancelWorkflow,
     retryWorkflow,
+    regenerateLastResponse,
     startAllSyncedWorkflows,
     continueAllSyncedWorkflows,
     cancelAllWorkflows,
