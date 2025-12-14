@@ -1,4 +1,4 @@
-import { asc, db, desc, eq, inArray, sql } from '@lmring/database';
+import { and, asc, db, desc, eq, inArray } from '@lmring/database';
 import { conversations, messages, modelResponses } from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
           content: messages.content,
         })
         .from(messages)
-        .where(sql`${messages.conversationId} IN ${conversationIds} AND ${messages.role} = 'user'`)
+        .where(and(inArray(messages.conversationId, conversationIds), eq(messages.role, 'user')))
         .orderBy(asc(messages.createdAt));
 
       const firstMessageMap = new Map<string, string>();
