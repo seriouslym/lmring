@@ -36,12 +36,18 @@ export function ChatList({
     }
   }, [messages, pendingResponse, isLoading]);
 
-  const lastAssistantIndex = messages.findLastIndex((m) => m.role === 'assistant');
+  // Filter out empty assistant messages when pendingResponse exists
+  // to avoid showing duplicate "Waiting for response..." bubbles
+  const filteredMessages = pendingResponse
+    ? messages.filter((m) => !(m.role === 'assistant' && !m.content))
+    : messages;
+
+  const lastAssistantIndex = filteredMessages.findLastIndex((m) => m.role === 'assistant');
 
   return (
     <ScrollArea className="h-full" ref={scrollRef}>
       <div className="flex flex-col gap-4 pb-4 pt-4 px-2">
-        {messages.map((message, index) => (
+        {filteredMessages.map((message, index) => (
           <Message
             key={message.id}
             message={message}
