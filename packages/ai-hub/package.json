@@ -20,18 +20,6 @@
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^3.0.70",
     "@ai-sdk/anthropic": "^2.0.56",
-    "@ai-sdk/azure": "^2.0.87",
-    "@ai-sdk/deepseek": "^1.0.32",
-    "@ai-sdk/google-vertex": "^3.0.90",
-    "@ai-sdk/mistral": "^2.0.26",
-    "@ai-sdk/openai": "^2.0.85",
-    "@ai-sdk/openai-compatible": "^1.0.29",
-    "@ai-sdk/provider": "^2.0.0",
-    "@ai-sdk/provider-utils": "^3.0.19",
-    "@ai-sdk/xai": "^2.0.40",
-    "@lmring/model-depot": "workspace:*",
-    "@ai-sdk/amazon-bedrock": "^3.0.70",
-    "@ai-sdk/anthropic": "^2.0.56",
     "@ai-sdk/azure": "^2.0.88",
     "@ai-sdk/deepseek": "^1.0.32",
     "@ai-sdk/google-vertex": "^3.0.91",
@@ -41,13 +29,14 @@
     "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/provider-utils": "^3.0.19",
     "@ai-sdk/xai": "^2.0.40",
+    "@lmring/model-depot": "workspace:*",
     "@openrouter/ai-sdk-provider": "^1.5.3",
     "ai": "^5.0.113",
     "zod": "^4.1.13"
   },
   "devDependencies": {
     "@lmring/typescript-config": "workspace:*",
-    "@types/node": "^24.10.3",
+    "@types/node": "^25.0.2",
     "typescript": "^5.9.3"
   }
 }
