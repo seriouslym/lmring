@@ -85,6 +85,7 @@ export default function ArenaPage() {
   const resetConversation = useWorkflowStore((state) => state.resetConversation);
   const loadConversationHistory = useWorkflowStore((state) => state.loadConversationHistory);
   const setConversationId = useWorkflowStore((state) => state.setConversationId);
+  const getWorkflowConversationId = useWorkflowStore((state) => state.getConversationId);
   const storedConversationId = useWorkflowStore(workflowSelectors.conversationId);
   const setNewConversation = useWorkflowStore((state) => state.setNewConversation);
   const isCreatingConversation = useWorkflowStore(workflowSelectors.isCreatingConversation);
@@ -99,13 +100,12 @@ export default function ArenaPage() {
 
   const handleConversationCreated = React.useCallback(
     (newConversationId: string, title: string) => {
-      window.history.replaceState(null, '', `/${locale}/arena/${newConversationId}`);
       setConversationId(newConversationId);
       setCurrentUrlConversationId(newConversationId);
       setNewConversation({ id: newConversationId, title, updatedAt: new Date().toISOString() });
       setConversationLoaded(true);
     },
-    [locale, setConversationId, setNewConversation],
+    [setConversationId, setNewConversation],
   );
 
   const persistenceCallbacks = React.useMemo<WorkflowPersistenceCallbacks>(
@@ -202,6 +202,19 @@ export default function ArenaPage() {
     availableModels,
     resetComparisons,
   ]);
+
+  React.useEffect(() => {
+    // When "New Chat" resets the workflow store without a route param change,
+    // make sure we don't keep "conversationLoaded" or old workflow mappings around.
+    if (storedConversationId !== null) return;
+
+    if (comparisonWorkflowMap.current.size > 0) {
+      comparisonWorkflowMap.current.clear();
+    }
+    if (conversationLoaded) {
+      setConversationLoaded(false);
+    }
+  }, [conversationLoaded, storedConversationId]);
 
   const hasConfiguredProviders = React.useMemo(() => {
     return savedApiKeys.some((k) => k.enabled);
@@ -530,6 +543,9 @@ export default function ArenaPage() {
   );
 
   React.useEffect(() => {
+    // Only sync workflows -> comparisons when viewing an existing conversation route.
+    // In "New Chat" mode, workflows are created lazily per-card and should not dictate card count.
+    if (!conversationId || !storedConversationId || storedConversationId !== conversationId) return;
     if (!conversationLoaded || workflows.size === 0) return;
 
     // Use workflowOrder for consistent ordering if available, otherwise fall back to entries
@@ -580,7 +596,16 @@ export default function ArenaPage() {
         }
       }
     });
-  }, [conversationLoaded, workflows, workflowOrder, comparisons, selectModel, setComparisons]);
+  }, [
+    conversationId,
+    storedConversationId,
+    conversationLoaded,
+    workflows,
+    workflowOrder,
+    comparisons,
+    selectModel,
+    setComparisons,
+  ]);
 
   // Handle re-entry to the same conversation (e.g., navigating from History to the same conversation)
   React.useEffect(() => {
@@ -655,6 +680,8 @@ export default function ArenaPage() {
 
   const handleSubmit = React.useCallback(async () => {
     if (!workflowGlobalPrompt.trim()) return;
+    const submitWindowPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isNewConversationSubmit = !storedConversationId;
 
     if (!hasConfiguredProviders) {
       toast.warning(t('configure_api_keys_title'), {
@@ -707,10 +734,25 @@ export default function ArenaPage() {
     }
 
     await startAllSyncedWorkflows();
+    if (isNewConversationSubmit) {
+      const convId = getWorkflowConversationId();
+      const currentWindowPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const basePath = submitWindowPath.replace(/\/$/, '');
+      const shouldUpdateUrl =
+        !!convId &&
+        currentWindowPath.replace(/\/$/, '') === basePath &&
+        // avoid navigating if we're already on a conversation route
+        basePath.endsWith('/arena');
+      if (shouldUpdateUrl) {
+        window.history.replaceState(null, '', `${basePath}/${convId}`);
+      }
+    }
     setWorkflowGlobalPrompt('');
   }, [
     workflowGlobalPrompt,
     comparisons,
+    storedConversationId,
+    getWorkflowConversationId,
     getOrCreateWorkflow,
     startAllSyncedWorkflows,
     hasConfiguredProviders,

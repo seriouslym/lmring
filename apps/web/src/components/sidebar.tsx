@@ -29,7 +29,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
-import { useWorkflowStore, workflowSelectors } from '@/stores';
+import { arenaSelectors, useArenaStore, useWorkflowStore, workflowSelectors } from '@/stores';
 import { UserMenu } from './user-menu';
 
 interface RecentConversation {
@@ -83,6 +83,10 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
 
   const newConversation = useWorkflowStore(workflowSelectors.newConversation);
   const clearNewConversation = useWorkflowStore((state) => state.clearNewConversation);
+  const resetConversation = useWorkflowStore((state) => state.resetConversation);
+
+  const availableModels = useArenaStore(arenaSelectors.availableModels);
+  const resetComparisons = useArenaStore((state) => state.resetComparisons);
 
   const currentPath = pathname.replace(`/${locale}`, '');
 
@@ -258,6 +262,13 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
               <motion.div
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (!isNewChat) return;
+                  resetConversation();
+                  if (availableModels.length > 0) {
+                    resetComparisons(availableModels);
+                  }
+                }}
                 className={`
                   relative flex items-center gap-3 px-3 py-2 rounded-lg
                   transition-colors apple-transition
