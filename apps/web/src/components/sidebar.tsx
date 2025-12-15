@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { arenaSelectors, useArenaStore, useWorkflowStore, workflowSelectors } from '@/stores';
 import { UserMenu } from './user-menu';
@@ -41,25 +42,25 @@ interface RecentConversation {
 }
 
 interface NavItem {
-  title: string;
+  titleKey: 'new_chat' | 'leaderboard' | 'history';
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
 }
 
-const navItems: NavItem[] = [
+const navItemsConfig: NavItem[] = [
   {
-    title: 'New Chat',
+    titleKey: 'new_chat',
     href: '/arena',
     icon: MessageSquarePlusIcon,
   },
   {
-    title: 'Leaderboard',
+    titleKey: 'leaderboard',
     href: '/leaderboard',
     icon: TrophyIcon,
   },
   {
-    title: 'History',
+    titleKey: 'history',
     href: '/history',
     icon: ClockIcon,
   },
@@ -75,6 +76,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ locale = 'en', user }: SidebarProps) {
+  const t = useTranslations('Sidebar');
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isLogoHovered, setIsLogoHovered] = React.useState(false);
@@ -188,7 +190,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Resources</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('resources')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a
@@ -198,7 +200,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <InfoIcon className="mr-2 h-4 w-4" />
-                  <span>About Us</span>
+                  <span>{t('about_us')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -209,7 +211,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <HelpCircleIcon className="mr-2 h-4 w-4" />
-                  <span>How it Works</span>
+                  <span>{t('how_it_works')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -220,7 +222,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <LifeBuoyIcon className="mr-2 h-4 w-4" />
-                  <span>Help Center</span>
+                  <span>{t('help_center')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -231,7 +233,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <UsersIcon className="mr-2 h-4 w-4" />
-                  <span>Join the Team</span>
+                  <span>{t('join_team')}</span>
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -251,7 +253,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-hidden flex flex-col">
-        {navItems.map((item) => {
+        {navItemsConfig.map((item) => {
           const isNewChat = item.href === '/arena';
           const isActive = isNewChat
             ? currentPath === '/arena'
@@ -299,7 +301,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                       transition={{ duration: 0.2 }}
                       className="text-sm font-medium whitespace-nowrap overflow-hidden"
                     >
-                      {item.title}
+                      {t(item.titleKey)}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -316,7 +318,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
         {!collapsed && (
           <div className="mt-4">
             <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Today
+              {t('today')}
             </div>
             <ScrollArea className="max-h-[300px]">
               {!conversationsLoaded ? (

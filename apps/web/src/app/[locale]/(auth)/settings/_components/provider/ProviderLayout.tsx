@@ -1,5 +1,6 @@
 import { Input, ProviderSidebarSkeleton, Separator } from '@lmring/ui';
 import { BoxIcon, SearchIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { AddProviderDialog } from './AddProviderDialog';
 import { ProviderDetail } from './ProviderDetail';
@@ -23,6 +24,7 @@ export function ProviderLayout({
   onAddProvider,
   onDeleteProvider,
 }: ProviderLayoutProps) {
+  const t = useTranslations('Provider');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,7 +53,7 @@ export function ProviderLayout({
             <Input
               id="provider-search"
               name="provider-search"
-              placeholder="Search..."
+              placeholder={t('search_placeholder')}
               className="pl-8 bg-background"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -73,7 +75,7 @@ export function ProviderLayout({
               <div className="h-8 w-8 rounded-md flex items-center justify-center bg-background border">
                 <BoxIcon className="h-4 w-4" />
               </div>
-              <span>All Providers</span>
+              <span>{t('all_providers')}</span>
             </button>
 
             <Separator className="my-2" />

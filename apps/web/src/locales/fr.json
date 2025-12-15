@@ -103,5 +103,231 @@
     "missing_api_key_description": "Les fournisseurs suivants n'ont pas de clés API configurées : {providers}",
     "prompt_placeholder": "Posez une question pour comparer les réponses des modèles...",
     "custom_model": "Personnalisé"
+  },
+  "Settings": {
+    "title": "Paramètres",
+    "description": "Préférences et paramètres de modèle.",
+    "powered_by": "Propulsé par {name}",
+    "tabs": {
+      "general": "Général",
+      "provider": "Fournisseur d'IA",
+      "system_model": "Modèle système",
+      "storage": "Stockage de données",
+      "help": "Aide & Support",
+      "about": "À propos"
+    },
+    "general": {
+      "title": "Paramètres généraux",
+      "theme": "Thème",
+      "theme_light": "Clair",
+      "theme_dark": "Sombre",
+      "theme_auto": "Automatique",
+      "language": "Langue"
+    },
+    "system_model": {
+      "title": "Modèles système",
+      "description": "Modèles par défaut fournis par le système.",
+      "system_default": "Par défaut système",
+      "chat": "Chat"
+    },
+    "storage": {
+      "title": "Opérations avancées",
+      "import_data": "Importer des données",
+      "import_data_description": "Importer des données depuis un fichier local",
+      "import": "Importer",
+      "clear_sessions": "Effacer tous les messages de session",
+      "clear_sessions_description": "Cela effacera toutes les données de session, y compris l'assistant, les fichiers, les messages, les plugins, etc.",
+      "clear_now": "Effacer maintenant",
+      "reset_settings": "Réinitialiser tous les paramètres",
+      "reset_settings_description": "Rétablir tous les paramètres aux valeurs par défaut",
+      "reset_now": "Réinitialiser maintenant"
+    },
+    "help": {
+      "title": "Aide & Support",
+      "description": "Ressources et support pour vous aider à tirer le meilleur parti de LMRing.",
+      "resources": "Ressources",
+      "how_it_works": "Comment ça marche",
+      "how_it_works_description": "Découvrez comment LMRing fonctionne",
+      "help_center": "Centre d'aide",
+      "help_center_description": "Parcourir les FAQ et guides",
+      "about_us": "À propos de nous",
+      "about_lmring": "À propos de LMRing",
+      "about_lmring_description": "Découvrir notre mission",
+      "join_team": "Rejoindre l'équipe",
+      "join_team_description": "Voir les postes ouverts"
+    },
+    "about": {
+      "title": "À propos de LMRing",
+      "changelog": "Journal des modifications",
+      "contact_us": "Nous contacter",
+      "official_website": "Site officiel",
+      "email_support": "Support par email",
+      "community": "Communauté et Actualités",
+      "legal": "Mentions légales",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité",
+      "telemetry": "Envoyer des données d'utilisation anonymes",
+      "telemetry_description": "En choisissant d'envoyer des données de télémétrie, vous nous aidez à améliorer l'expérience utilisateur globale."
+    }
+  },
+  "Sidebar": {
+    "new_chat": "Nouvelle conversation",
+    "leaderboard": "Classement",
+    "history": "Historique",
+    "today": "Aujourd'hui",
+    "resources": "Ressources",
+    "about_us": "À propos de nous",
+    "how_it_works": "Comment ça marche",
+    "help_center": "Centre d'aide",
+    "join_team": "Rejoindre l'équipe",
+    "user_menu": {
+      "account": "Compte",
+      "theme": "Thème",
+      "arena": "Arène",
+      "settings": "Paramètres",
+      "logout": "Déconnexion"
+    }
+  },
+  "Provider": {
+    "search_placeholder": "Rechercher...",
+    "all_providers": "Tous les fournisseurs",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "add_provider": "Ajouter un fournisseur",
+    "add_provider_dialog": {
+      "title": "Ajouter un fournisseur",
+      "provider_name": "Nom du fournisseur",
+      "provider_type": "Type de fournisseur",
+      "select_provider_type": "Sélectionner le type de fournisseur",
+      "cancel": "Annuler",
+      "ok": "OK",
+      "adding": "Ajout..."
+    },
+    "detail": {
+      "api_key": "Clé API",
+      "api_key_placeholder": "Entrer la clé API",
+      "api_key_saved_placeholder": "Clé API enregistrée (entrer une nouvelle pour remplacer)",
+      "api_key_stored_hint": "Votre clé API est stockée en toute sécurité. Entrez une nouvelle clé pour la remplacer.",
+      "api_proxy_url": "URL du proxy API",
+      "connectivity_check": "Test de connexion",
+      "select_model_to_check": "Sélectionner un modèle à tester",
+      "search_models": "Rechercher des modèles...",
+      "check": "Tester",
+      "checking": "Test en cours",
+      "connected_in": "Connecté en {time}ms",
+      "connection_failed": "Connexion échouée",
+      "encryption_hint": "Votre clé sera chiffrée avec l'algorithme AES-GCM",
+      "model_list": "Liste des modèles",
+      "models_available": "{count} modèles disponibles dans {categories} catégories",
+      "search_models_placeholder": "Rechercher des modèles...",
+      "no_models_found": "Aucun modèle correspondant trouvé"
+    },
+    "model_types": {
+      "chat": "Chat",
+      "embedding": "Embedding",
+      "image": "Image",
+      "tts": "TTS",
+      "stt": "STT",
+      "realtime": "Temps réel"
+    },
+    "abilities": {
+      "vision": "Vision",
+      "image_generation": "Génération d'images",
+      "reasoning": "Raisonnement / Réflexion approfondie",
+      "online_search": "Recherche en ligne",
+      "function_calls": "Appels de fonctions"
+    },
+    "delete_model_dialog": {
+      "title": "Supprimer le modèle personnalisé",
+      "description": "Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "delete": "Supprimer"
+    },
+    "delete_provider_dialog": {
+      "title": "Supprimer le fournisseur",
+      "description": "Êtes-vous sûr de vouloir supprimer « {name} » ? Cela supprimera définitivement :",
+      "item_api_key": "Votre configuration de clé API",
+      "item_model_settings": "Tous les paramètres de modèles activés",
+      "item_custom_models": "Tous les modèles personnalisés ajoutés à ce fournisseur",
+      "cannot_undo": "Cette action est irréversible.",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleting": "Suppression..."
+    },
+    "api_key_required_dialog": {
+      "title": "Clé API requise",
+      "description": "Vous devez entrer une clé API avant d'activer les modèles pour ce fournisseur. Veuillez entrer votre clé API dans le champ ci-dessus.",
+      "ok": "OK"
+    },
+    "edit_model_dialog": {
+      "title": "Modifier le modèle",
+      "model_information": "Informations du modèle",
+      "model_id": "ID du modèle",
+      "model_id_tooltip": "L'identifiant unique de ce modèle",
+      "display_name": "Nom d'affichage",
+      "capabilities": "Capacités",
+      "model_types": "Types de modèle",
+      "model_types_tooltip": "Capacités supportées par ce modèle",
+      "streaming_output": "Sortie en streaming",
+      "streaming_output_tooltip": "Si le modèle supporte les réponses en streaming",
+      "pricing": "Tarification",
+      "currency": "Devise",
+      "input_price": "Prix d'entrée",
+      "output_price": "Prix de sortie",
+      "per_million_tokens": "$ / M Tokens",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    },
+    "add_model_dialog": {
+      "title": "Ajouter un modèle",
+      "model_id": "ID du modèle",
+      "model_name": "Nom du modèle",
+      "cancel": "Annuler",
+      "ok": "OK"
+    },
+    "ability_labels": {
+      "vision": "Vision",
+      "web_search": "Recherche Web",
+      "reasoning": "Raisonnement",
+      "tool": "Outil"
+    }
+  },
+  "Leaderboard": {
+    "title": "Classement des modèles",
+    "elo_score": "Score ELO"
+  },
+  "Account": {
+    "title": "Compte",
+    "loading": "Chargement des informations du compte...",
+    "error": "Échec du chargement des informations du compte. Veuillez actualiser la page.",
+    "no_name": "Nom non défini",
+    "profile": {
+      "title": "Informations du profil",
+      "description": "Mettez à jour vos informations et préférences",
+      "full_name": "Nom complet",
+      "full_name_placeholder": "Entrez votre nom complet",
+      "email": "E-mail",
+      "bio": "Bio",
+      "bio_placeholder": "Parlez-nous de vous...",
+      "save": "Enregistrer",
+      "saved": "Enregistré"
+    },
+    "subscription": {
+      "title": "Abonnement",
+      "current_plan": "Plan actuel",
+      "free": "Gratuit",
+      "api_requests": "Requêtes API",
+      "monthly_limit": "{percent}% de la limite mensuelle utilisée",
+      "upgrade": "Mettre à niveau"
+    },
+    "details": {
+      "title": "Détails du compte",
+      "member_since": "Membre depuis",
+      "account_id": "ID du compte",
+      "status": "Statut",
+      "invited_by": "Invité par",
+      "active": "actif"
+    }
   }
 }

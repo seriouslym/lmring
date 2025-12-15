@@ -1,5 +1,7 @@
 'use client';
 
+import { routing } from '@lmring/i18n';
+import { usePathname } from '@lmring/i18n/navigation';
 import {
   Badge,
   Button,
@@ -9,6 +11,11 @@ import {
   CardHeader,
   CardTitle,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Switch,
 } from '@lmring/ui';
@@ -73,7 +80,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   BotIcon,
   BoxIcon,
-  ChevronRightIcon,
   DatabaseIcon,
   ExternalLinkIcon,
   GithubIcon,
@@ -86,6 +92,8 @@ import {
   TwitterIcon,
   UsersIcon,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import * as React from 'react';
 import { useProviderMetadata } from '@/hooks/use-provider-metadata';
@@ -165,14 +173,30 @@ const systemModels = [
 
 type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
+// Language display names mapping
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  zh: '中文',
+  fr: 'Français',
+};
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations('Settings');
   const [mounted, setMounted] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<Tab>('general');
   const [telemetryEnabled, setTelemetryEnabled] = React.useState(false);
   const [apiKeysLoaded, setApiKeysLoaded] = React.useState(false);
   const [savedApiKeys, setSavedApiKeys] = React.useState<ApiKeyRecord[]>([]);
   const providerMetadata = useProviderMetadata();
+
+  const handleLanguageChange = (newLocale: string) => {
+    router.push(`/${newLocale}${pathname}`);
+    router.refresh();
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -354,22 +378,23 @@ export default function SettingsPage() {
     <div className="h-full flex bg-background overflow-hidden">
       <div className="w-64 flex-none border-r border-border bg-muted/40 flex flex-col">
         <div className="p-4 pb-2">
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-xs text-muted-foreground mt-1">Preferences and model settings.</p>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <p className="text-xs text-muted-foreground mt-1">{t('description')}</p>
         </div>
         <div className="px-3 space-y-1">
-          {renderSidebarItem('general', 'General', <Settings2Icon className="h-4 w-4" />)}
-          {renderSidebarItem('provider', 'AI Provider', <BotIcon className="h-4 w-4" />)}
-          {renderSidebarItem('system-model', 'System Model', <BoxIcon className="h-4 w-4" />)}
-          {renderSidebarItem('storage', 'Data Storage', <DatabaseIcon className="h-4 w-4" />)}
-          {renderSidebarItem('help', 'Help & Support', <LifeBuoyIcon className="h-4 w-4" />)}
-          {renderSidebarItem('about', 'About', <InfoIcon className="h-4 w-4" />)}
+          {renderSidebarItem('general', t('tabs.general'), <Settings2Icon className="h-4 w-4" />)}
+          {renderSidebarItem('provider', t('tabs.provider'), <BotIcon className="h-4 w-4" />)}
+          {renderSidebarItem(
+            'system-model',
+            t('tabs.system_model'),
+            <BoxIcon className="h-4 w-4" />,
+          )}
+          {renderSidebarItem('storage', t('tabs.storage'), <DatabaseIcon className="h-4 w-4" />)}
+          {renderSidebarItem('help', t('tabs.help'), <LifeBuoyIcon className="h-4 w-4" />)}
+          {renderSidebarItem('about', t('tabs.about'), <InfoIcon className="h-4 w-4" />)}
         </div>
         <div className="mt-auto p-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Powered by</span>
-            <span className="font-semibold text-foreground">LMRing</span>
-          </div>
+          <div className="text-xs text-muted-foreground">{t('powered_by', { name: 'LMRing' })}</div>
         </div>
       </div>
 
@@ -397,12 +422,12 @@ export default function SettingsPage() {
                     className="space-y-8"
                   >
                     <div>
-                      <h2 className="text-lg font-medium mb-1">General Settings</h2>
+                      <h2 className="text-lg font-medium mb-1">{t('general.title')}</h2>
                     </div>
 
                     <div className="space-y-6">
                       <div className="space-y-4">
-                        <Label className="text-base">Theme</Label>
+                        <Label className="text-base">{t('general.theme')}</Label>
                         <div className="grid grid-cols-3 gap-4 max-w-md">
                           <button
                             type="button"
@@ -420,7 +445,8 @@ export default function SettingsPage() {
                               </div>
                             </div>
                             <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                              <span className="text-muted-foreground">☀</span> Light
+                              <span className="text-muted-foreground">☀</span>{' '}
+                              {t('general.theme_light')}
                             </div>
                           </button>
                           <button
@@ -439,7 +465,8 @@ export default function SettingsPage() {
                               </div>
                             </div>
                             <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                              <span className="text-muted-foreground">🌙</span> Dark
+                              <span className="text-muted-foreground">🌙</span>{' '}
+                              {t('general.theme_dark')}
                             </div>
                           </button>
                           <button
@@ -462,19 +489,30 @@ export default function SettingsPage() {
                               </div>
                             </div>
                             <div className="text-center text-sm font-medium flex items-center justify-center gap-1">
-                              <span className="text-muted-foreground">💻</span> Automatic
+                              <span className="text-muted-foreground">💻</span>{' '}
+                              {t('general.theme_auto')}
                             </div>
                           </button>
                         </div>
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-base">Language</Label>
+                        <Label className="text-base">{t('general.language')}</Label>
                         <div className="max-w-md">
-                          <Button variant="outline" className="w-full justify-between font-normal">
-                            English
-                            <ChevronRightIcon className="h-4 w-4 opacity-50 rotate-90" />
-                          </Button>
+                          <Select value={locale} onValueChange={handleLanguageChange}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select language">
+                                {LANGUAGE_NAMES[locale] || locale.toUpperCase()}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {routing.locales.map((loc) => (
+                                <SelectItem key={loc} value={loc}>
+                                  {LANGUAGE_NAMES[loc] || loc.toUpperCase()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     </div>
@@ -491,9 +529,9 @@ export default function SettingsPage() {
                     className="space-y-6"
                   >
                     <div>
-                      <h2 className="text-lg font-medium mb-1">System Models</h2>
+                      <h2 className="text-lg font-medium mb-1">{t('system_model.title')}</h2>
                       <p className="text-sm text-muted-foreground">
-                        Default models provided by the system.
+                        {t('system_model.description')}
                       </p>
                     </div>
 
@@ -506,8 +544,8 @@ export default function SettingsPage() {
                           </CardHeader>
                           <CardContent>
                             <div className="flex items-center gap-2">
-                              <Badge variant="secondary">System Default</Badge>
-                              <Badge variant="outline">Chat</Badge>
+                              <Badge variant="secondary">{t('system_model.system_default')}</Badge>
+                              <Badge variant="outline">{t('system_model.chat')}</Badge>
                             </div>
                           </CardContent>
                         </Card>
@@ -526,41 +564,40 @@ export default function SettingsPage() {
                     className="space-y-8"
                   >
                     <div>
-                      <h2 className="text-lg font-medium mb-1">Advanced Operations</h2>
+                      <h2 className="text-lg font-medium mb-1">{t('storage.title')}</h2>
                     </div>
 
                     <div className="space-y-6">
                       <div className="flex items-center justify-between py-4 border-b">
                         <div className="space-y-0.5">
-                          <div className="font-medium">Import Data</div>
+                          <div className="font-medium">{t('storage.import_data')}</div>
                           <div className="text-sm text-muted-foreground">
-                            Import data from a local file
+                            {t('storage.import_data_description')}
                           </div>
                         </div>
                         <Button variant="outline" className="gap-2">
-                          <DatabaseIcon className="h-4 w-4" /> Import
+                          <DatabaseIcon className="h-4 w-4" /> {t('storage.import')}
                         </Button>
                       </div>
 
                       <div className="flex items-center justify-between py-4 border-b">
                         <div className="space-y-0.5">
-                          <div className="font-medium">Clear All Session Messages</div>
+                          <div className="font-medium">{t('storage.clear_sessions')}</div>
                           <div className="text-sm text-muted-foreground">
-                            This will clear all session data, including assistant, files, messages,
-                            plugins, etc.
+                            {t('storage.clear_sessions_description')}
                           </div>
                         </div>
-                        <Button variant="destructive">Clear Now</Button>
+                        <Button variant="destructive">{t('storage.clear_now')}</Button>
                       </div>
 
                       <div className="flex items-center justify-between py-4">
                         <div className="space-y-0.5">
-                          <div className="font-medium">Reset All Settings</div>
+                          <div className="font-medium">{t('storage.reset_settings')}</div>
                           <div className="text-sm text-muted-foreground">
-                            Reset all settings to default values
+                            {t('storage.reset_settings_description')}
                           </div>
                         </div>
-                        <Button variant="destructive">Reset Now</Button>
+                        <Button variant="destructive">{t('storage.reset_now')}</Button>
                       </div>
                     </div>
                   </motion.div>
@@ -576,16 +613,14 @@ export default function SettingsPage() {
                     className="space-y-8"
                   >
                     <div>
-                      <h2 className="text-lg font-medium mb-1">Help & Support</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Resources and support to help you get the most out of LMRing.
-                      </p>
+                      <h2 className="text-lg font-medium mb-1">{t('help.title')}</h2>
+                      <p className="text-sm text-muted-foreground">{t('help.description')}</p>
                     </div>
 
                     <div className="space-y-6">
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                          Resources
+                          {t('help.resources')}
                         </h3>
                         <div className="grid gap-4">
                           <a
@@ -597,9 +632,9 @@ export default function SettingsPage() {
                               <CardContent className="p-4 flex items-center gap-4">
                                 <HelpCircleIcon className="h-8 w-8 text-primary" />
                                 <div>
-                                  <h4 className="font-medium">How it Works</h4>
+                                  <h4 className="font-medium">{t('help.how_it_works')}</h4>
                                   <p className="text-sm text-muted-foreground">
-                                    Learn how LMRing works
+                                    {t('help.how_it_works_description')}
                                   </p>
                                 </div>
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
@@ -615,9 +650,9 @@ export default function SettingsPage() {
                               <CardContent className="p-4 flex items-center gap-4">
                                 <LifeBuoyIcon className="h-8 w-8 text-primary" />
                                 <div>
-                                  <h4 className="font-medium">Help Center</h4>
+                                  <h4 className="font-medium">{t('help.help_center')}</h4>
                                   <p className="text-sm text-muted-foreground">
-                                    Browse FAQs and guides
+                                    {t('help.help_center_description')}
                                   </p>
                                 </div>
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
@@ -629,7 +664,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                          About Us
+                          {t('help.about_us')}
                         </h3>
                         <div className="grid gap-4">
                           <a
@@ -641,9 +676,9 @@ export default function SettingsPage() {
                               <CardContent className="p-4 flex items-center gap-4">
                                 <InfoIcon className="h-8 w-8 text-primary" />
                                 <div>
-                                  <h4 className="font-medium">About LMRing</h4>
+                                  <h4 className="font-medium">{t('help.about_lmring')}</h4>
                                   <p className="text-sm text-muted-foreground">
-                                    Learn about our mission
+                                    {t('help.about_lmring_description')}
                                   </p>
                                 </div>
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
@@ -659,9 +694,9 @@ export default function SettingsPage() {
                               <CardContent className="p-4 flex items-center gap-4">
                                 <UsersIcon className="h-8 w-8 text-primary" />
                                 <div>
-                                  <h4 className="font-medium">Join the Team</h4>
+                                  <h4 className="font-medium">{t('help.join_team')}</h4>
                                   <p className="text-sm text-muted-foreground">
-                                    View open positions
+                                    {t('help.join_team_description')}
                                   </p>
                                 </div>
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
@@ -684,7 +719,7 @@ export default function SettingsPage() {
                     className="space-y-8"
                   >
                     <div>
-                      <h2 className="text-lg font-medium mb-1">About LMRing</h2>
+                      <h2 className="text-lg font-medium mb-1">{t('about.title')}</h2>
                     </div>
 
                     <div className="space-y-8">
@@ -698,12 +733,12 @@ export default function SettingsPage() {
                             <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
                           </div>
                         </div>
-                        <Button variant="outline">Changelog</Button>
+                        <Button variant="outline">{t('about.changelog')}</Button>
                       </div>
 
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                          Contact Us
+                          {t('about.contact_us')}
                         </h3>
                         <div className="space-y-2">
                           <a
@@ -712,14 +747,14 @@ export default function SettingsPage() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
-                            <GlobeIcon className="h-4 w-4" /> Official Website{' '}
+                            <GlobeIcon className="h-4 w-4" /> {t('about.official_website')}{' '}
                             <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
                             href="mailto:support@lmring.ai"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
-                            <MailIcon className="h-4 w-4" /> Email Support{' '}
+                            <MailIcon className="h-4 w-4" /> {t('about.email_support')}{' '}
                             <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                         </div>
@@ -727,7 +762,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                          Community and News
+                          {t('about.community')}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <Button variant="secondary" className="w-full justify-start gap-2">
@@ -744,7 +779,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                          Legal Disclaimer
+                          {t('about.legal')}
                         </h3>
                         <div className="space-y-2">
                           <a
@@ -753,7 +788,7 @@ export default function SettingsPage() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
-                            Terms of Service <ExternalLinkIcon className="h-3 w-3" />
+                            {t('about.terms')} <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
                             href="https://lmring.ai/privacy"
@@ -761,7 +796,7 @@ export default function SettingsPage() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
-                            Privacy Policy <ExternalLinkIcon className="h-3 w-3" />
+                            {t('about.privacy')} <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                         </div>
                       </div>
@@ -770,10 +805,9 @@ export default function SettingsPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <div className="font-medium">Send Anonymous Usage Data</div>
+                          <div className="font-medium">{t('about.telemetry')}</div>
                           <div className="text-sm text-muted-foreground">
-                            By opting to send telemetry data, you can help us improve the overall
-                            user experience.
+                            {t('about.telemetry_description')}
                           </div>
                         </div>
                         <Switch checked={telemetryEnabled} onCheckedChange={setTelemetryEnabled} />

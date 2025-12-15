@@ -32,6 +32,7 @@ import {
   Loader2Icon,
   WrenchIcon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 interface EditModelDialogProps {
@@ -84,6 +85,7 @@ export function EditModelDialog({
   isCustomModel: _isCustomModel,
   onSave,
 }: EditModelDialogProps) {
+  const t = useTranslations('Provider');
   const [displayName, setDisplayName] = useState('');
   const [abilities, setAbilities] = useState<ModelAbilities>({});
   const [supportsStreaming, setSupportsStreaming] = useState(false);
@@ -154,25 +156,27 @@ export function EditModelDialog({
       <DialogContent open={open} className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Edit Model</DialogTitle>
+            <DialogTitle>{t('edit_model_dialog.title')}</DialogTitle>
           </DialogHeader>
 
           <div className="py-4 space-y-6">
             {/* Model Information Section */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Model Information</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {t('edit_model_dialog.model_information')}
+              </h4>
               <div className="space-y-4">
                 {/* Model ID (read-only) */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
-                    <Label htmlFor="model-id">Model ID</Label>
+                    <Label htmlFor="model-id">{t('edit_model_dialog.model_id')}</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <HelpCircleIcon className="h-4 w-4 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>The unique identifier for this model</p>
+                          <p>{t('edit_model_dialog.model_id_tooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -198,7 +202,7 @@ export function EditModelDialog({
 
                 {/* Model Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="model-name">Display Name</Label>
+                  <Label htmlFor="model-name">{t('edit_model_dialog.display_name')}</Label>
                   <Input
                     id="model-name"
                     value={displayName}
@@ -214,19 +218,21 @@ export function EditModelDialog({
 
             {/* Capabilities Section */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Capabilities</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {t('edit_model_dialog.capabilities')}
+              </h4>
               <div className="space-y-4">
                 {/* Model Types / Abilities */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-1">
-                    <Label>Model Types</Label>
+                    <Label>{t('edit_model_dialog.model_types')}</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <HelpCircleIcon className="h-4 w-4 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Capabilities supported by this model</p>
+                          <p>{t('edit_model_dialog.model_types_tooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -259,14 +265,16 @@ export function EditModelDialog({
                 {/* Support incremental text output */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="supports-streaming">Streaming Output</Label>
+                    <Label htmlFor="supports-streaming">
+                      {t('edit_model_dialog.streaming_output')}
+                    </Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <HelpCircleIcon className="h-4 w-4 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Whether the model supports streaming responses</p>
+                          <p>{t('edit_model_dialog.streaming_output_tooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -284,11 +292,13 @@ export function EditModelDialog({
 
             {/* Pricing Section */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Pricing</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {t('edit_model_dialog.pricing')}
+              </h4>
               <div className="space-y-4">
                 {/* Currency */}
                 <div className="flex items-center justify-between gap-4">
-                  <Label>Currency</Label>
+                  <Label>{t('edit_model_dialog.currency')}</Label>
                   <Select value={priceCurrency} onValueChange={setPriceCurrency}>
                     <SelectTrigger className="w-[180px] h-9">
                       <SelectValue />
@@ -302,7 +312,7 @@ export function EditModelDialog({
 
                 {/* Input Price */}
                 <div className="flex items-center justify-between gap-4">
-                  <Label htmlFor="input-price">Input Price</Label>
+                  <Label htmlFor="input-price">{t('edit_model_dialog.input_price')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="input-price"
@@ -315,14 +325,14 @@ export function EditModelDialog({
                       className="w-[180px] h-9 text-right"
                     />
                     <div className="w-[120px] px-3 py-1.5 text-sm text-muted-foreground border rounded-md bg-muted/50 whitespace-nowrap text-center">
-                      $ / M Tokens
+                      {t('edit_model_dialog.per_million_tokens')}
                     </div>
                   </div>
                 </div>
 
                 {/* Output Price */}
                 <div className="flex items-center justify-between gap-4">
-                  <Label htmlFor="output-price">Output Price</Label>
+                  <Label htmlFor="output-price">{t('edit_model_dialog.output_price')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="output-price"
@@ -335,7 +345,7 @@ export function EditModelDialog({
                       className="w-[180px] h-9 text-right"
                     />
                     <div className="w-[120px] px-3 py-1.5 text-sm text-muted-foreground border rounded-md bg-muted/50 whitespace-nowrap text-center">
-                      $ / M Tokens
+                      {t('edit_model_dialog.per_million_tokens')}
                     </div>
                   </div>
                 </div>
@@ -345,16 +355,16 @@ export function EditModelDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('edit_model_dialog.cancel')}
             </Button>
             <Button type="submit" disabled={isSaving}>
               {isSaving ? (
                 <>
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {t('edit_model_dialog.saving')}
                 </>
               ) : (
-                'Save'
+                t('edit_model_dialog.save')
               )}
             </Button>
           </DialogFooter>

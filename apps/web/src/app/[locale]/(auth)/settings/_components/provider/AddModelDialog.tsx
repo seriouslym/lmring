@@ -11,6 +11,7 @@ import {
   Label,
 } from '@lmring/ui';
 import { PlusIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface AddModelDialogProps {
@@ -18,6 +19,7 @@ interface AddModelDialogProps {
 }
 
 export function AddModelDialog({ onAdd }: AddModelDialogProps) {
+  const t = useTranslations('Provider');
   const [open, setOpen] = useState(false);
   const [modelId, setModelId] = useState('');
   const [modelName, setModelName] = useState('');
@@ -49,7 +51,7 @@ export function AddModelDialog({ onAdd }: AddModelDialogProps) {
         variant="outline"
         size="icon"
         className="h-9 w-9"
-        title="Add model"
+        title={t('add_model_dialog.title')}
         onClick={() => setOpen(true)}
       >
         <PlusIcon className="h-4 w-4" />
@@ -59,12 +61,12 @@ export function AddModelDialog({ onAdd }: AddModelDialogProps) {
         <DialogContent open={open} className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Add Model</DialogTitle>
+              <DialogTitle>{t('add_model_dialog.title')}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="modelId">
-                  Model ID <span className="text-red-500">*</span>
+                  {t('add_model_dialog.model_id')} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="modelId"
@@ -75,7 +77,7 @@ export function AddModelDialog({ onAdd }: AddModelDialogProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modelName">Model Name</Label>
+                <Label htmlFor="modelName">{t('add_model_dialog.model_name')}</Label>
                 <Input
                   id="modelName"
                   value={modelName}
@@ -86,10 +88,10 @@ export function AddModelDialog({ onAdd }: AddModelDialogProps) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                Cancel
+                {t('add_model_dialog.cancel')}
               </Button>
               <Button type="submit" disabled={!modelId}>
-                OK
+                {t('add_model_dialog.ok')}
               </Button>
             </DialogFooter>
           </form>

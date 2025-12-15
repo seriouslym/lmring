@@ -1,4 +1,5 @@
 import { Badge, ProviderCardSkeleton } from '@lmring/ui';
+import { useTranslations } from 'next-intl';
 import { ProviderCard } from './ProviderCard';
 import type { Provider } from './types';
 
@@ -10,6 +11,7 @@ interface ProviderGridProps {
 }
 
 export function ProviderGrid({ providers, isLoading, onToggle, onSelect }: ProviderGridProps) {
+  const t = useTranslations('Provider');
   return (
     <div className="space-y-6 p-4 md:p-8">
       {/* <div className="flex items-center gap-2">
@@ -33,7 +35,7 @@ export function ProviderGrid({ providers, isLoading, onToggle, onSelect }: Provi
       <div className="space-y-8">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-bold text-lg">Enabled</h3>
+            <h3 className="font-bold text-lg">{t('enabled')}</h3>
             <Badge
               variant="secondary"
               className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
@@ -61,7 +63,7 @@ export function ProviderGrid({ providers, isLoading, onToggle, onSelect }: Provi
 
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-bold text-lg">Disabled</h3>
+            <h3 className="font-bold text-lg">{t('disabled')}</h3>
             <Badge
               variant="secondary"
               className="text-xs px-1.5 min-w-5 h-5 flex items-center justify-center"
