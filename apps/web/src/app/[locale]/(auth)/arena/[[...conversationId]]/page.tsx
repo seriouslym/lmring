@@ -67,6 +67,8 @@ export default function ArenaPage() {
   const setEnabledModelsMap = useArenaStore((state) => state.setEnabledModelsMap);
   const customModelsMap = useArenaStore(arenaSelectors.customModelsMap);
   const setCustomModelsMap = useArenaStore((state) => state.setCustomModelsMap);
+  const modelOverridesMap = useArenaStore(arenaSelectors.modelOverridesMap);
+  const setModelOverridesMap = useArenaStore((state) => state.setModelOverridesMap);
 
   const savedApiKeys = useSettingsStore(settingsSelectors.savedApiKeys);
   const loadApiKeys = useSettingsStore((state) => state.loadApiKeys);
@@ -250,11 +252,28 @@ export default function ArenaPage() {
 
       const newEnabledModelsMap = new Map<string, Set<string>>();
       const newCustomModelsMap = new Map<string, Array<{ modelId: string; displayName: string }>>();
+      const newModelOverridesMap = new Map<
+        string,
+        Map<
+          string,
+          {
+            modelId: string;
+            displayName?: string | null;
+            groupName?: string | null;
+            abilities?: Record<string, boolean> | null;
+            supportsStreaming?: boolean | null;
+            priceCurrency?: string | null;
+            inputPrice?: number | null;
+            outputPrice?: number | null;
+          }
+        >
+      >();
 
       try {
-        const [enabledResponse, customResponse] = await Promise.all([
+        const [enabledResponse, customResponse, overridesResponse] = await Promise.all([
           fetch('/api/settings/api-keys/all/enabled-models'),
           fetch('/api/settings/api-keys/all/custom-models'),
+          fetch('/api/settings/api-keys/all/model-overrides'),
         ]);
 
         if (enabledResponse.ok) {
@@ -295,6 +314,45 @@ export default function ArenaPage() {
           }
         }
 
+        if (overridesResponse.ok) {
+          const data = await overridesResponse.json();
+          const overridesByApiKeyId = data.overrides || {};
+
+          for (const [apiKeyId, overrides] of Object.entries(overridesByApiKeyId)) {
+            const providerName = apiKeyIdToProviderName.get(apiKeyId);
+            if (providerName) {
+              const providerOverrides = new Map<
+                string,
+                {
+                  modelId: string;
+                  displayName?: string | null;
+                  groupName?: string | null;
+                  abilities?: Record<string, boolean> | null;
+                  supportsStreaming?: boolean | null;
+                  priceCurrency?: string | null;
+                  inputPrice?: number | null;
+                  outputPrice?: number | null;
+                }
+              >();
+              for (const override of overrides as Array<{
+                modelId: string;
+                displayName?: string | null;
+                groupName?: string | null;
+                abilities?: Record<string, boolean> | null;
+                supportsStreaming?: boolean | null;
+                priceCurrency?: string | null;
+                inputPrice?: number | null;
+                outputPrice?: number | null;
+              }>) {
+                providerOverrides.set(override.modelId, override);
+              }
+              if (providerOverrides.size > 0) {
+                newModelOverridesMap.set(providerName, providerOverrides);
+              }
+            }
+          }
+        }
+
         setModelsLastLoadedAt(Date.now());
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('arena_models_need_refresh');
@@ -305,6 +363,7 @@ export default function ArenaPage() {
 
       setEnabledModelsMap(newEnabledModelsMap);
       setCustomModelsMap(newCustomModelsMap);
+      setModelOverridesMap(newModelOverridesMap);
       setEnabledModelsLoaded(true);
     };
 
@@ -315,6 +374,7 @@ export default function ArenaPage() {
     setModelsLastLoadedAt,
     setEnabledModelsMap,
     setCustomModelsMap,
+    setModelOverridesMap,
     savedApiKeys,
   ]);
 
@@ -335,6 +395,7 @@ export default function ArenaPage() {
     for (const provider of filteredProviders) {
       if (provider.models) {
         const providerEnabledModels = enabledModelsMap.get(provider.id.toLowerCase());
+        const providerOverrides = modelOverridesMap.get(provider.id.toLowerCase());
 
         for (const model of provider.models) {
           const shouldInclude =
@@ -346,22 +407,23 @@ export default function ArenaPage() {
 
           if (shouldInclude) {
             const modelId = `${provider.id}:${model.id}`;
+            // Apply model override if exists
+            const override = providerOverrides?.get(model.id);
+            const displayName = override?.displayName || model.displayName || model.id;
+            const inputPrice = override?.inputPrice ?? model.pricing?.input;
+            const outputPrice = override?.outputPrice ?? model.pricing?.output;
+
             models.push({
               id: modelId,
-              name: model.displayName || model.id,
+              name: displayName,
               provider: provider.name,
               providerId: provider.id,
-              description:
-                provider.description || `${model.displayName || model.id} from ${provider.name}`,
+              description: provider.description || `${displayName} from ${provider.name}`,
               context: model.contextWindowTokens
                 ? `${model.contextWindowTokens.toLocaleString()} tokens`
                 : undefined,
-              inputPricing: model.pricing?.input
-                ? `$${model.pricing.input} / million tokens`
-                : undefined,
-              outputPricing: model.pricing?.output
-                ? `$${model.pricing.output} / million tokens`
-                : undefined,
+              inputPricing: inputPrice ? `$${inputPrice} / million tokens` : undefined,
+              outputPricing: outputPrice ? `$${outputPrice} / million tokens` : undefined,
               type: 'pro',
               isNew: false,
               isCustom: false,
@@ -421,6 +483,7 @@ export default function ArenaPage() {
     filteredProviders,
     enabledModelsMap,
     customModelsMap,
+    modelOverridesMap,
     hasConfiguredProviders,
     enabledModelsLoaded,
     savedApiKeys,

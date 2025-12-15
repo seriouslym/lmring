@@ -1,5 +1,5 @@
 import { and, db, eq } from '@lmring/database';
-import { apiKeys, userCustomModels, userEnabledModels } from '@lmring/database/schema';
+import { apiKeys, userModelOverrides } from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
 import { logError } from '@/libs/error-logging';
@@ -7,7 +7,7 @@ import { customModelUpdateSchema } from '@/libs/validation';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// PUT: Update a custom model
+// PUT: Update a specific model override
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; modelId: string }> },
@@ -76,10 +76,13 @@ export async function PUT(
     const decodedModelId = decodeURIComponent(modelId);
     const now = new Date();
 
-    // Update the custom model
-    const updatedModels = await db
-      .update(userCustomModels)
-      .set({
+    // Upsert the override
+    const updatedOverrides = await db
+      .insert(userModelOverrides)
+      .values({
+        userId,
+        apiKeyId: keyId,
+        modelId: decodedModelId,
         displayName: displayName || null,
         groupName: groupName || null,
         abilities: abilities || null,
@@ -87,42 +90,52 @@ export async function PUT(
         priceCurrency: priceCurrency || null,
         inputPrice: inputPrice ?? null,
         outputPrice: outputPrice ?? null,
+        createdAt: now,
         updatedAt: now,
       })
-      .where(
-        and(eq(userCustomModels.apiKeyId, keyId), eq(userCustomModels.modelId, decodedModelId)),
-      )
+      .onConflictDoUpdate({
+        target: [userModelOverrides.apiKeyId, userModelOverrides.modelId],
+        set: {
+          displayName: displayName || null,
+          groupName: groupName || null,
+          abilities: abilities || null,
+          supportsStreaming: supportsStreaming ?? null,
+          priceCurrency: priceCurrency || null,
+          inputPrice: inputPrice ?? null,
+          outputPrice: outputPrice ?? null,
+          updatedAt: now,
+        },
+      })
       .returning();
 
-    if (updatedModels.length === 0) {
+    const override = updatedOverrides[0];
+    if (!override) {
       return NextResponse.json(
-        { error: 'MODEL_NOT_FOUND', message: 'Custom model not found' },
-        { status: 404 },
+        { error: 'UPDATE_FAILED', message: 'Failed to update model override' },
+        { status: 500 },
       );
     }
 
-    const updatedModel = updatedModels[0];
-
     return NextResponse.json(
       {
-        id: updatedModel?.id,
-        modelId: updatedModel?.modelId,
-        displayName: updatedModel?.displayName,
-        groupName: updatedModel?.groupName,
-        abilities: updatedModel?.abilities,
-        supportsStreaming: updatedModel?.supportsStreaming,
-        priceCurrency: updatedModel?.priceCurrency,
-        inputPrice: updatedModel?.inputPrice,
-        outputPrice: updatedModel?.outputPrice,
+        id: override.id,
+        modelId: override.modelId,
+        displayName: override.displayName,
+        groupName: override.groupName,
+        abilities: override.abilities,
+        supportsStreaming: override.supportsStreaming,
+        priceCurrency: override.priceCurrency,
+        inputPrice: override.inputPrice,
+        outputPrice: override.outputPrice,
       },
       { status: 200 },
     );
   } catch (error) {
-    logError('Update custom model error', error);
+    logError('Update model override error', error);
     return NextResponse.json(
       {
         error: 'INTERNAL_ERROR',
-        message: 'Failed to update custom model',
+        message: 'Failed to update model override',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
@@ -130,6 +143,7 @@ export async function PUT(
   }
 }
 
+// DELETE: Remove a model override (restore to default)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; modelId: string }> },
@@ -176,29 +190,32 @@ export async function DELETE(
       );
     }
 
-    const deletedModels = await db
-      .delete(userCustomModels)
-      .where(and(eq(userCustomModels.apiKeyId, keyId), eq(userCustomModels.modelId, modelId)))
+    const decodedModelId = decodeURIComponent(modelId);
+
+    const deletedOverrides = await db
+      .delete(userModelOverrides)
+      .where(
+        and(eq(userModelOverrides.apiKeyId, keyId), eq(userModelOverrides.modelId, decodedModelId)),
+      )
       .returning();
 
-    if (deletedModels.length === 0) {
+    if (deletedOverrides.length === 0) {
       return NextResponse.json(
-        { error: 'MODEL_NOT_FOUND', message: 'Custom model not found' },
+        { error: 'OVERRIDE_NOT_FOUND', message: 'Model override not found' },
         { status: 404 },
       );
     }
 
-    await db
-      .delete(userEnabledModels)
-      .where(and(eq(userEnabledModels.apiKeyId, keyId), eq(userEnabledModels.modelId, modelId)));
-
-    return NextResponse.json({ message: 'Custom model deleted successfully' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Model override deleted successfully, restored to default' },
+      { status: 200 },
+    );
   } catch (error) {
-    logError('Delete custom model error', error);
+    logError('Delete model override error', error);
     return NextResponse.json(
       {
         error: 'INTERNAL_ERROR',
-        message: 'Failed to delete custom model',
+        message: 'Failed to delete model override',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },

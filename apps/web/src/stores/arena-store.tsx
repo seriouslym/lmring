@@ -10,6 +10,18 @@ import {
   type ModelOption,
 } from '@/types/arena';
 
+// Type for model override data
+export interface ModelOverrideData {
+  modelId: string;
+  displayName?: string | null;
+  groupName?: string | null;
+  abilities?: Record<string, boolean> | null;
+  supportsStreaming?: boolean | null;
+  priceCurrency?: string | null;
+  inputPrice?: number | null;
+  outputPrice?: number | null;
+}
+
 export type ArenaState = {
   comparisons: ModelComparison[];
   globalPrompt: string;
@@ -18,6 +30,7 @@ export type ArenaState = {
   modelsLastLoadedAt: number | null;
   enabledModelsMap: Map<string, Set<string>>;
   customModelsMap: Map<string, Array<{ modelId: string; displayName: string }>>;
+  modelOverridesMap: Map<string, Map<string, ModelOverrideData>>;
 };
 
 export type ArenaActions = {
@@ -47,6 +60,7 @@ export type ArenaActions = {
   resetComparisons: (availableModels: ModelOption[]) => void;
   setEnabledModelsMap: (map: Map<string, Set<string>>) => void;
   setCustomModelsMap: (map: Map<string, Array<{ modelId: string; displayName: string }>>) => void;
+  setModelOverridesMap: (map: Map<string, Map<string, ModelOverrideData>>) => void;
 };
 
 export type ArenaStore = ArenaState & ArenaActions;
@@ -71,6 +85,7 @@ const defaultInitState: ArenaState = {
   modelsLastLoadedAt: null,
   enabledModelsMap: new Map(),
   customModelsMap: new Map(),
+  modelOverridesMap: new Map(),
 };
 
 export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
@@ -297,6 +312,9 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
 
         setCustomModelsMap: (map) =>
           set({ customModelsMap: map }, false, 'arena/setCustomModelsMap'),
+
+        setModelOverridesMap: (map) =>
+          set({ modelOverridesMap: map }, false, 'arena/setModelOverridesMap'),
       }),
       { name: 'arena-store', enabled: process.env.NODE_ENV === 'development' },
     ),
@@ -336,4 +354,5 @@ export const arenaSelectors = {
   modelsLastLoadedAt: (state: ArenaStore) => state.modelsLastLoadedAt,
   enabledModelsMap: (state: ArenaStore) => state.enabledModelsMap,
   customModelsMap: (state: ArenaStore) => state.customModelsMap,
+  modelOverridesMap: (state: ArenaStore) => state.modelOverridesMap,
 };

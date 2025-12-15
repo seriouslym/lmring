@@ -150,3 +150,28 @@ export interface ProviderModelListItem {
   source?: AiModelSourceType;
   releasedAt?: string;
 }
+
+// Model override - user customizations for default or custom models
+export interface ModelOverride {
+  modelId: string;
+  displayName?: string;
+  groupName?: string;
+  abilities?: ModelAbilities;
+  supportsStreaming?: boolean;
+  priceCurrency?: ModelPriceCurrency;
+  inputPrice?: number;
+  outputPrice?: number;
+}
+
+export const ModelOverrideSchema = z.object({
+  modelId: z.string(),
+  displayName: z.string().optional(),
+  groupName: z.string().optional(),
+  abilities: ModelAbilitiesSchema.optional(),
+  supportsStreaming: z.boolean().optional(),
+  priceCurrency: z.enum(['USD', 'CNY']).optional(),
+  inputPrice: z.number().optional(),
+  outputPrice: z.number().optional(),
+});
+
+export type ModelOverrideParams = z.infer<typeof ModelOverrideSchema>;

@@ -102,6 +102,41 @@ export const customModelSchema = z.object({
   displayName: z.string().max(200).optional(),
 });
 
+// Schema for model abilities
+export const modelAbilitiesSchema = z.object({
+  files: z.boolean().optional(),
+  functionCall: z.boolean().optional(),
+  imageOutput: z.boolean().optional(),
+  reasoning: z.boolean().optional(),
+  search: z.boolean().optional(),
+  structuredOutput: z.boolean().optional(),
+  video: z.boolean().optional(),
+  vision: z.boolean().optional(),
+});
+
+// Schema for creating/updating model override (for default models)
+export const modelOverrideSchema = z.object({
+  modelId: z.string().min(1).max(200),
+  displayName: z.string().max(200).optional(),
+  groupName: z.string().max(100).optional(),
+  abilities: modelAbilitiesSchema.optional(),
+  supportsStreaming: z.boolean().optional(),
+  priceCurrency: z.enum(['USD', 'CNY']).optional(),
+  inputPrice: z.number().min(0).max(1000).optional(),
+  outputPrice: z.number().min(0).max(1000).optional(),
+});
+
+// Schema for updating custom model (full update)
+export const customModelUpdateSchema = z.object({
+  displayName: z.string().max(200).optional(),
+  groupName: z.string().max(100).optional(),
+  abilities: modelAbilitiesSchema.optional(),
+  supportsStreaming: z.boolean().optional(),
+  priceCurrency: z.enum(['USD', 'CNY']).optional(),
+  inputPrice: z.number().min(0).max(1000).optional(),
+  outputPrice: z.number().min(0).max(1000).optional(),
+});
+
 export const userPreferencesSchema = z.object({
   theme: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
@@ -157,6 +192,9 @@ export type CustomModelInput = z.infer<typeof customModelSchema>;
 export type UserPreferencesInput = z.infer<typeof userPreferencesSchema>;
 export type ShareInput = z.infer<typeof shareSchema>;
 export type WorkflowStreamInput = z.infer<typeof workflowStreamSchema>;
+export type ModelAbilitiesInput = z.infer<typeof modelAbilitiesSchema>;
+export type ModelOverrideInput = z.infer<typeof modelOverrideSchema>;
+export type CustomModelUpdateInput = z.infer<typeof customModelUpdateSchema>;
 
 export function maskApiKey(apiKey: string): string {
   if (apiKey.length <= 8) {

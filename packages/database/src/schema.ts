@@ -14,6 +14,18 @@ import {
   type PgColumn,
 } from 'drizzle-orm/pg-core';
 
+// Type for model abilities JSON field
+export interface ModelAbilitiesJson {
+  files?: boolean;
+  functionCall?: boolean;
+  imageOutput?: boolean;
+  reasoning?: boolean;
+  search?: boolean;
+  structuredOutput?: boolean;
+  video?: boolean;
+  vision?: boolean;
+}
+
 // Enums
 export const configSourceEnum = pgEnum('config_source', ['manual', 'cherry-studio', 'newapi']);
 export const roleEnum = pgEnum('message_role', ['user', 'assistant', 'system']);
@@ -139,6 +151,12 @@ export const userCustomModels = pgTable(
       .notNull(),
     modelId: text('model_id').notNull(),
     displayName: text('display_name'),
+    groupName: text('group_name'),
+    abilities: jsonb('abilities').$type<ModelAbilitiesJson>(),
+    supportsStreaming: boolean('supports_streaming'),
+    priceCurrency: text('price_currency'),
+    inputPrice: real('input_price'),
+    outputPrice: real('output_price'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
@@ -146,6 +164,35 @@ export const userCustomModels = pgTable(
     index('user_custom_models_user_id_idx').on(table.userId),
     index('user_custom_models_api_key_id_idx').on(table.apiKeyId),
     unique('user_custom_models_api_key_model_unique').on(table.apiKeyId, table.modelId),
+  ],
+);
+
+// User model overrides - stores user customizations for default models
+export const userModelOverrides = pgTable(
+  'user_model_overrides',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    apiKeyId: uuid('api_key_id')
+      .references(() => apiKeys.id, { onDelete: 'cascade' })
+      .notNull(),
+    modelId: text('model_id').notNull(),
+    displayName: text('display_name'),
+    groupName: text('group_name'),
+    abilities: jsonb('abilities').$type<ModelAbilitiesJson>(),
+    supportsStreaming: boolean('supports_streaming'),
+    priceCurrency: text('price_currency'),
+    inputPrice: real('input_price'),
+    outputPrice: real('output_price'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('user_model_overrides_user_id_idx').on(table.userId),
+    index('user_model_overrides_api_key_id_idx').on(table.apiKeyId),
+    unique('user_model_overrides_api_key_model_unique').on(table.apiKeyId, table.modelId),
   ],
 );
 
@@ -364,6 +411,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   apiKeys: many(apiKeys),
   enabledModels: many(userEnabledModels),
   customModels: many(userCustomModels),
+  modelOverrides: many(userModelOverrides),
   conversations: many(conversations),
   votes: many(userVotes),
   files: many(files),
@@ -385,6 +433,7 @@ export const apiKeysRelations = relations(apiKeys, ({ one, many }) => ({
   }),
   enabledModels: many(userEnabledModels),
   customModels: many(userCustomModels),
+  modelOverrides: many(userModelOverrides),
 }));
 
 export const userEnabledModelsRelations = relations(userEnabledModels, ({ one }) => ({
@@ -405,6 +454,17 @@ export const userCustomModelsRelations = relations(userCustomModels, ({ one }) =
   }),
   apiKey: one(apiKeys, {
     fields: [userCustomModels.apiKeyId],
+    references: [apiKeys.id],
+  }),
+}));
+
+export const userModelOverridesRelations = relations(userModelOverrides, ({ one }) => ({
+  user: one(users, {
+    fields: [userModelOverrides.userId],
+    references: [users.id],
+  }),
+  apiKey: one(apiKeys, {
+    fields: [userModelOverrides.apiKeyId],
     references: [apiKeys.id],
   }),
 }));
@@ -502,3 +562,5 @@ export type UserEnabledModel = typeof userEnabledModels.$inferSelect;
 export type NewUserEnabledModel = typeof userEnabledModels.$inferInsert;
 export type UserCustomModel = typeof userCustomModels.$inferSelect;
 export type NewUserCustomModel = typeof userCustomModels.$inferInsert;
+export type UserModelOverride = typeof userModelOverrides.$inferSelect;
+export type NewUserModelOverride = typeof userModelOverrides.$inferInsert;

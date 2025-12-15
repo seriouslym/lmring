@@ -11,14 +11,18 @@ import {
   AlertDialogTitle,
   Badge,
   Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
   cn,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Separator,
   Switch,
   Tabs,
@@ -35,6 +39,7 @@ import {
   AlertCircleIcon,
   BrainCircuitIcon,
   CheckCircle2Icon,
+  ChevronsUpDownIcon,
   EyeIcon,
   EyeOffIcon,
   ImageIcon,
@@ -42,6 +47,7 @@ import {
   LockIcon,
   MessageSquareIcon,
   MicIcon,
+  PencilIcon,
   RadioIcon,
   RotateCwIcon,
   SearchIcon,
@@ -52,7 +58,20 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddModelDialog } from './AddModelDialog';
+import { EditModelDialog } from './EditModelDialog';
 import type { ConnectionCheckResponse, Provider, SaveApiKeyResponse } from './types';
+
+// Model override type from database
+interface ModelOverrideData {
+  modelId: string;
+  displayName?: string | null;
+  groupName?: string | null;
+  abilities?: Record<string, boolean> | null;
+  supportsStreaming?: boolean | null;
+  priceCurrency?: string | null;
+  inputPrice?: number | null;
+  outputPrice?: number | null;
+}
 
 const MODEL_TYPE_CONFIG: Record<
   AiModelType,
@@ -94,10 +113,20 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
 
   const [modelEnabledStates, setModelEnabledStates] = useState<Record<string, boolean>>({});
   const [customModels, setCustomModels] = useState<DefaultModelListItem[]>([]);
+  const [modelOverrides, setModelOverrides] = useState<Map<string, ModelOverrideData>>(new Map());
   const [modelToDelete, setModelToDelete] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showApiKeyWarning, setShowApiKeyWarning] = useState(false);
+  const [modelToEdit, setModelToEdit] = useState<{
+    id: string;
+    displayName?: string;
+    abilities?: ModelAbilities;
+    supportsStreaming?: boolean;
+    pricing?: { currency?: string; input?: number; output?: number };
+    isCustomModel: boolean;
+  } | null>(null);
+  const [connectivityCheckOpen, setConnectivityCheckOpen] = useState(false);
 
   const hasExistingApiKey = Boolean(provider.hasApiKey);
 
@@ -180,9 +209,59 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
     fetchCustomModels();
   }, [provider.apiKeyId, provider.id]);
 
+  // Fetch model overrides
+  useEffect(() => {
+    const fetchModelOverrides = async () => {
+      if (!provider.apiKeyId) {
+        setModelOverrides(new Map());
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/settings/api-keys/${provider.apiKeyId}/model-overrides`);
+        if (response.ok) {
+          const data = await response.json();
+          const overridesMap = new Map<string, ModelOverrideData>();
+          for (const override of data.overrides || []) {
+            overridesMap.set(override.modelId, override);
+          }
+          setModelOverrides(overridesMap);
+        }
+      } catch (error) {
+        console.error('Failed to fetch model overrides:', error);
+      }
+    };
+
+    fetchModelOverrides();
+  }, [provider.apiKeyId]);
+
   const models = useMemo(() => {
     const staticModels = getModelsForProvider(resolveProviderType(provider));
     const staticIds = new Set(staticModels.map((m) => m.id));
+
+    // Apply overrides to static models
+    const modelsWithOverrides = staticModels.map((model) => {
+      const override = modelOverrides.get(model.id);
+      if (override) {
+        return {
+          ...model,
+          displayName: override.displayName || model.displayName,
+          abilities: override.abilities
+            ? ({ ...model.abilities, ...override.abilities } as ModelAbilities)
+            : model.abilities,
+          pricing:
+            override.inputPrice != null || override.outputPrice != null
+              ? {
+                  ...model.pricing,
+                  currency: (override.priceCurrency as 'USD' | 'CNY') || model.pricing?.currency,
+                  input: override.inputPrice ?? model.pricing?.input,
+                  output: override.outputPrice ?? model.pricing?.output,
+                }
+              : model.pricing,
+        };
+      }
+      return model;
+    });
 
     const dbCustomModels = Object.keys(modelEnabledStates)
       .filter((id) => !staticIds.has(id))
@@ -205,8 +284,8 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
       });
     }
 
-    return [...staticModels, ...mergedCustomModelsMap.values()] as typeof staticModels;
-  }, [provider, modelEnabledStates, customModels]);
+    return [...modelsWithOverrides, ...mergedCustomModelsMap.values()] as typeof staticModels;
+  }, [provider, modelEnabledStates, customModels, modelOverrides]);
 
   const filteredModels = useMemo(() => {
     if (!searchQuery) return models;
@@ -475,6 +554,108 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
     [provider.apiKeyId, provider.id],
   );
 
+  const handleEditModel = useCallback(
+    (model: DefaultModelListItem) => {
+      const isCustom = customModels.some((cm) => cm.id === model.id);
+      const override = modelOverrides.get(model.id);
+
+      setModelToEdit({
+        id: model.id,
+        displayName: override?.displayName ?? model.displayName,
+        abilities: (override?.abilities as ModelAbilities) || model.abilities,
+        supportsStreaming: override?.supportsStreaming ?? undefined,
+        pricing: {
+          currency: override?.priceCurrency ?? model.pricing?.currency,
+          input: override?.inputPrice ?? model.pricing?.input,
+          output: override?.outputPrice ?? model.pricing?.output,
+        },
+        isCustomModel: isCustom,
+      });
+    },
+    [customModels, modelOverrides],
+  );
+
+  const handleSaveModelEdit = useCallback(
+    async (data: {
+      displayName?: string;
+      abilities?: ModelAbilities;
+      supportsStreaming?: boolean;
+      priceCurrency?: string;
+      inputPrice?: number;
+      outputPrice?: number;
+    }) => {
+      if (!provider.apiKeyId || !modelToEdit) return;
+
+      const isCustomModel = modelToEdit.isCustomModel;
+      const endpoint = isCustomModel
+        ? `/api/settings/api-keys/${provider.apiKeyId}/custom-models/${encodeURIComponent(modelToEdit.id)}`
+        : `/api/settings/api-keys/${provider.apiKeyId}/model-overrides`;
+
+      const body = isCustomModel
+        ? data
+        : {
+            modelId: modelToEdit.id,
+            ...data,
+          };
+
+      try {
+        const response = await fetch(endpoint, {
+          method: isCustomModel ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to save model');
+        }
+
+        await response.json();
+
+        // Update local state
+        if (isCustomModel) {
+          setCustomModels((prev) =>
+            prev.map((m) =>
+              m.id === modelToEdit.id
+                ? {
+                    ...m,
+                    displayName: data.displayName || m.displayName,
+                    abilities: data.abilities || m.abilities,
+                  }
+                : m,
+            ),
+          );
+        } else {
+          setModelOverrides((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(modelToEdit.id, {
+              modelId: modelToEdit.id,
+              displayName: data.displayName,
+              abilities: data.abilities as Record<string, boolean>,
+              supportsStreaming: data.supportsStreaming,
+              priceCurrency: data.priceCurrency,
+              inputPrice: data.inputPrice,
+              outputPrice: data.outputPrice,
+            });
+            return newMap;
+          });
+        }
+
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('arena_models_need_refresh', 'true');
+        }
+
+        toast.success('Model updated successfully');
+      } catch (error) {
+        toast.error('Failed to update model', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        });
+        throw error;
+      }
+    },
+    [provider.apiKeyId, modelToEdit],
+  );
+
   const handleDeleteCustomModel = useCallback(
     async (modelId: string) => {
       if (!provider.apiKeyId) return;
@@ -714,6 +895,15 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              onPaste={(e) => {
+                const input = e.currentTarget;
+                setTimeout(() => {
+                  if (input.value !== apiKey) {
+                    setApiKey(input.value);
+                  }
+                }, 0);
+              }}
+              autoComplete="off"
               placeholder={
                 hasExistingApiKey ? 'API Key saved (enter new to replace)' : 'Enter API Key'
               }
@@ -755,21 +945,53 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
         <div className="space-y-3">
           <Label>Connectivity Check</Label>
           <div className="flex gap-3 w-full items-start">
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="flex-1 h-9">
-                <SelectValue placeholder="Select model to check" />
-              </SelectTrigger>
-              <SelectContent>
-                {models.map((model) => (
-                  <SelectItem key={model.id} value={model.id}>
-                    <div className="flex items-center gap-2">
+            <Popover open={connectivityCheckOpen} onOpenChange={setConnectivityCheckOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={connectivityCheckOpen}
+                  className="flex-1 h-9 justify-between font-normal"
+                >
+                  {selectedModel ? (
+                    <div className="flex items-center gap-2 truncate">
                       {renderModelListIcon(16)}
-                      <span>{model.displayName || model.id}</span>
+                      <span className="truncate">
+                        {models.find((m) => m.id === selectedModel)?.displayName || selectedModel}
+                      </span>
                     </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  ) : (
+                    <span className="text-muted-foreground">Select model to check</span>
+                  )}
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search models..." />
+                  <CommandList className="max-h-[300px]">
+                    <CommandEmpty>No models found.</CommandEmpty>
+                    <CommandGroup>
+                      {models.map((model) => (
+                        <CommandItem
+                          key={model.id}
+                          value={`${model.displayName || model.id} ${model.id}`}
+                          onSelect={() => {
+                            setSelectedModel(model.id);
+                            setConnectivityCheckOpen(false);
+                          }}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {renderModelListIcon(16)}
+                            <span className="truncate">{model.displayName || model.id}</span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <Button
               variant="outline"
               className="gap-2 h-9 min-w-[100px] transition-all hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 dark:hover:text-blue-400 dark:hover:border-blue-500"
@@ -877,6 +1099,13 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
                               <span className="font-medium leading-tight">
                                 {model.displayName || model.id}
                               </span>
+                              <button
+                                type="button"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-[#00b96b]/10 rounded"
+                                onClick={() => handleEditModel(model)}
+                              >
+                                <PencilIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-[#00b96b]" />
+                              </button>
                             </div>
                             <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground leading-tight">
                               {model.releasedAt && <span>{model.releasedAt}</span>}
@@ -998,6 +1227,17 @@ export function ProviderDetail({ provider, onToggle, onSave, onDelete }: Provide
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Model Dialog */}
+      {modelToEdit && (
+        <EditModelDialog
+          open={!!modelToEdit}
+          onOpenChange={(open) => !open && setModelToEdit(null)}
+          model={modelToEdit}
+          isCustomModel={modelToEdit.isCustomModel}
+          onSave={handleSaveModelEdit}
+        />
+      )}
     </div>
   );
 }
