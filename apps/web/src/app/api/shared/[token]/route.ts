@@ -1,5 +1,11 @@
 import { asc, db, eq } from '@lmring/database';
-import { conversations, messages, modelResponses, sharedResults } from '@lmring/database/schema';
+import {
+  conversations,
+  messages,
+  modelResponses,
+  sharedResults,
+  users,
+} from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
 import { logError } from '@/libs/error-logging';
 
@@ -38,13 +44,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
       return NextResponse.json({ error: 'Share link has expired' }, { status: 410 });
     }
 
-    const [conversation] = await db
-      .select()
+    const [conversationWithUser] = await db
+      .select({
+        id: conversations.id,
+        title: conversations.title,
+        createdAt: conversations.createdAt,
+        userId: conversations.userId,
+        userName: users.fullName,
+        userAvatarUrl: users.avatarUrl,
+      })
       .from(conversations)
+      .leftJoin(users, eq(conversations.userId, users.id))
       .where(eq(conversations.id, shared.conversationId))
       .limit(1);
 
-    if (!conversation) {
+    if (!conversationWithUser) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
     }
 
@@ -137,9 +151,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     return NextResponse.json(
       {
         conversation: {
-          id: conversation.id,
-          title: conversation.title,
-          createdAt: conversation.createdAt,
+          id: conversationWithUser.id,
+          title: conversationWithUser.title,
+          createdAt: conversationWithUser.createdAt,
+        },
+        user: {
+          name: conversationWithUser.userName,
+          avatarUrl: conversationWithUser.userAvatarUrl,
         },
         messages: messagesWithResponses,
       },

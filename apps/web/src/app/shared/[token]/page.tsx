@@ -20,6 +20,7 @@ import {
   ThumbsUpIcon,
   UserIcon,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import * as React from 'react';
@@ -45,12 +46,18 @@ interface Message {
   responses?: ModelResponse[];
 }
 
+interface SharedUser {
+  name: string | null;
+  avatarUrl: string | null;
+}
+
 interface SharedConversation {
   conversation: {
     id: string;
     title: string;
     createdAt: string;
   };
+  user: SharedUser;
   messages: Message[];
 }
 
@@ -262,7 +269,7 @@ export default function SharedConversationPage() {
                 >
                   {/* User message */}
                   <div className="bg-muted/30 rounded-lg p-4">
-                    <UserPrompt content={turn.userMessage.content} />
+                    <UserPrompt content={turn.userMessage.content} user={data.user} />
                   </div>
 
                   {/* Model responses in Arena grid layout */}
@@ -357,16 +364,42 @@ function SharedHeader({ title, createdAt, models }: SharedHeaderProps) {
   );
 }
 
-function UserPrompt({ content }: { content: string }) {
+interface UserPromptProps {
+  content: string;
+  user?: SharedUser;
+}
+
+function UserPrompt({ content, user }: UserPromptProps) {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return null;
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="flex items-start gap-3">
       <Avatar className="size-8 border shadow-sm flex-shrink-0">
-        <AvatarFallback className="bg-primary/10">
-          <UserIcon className="size-4 text-primary" />
-        </AvatarFallback>
+        {user?.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={user.name || 'User'}
+            width={32}
+            height={32}
+            className="size-full object-cover"
+            unoptimized
+          />
+        ) : (
+          <AvatarFallback className="bg-primary/10">
+            {getInitials(user?.name) || <UserIcon className="size-4 text-primary" />}
+          </AvatarFallback>
+        )}
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-muted-foreground mb-1">Prompt</p>
+        <p className="text-sm font-medium text-muted-foreground mb-1">{user?.name || 'Prompt'}</p>
         <p className="whitespace-pre-wrap text-foreground">{content}</p>
       </div>
     </div>
