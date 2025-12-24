@@ -7,6 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  ScrollArea,
+  SidebarConversationSkeleton,
 } from '@lmring/ui';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -16,6 +18,7 @@ import {
   InfoIcon,
   LifeBuoyIcon,
   MenuIcon,
+  MessageSquareIcon,
   MessageSquarePlusIcon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -26,29 +29,38 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
+import { arenaSelectors, useArenaStore, useWorkflowStore, workflowSelectors } from '@/stores';
 import { UserMenu } from './user-menu';
 
-interface NavItem {
+interface RecentConversation {
+  id: string;
   title: string;
+  firstMessage?: string;
+  updatedAt: string;
+}
+
+interface NavItem {
+  titleKey: 'new_chat' | 'leaderboard' | 'history';
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
 }
 
-const navItems: NavItem[] = [
+const navItemsConfig: NavItem[] = [
   {
-    title: 'New Chat',
+    titleKey: 'new_chat',
     href: '/arena',
     icon: MessageSquarePlusIcon,
   },
   {
-    title: 'Leaderboard',
+    titleKey: 'leaderboard',
     href: '/leaderboard',
     icon: TrophyIcon,
   },
   {
-    title: 'History',
+    titleKey: 'history',
     href: '/history',
     icon: ClockIcon,
   },
@@ -64,15 +76,23 @@ interface SidebarProps {
 }
 
 export function Sidebar({ locale = 'en', user }: SidebarProps) {
+  const t = useTranslations('Sidebar');
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isLogoHovered, setIsLogoHovered] = React.useState(false);
+  const [recentConversations, setRecentConversations] = React.useState<RecentConversation[]>([]);
+  const [conversationsLoaded, setConversationsLoaded] = React.useState(false);
   const pathname = usePathname();
 
-  // Remove locale from pathname for matching
+  const newConversation = useWorkflowStore(workflowSelectors.newConversation);
+  const clearNewConversation = useWorkflowStore((state) => state.clearNewConversation);
+  const resetConversation = useWorkflowStore((state) => state.resetConversation);
+
+  const availableModels = useArenaStore(arenaSelectors.availableModels);
+  const resetComparisons = useArenaStore((state) => state.resetComparisons);
+
   const currentPath = pathname.replace(`/${locale}`, '');
 
-  // Auto-collapse sidebar on settings page
   const isSettingsPage = currentPath.startsWith('/settings');
 
   React.useEffect(() => {
@@ -81,11 +101,53 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
     }
   }, [isSettingsPage]);
 
+  React.useEffect(() => {
+    const fetchRecentConversations = async () => {
+      if (collapsed || conversationsLoaded) return;
+
+      try {
+        const response = await fetch('/api/conversations?limit=10&withFirstMessage=true');
+        if (response.ok) {
+          const data = await response.json();
+          setRecentConversations(data.conversations || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch recent conversations:', error);
+      } finally {
+        setConversationsLoaded(true);
+      }
+    };
+
+    fetchRecentConversations();
+  }, [collapsed, conversationsLoaded]);
+
+  React.useEffect(() => {
+    if (newConversation && conversationsLoaded) {
+      const exists = recentConversations.some((conv) => conv.id === newConversation.id);
+      if (!exists) {
+        setRecentConversations((prev) => [
+          {
+            id: newConversation.id,
+            title: newConversation.title,
+            firstMessage: newConversation.title,
+            updatedAt: newConversation.updatedAt,
+          },
+          ...prev.slice(0, 9),
+        ]);
+      }
+      clearNewConversation();
+    }
+  }, [newConversation, conversationsLoaded, recentConversations, clearNewConversation]);
+
   const sidebarWidth = collapsed ? 'w-16' : 'w-64';
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength)}...`;
+  };
 
   const SidebarContent = () => (
     <>
-      {/* Logo/Brand with Dropdown Menu */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
         {collapsed ? (
           <button
@@ -128,7 +190,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Resources</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('resources')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a
@@ -138,7 +200,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <InfoIcon className="mr-2 h-4 w-4" />
-                  <span>About Us</span>
+                  <span>{t('about_us')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -149,7 +211,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <HelpCircleIcon className="mr-2 h-4 w-4" />
-                  <span>How it Works</span>
+                  <span>{t('how_it_works')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -160,7 +222,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <LifeBuoyIcon className="mr-2 h-4 w-4" />
-                  <span>Help Center</span>
+                  <span>{t('help_center')}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -171,7 +233,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                   className="flex items-center cursor-pointer"
                 >
                   <UsersIcon className="mr-2 h-4 w-4" />
-                  <span>Join the Team</span>
+                  <span>{t('join_team')}</span>
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -190,10 +252,12 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
-        {navItems.map((item) => {
-          const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+      <nav className="flex-1 p-3 space-y-1 overflow-hidden flex flex-col">
+        {navItemsConfig.map((item) => {
+          const isNewChat = item.href === '/arena';
+          const isActive = isNewChat
+            ? currentPath === '/arena'
+            : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
           const Icon = item.icon;
 
           return (
@@ -201,6 +265,13 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
               <motion.div
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (!isNewChat) return;
+                  resetConversation();
+                  if (availableModels.length > 0) {
+                    resetComparisons(availableModels);
+                  }
+                }}
                 className={`
                   relative flex items-center gap-3 px-3 py-2 rounded-lg
                   transition-colors apple-transition
@@ -230,7 +301,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                       transition={{ duration: 0.2 }}
                       className="text-sm font-medium whitespace-nowrap overflow-hidden"
                     >
-                      {item.title}
+                      {t(item.titleKey)}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -243,9 +314,62 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
             </Link>
           );
         })}
+
+        {!collapsed && (
+          <div className="mt-4">
+            <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {t('today')}
+            </div>
+            <ScrollArea className="max-h-[300px]">
+              {!conversationsLoaded ? (
+                <SidebarConversationSkeleton count={5} />
+              ) : recentConversations.length > 0 ? (
+                <div className="space-y-0.5">
+                  {recentConversations.map((conv) => {
+                    const isConvActive = currentPath === `/arena/${conv.id}`;
+                    const displayText = conv.firstMessage
+                      ? truncateText(conv.firstMessage, 20)
+                      : truncateText(conv.title, 20);
+
+                    return (
+                      <Link key={conv.id} href={`/${locale}/arena/${conv.id}`} className="block">
+                        <motion.div
+                          whileHover={{ x: 2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`
+                            relative flex items-center gap-2 px-3 py-1.5 rounded-md text-sm
+                            transition-colors apple-transition
+                            ${
+                              isConvActive
+                                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                : 'hover:bg-sidebar-accent/30 text-sidebar-foreground/70'
+                            }
+                          `}
+                        >
+                          {isConvActive && (
+                            <motion.div
+                              layoutId="conversationIndicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                            />
+                          )}
+                          <MessageSquareIcon
+                            className={`h-4 w-4 flex-shrink-0 ${isConvActive ? 'text-primary' : 'opacity-60'}`}
+                          />
+                          <span className="truncate">{displayText}</span>
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </ScrollArea>
+          </div>
+        )}
       </nav>
 
-      {/* User Section */}
       <div className="p-3 mt-auto">
         <UserMenu user={user} collapsed={collapsed} />
       </div>
@@ -254,7 +378,6 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Menu Button */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
@@ -264,7 +387,6 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
         <MenuIcon className="h-5 w-5" />
       </button>
 
-      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -296,7 +418,6 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Desktop Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 64 : 256 }}

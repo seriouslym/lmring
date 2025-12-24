@@ -89,5 +89,259 @@
     "vllm_description": "vLLM 是高吞吐量的大语言模型推理引擎。",
     "xinference_description": "Xinference 是支持多种 AI 模型的分布式推理框架。",
     "higress_description": "Higress 是用于管理和路由模型请求的 AI 网关。"
+  },
+  "Arena": {
+    "loading_models": "正在加载模型...",
+    "configure_api_keys_title": "请先配置 API Keys",
+    "configure_api_keys_description": "您需要在设置页面配置至少一个 Provider 的 API Key 才能使用",
+    "go_to_settings": "前往设置",
+    "select_model_title": "请选择至少一个模型",
+    "select_model_description": "请确保至少有一个模型的同步开关已开启",
+    "select_model_for_all_cards_title": "请为所有卡片选择模型",
+    "select_model_for_all_cards_description": "提交前所有同步的卡片都需要选择模型",
+    "missing_api_key_title": "缺少 API Key 配置",
+    "missing_api_key_description": "以下 Provider 未配置 API Key: {providers}",
+    "prompt_placeholder": "输入任意问题来对比模型响应...",
+    "custom_model": "自定义"
+  },
+  "Settings": {
+    "title": "设置",
+    "description": "偏好和模型设置。",
+    "powered_by": "由 {name} 支持",
+    "tabs": {
+      "general": "通用",
+      "provider": "AI 服务商",
+      "system_model": "系统模型",
+      "storage": "数据存储",
+      "help": "帮助与支持",
+      "about": "关于"
+    },
+    "general": {
+      "title": "通用设置",
+      "theme": "主题",
+      "theme_light": "浅色",
+      "theme_dark": "深色",
+      "theme_auto": "自动",
+      "language": "语言"
+    },
+    "system_model": {
+      "title": "系统模型",
+      "description": "系统提供的默认模型。",
+      "system_default": "系统默认",
+      "chat": "对话"
+    },
+    "storage": {
+      "title": "高级操作",
+      "import_data": "导入数据",
+      "import_data_description": "从本地文件导入数据",
+      "import": "导入",
+      "clear_sessions": "清除所有会话消息",
+      "clear_sessions_description": "这将清除所有会话数据，包括助手、文件、消息、插件等。",
+      "clear_now": "立即清除",
+      "reset_settings": "重置所有设置",
+      "reset_settings_description": "将所有设置重置为默认值",
+      "reset_now": "立即重置"
+    },
+    "help": {
+      "title": "帮助与支持",
+      "description": "帮助您充分使用 LMRing 的资源和支持。",
+      "resources": "资源",
+      "how_it_works": "工作原理",
+      "how_it_works_description": "了解 LMRing 的工作原理",
+      "help_center": "帮助中心",
+      "help_center_description": "浏览常见问题和指南",
+      "about_us": "关于我们",
+      "about_lmring": "关于 LMRing",
+      "about_lmring_description": "了解我们的使命",
+      "join_team": "加入团队",
+      "join_team_description": "查看开放职位"
+    },
+    "about": {
+      "title": "关于 LMRing",
+      "changelog": "更新日志",
+      "contact_us": "联系我们",
+      "official_website": "官方网站",
+      "email_support": "邮件支持",
+      "community": "社区与动态",
+      "legal": "法律声明",
+      "terms": "服务条款",
+      "privacy": "隐私政策",
+      "telemetry": "发送匿名使用数据",
+      "telemetry_description": "选择发送遥测数据可以帮助我们改善整体用户体验。"
+    }
+  },
+  "Sidebar": {
+    "new_chat": "新对话",
+    "leaderboard": "排行榜",
+    "history": "历史记录",
+    "today": "今天",
+    "resources": "资源",
+    "about_us": "关于我们",
+    "how_it_works": "工作原理",
+    "help_center": "帮助中心",
+    "join_team": "加入团队",
+    "user_menu": {
+      "account": "账户",
+      "theme": "主题",
+      "arena": "竞技场",
+      "settings": "设置",
+      "logout": "退出登录"
+    }
+  },
+  "Provider": {
+    "search_placeholder": "搜索...",
+    "all_providers": "所有服务商",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "add_provider": "添加服务商",
+    "add_provider_dialog": {
+      "title": "添加服务商",
+      "provider_name": "服务商名称",
+      "provider_type": "服务商类型",
+      "select_provider_type": "选择服务商类型",
+      "cancel": "取消",
+      "ok": "确定",
+      "adding": "添加中..."
+    },
+    "detail": {
+      "api_key": "API Key",
+      "api_key_placeholder": "输入 API Key",
+      "api_key_saved_placeholder": "API Key 已保存（输入新密钥可替换）",
+      "api_key_stored_hint": "您的 API Key 已安全存储。输入新密钥可替换现有密钥。",
+      "api_proxy_url": "API 代理地址",
+      "connectivity_check": "连接测试",
+      "select_model_to_check": "选择要测试的模型",
+      "search_models": "搜索模型...",
+      "check": "测试",
+      "checking": "测试中",
+      "connected_in": "连接成功，耗时 {time}ms",
+      "connection_failed": "连接失败",
+      "encryption_hint": "您的密钥将使用 AES-GCM 加密算法进行加密",
+      "model_list": "模型列表",
+      "models_available": "共 {count} 个模型，分为 {categories} 个类别",
+      "search_models_placeholder": "搜索模型...",
+      "no_models_found": "未找到匹配的模型"
+    },
+    "model_types": {
+      "chat": "对话",
+      "embedding": "嵌入",
+      "image": "图像",
+      "tts": "语音合成",
+      "stt": "语音识别",
+      "realtime": "实时"
+    },
+    "abilities": {
+      "vision": "视觉",
+      "image_generation": "图像生成",
+      "reasoning": "推理 / 深度思考",
+      "online_search": "在线搜索",
+      "function_calls": "函数调用"
+    },
+    "delete_model_dialog": {
+      "title": "删除自定义模型",
+      "description": "确定要删除此模型吗？此操作无法撤销。",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "delete_provider_dialog": {
+      "title": "删除服务商",
+      "description": "确定要删除「{name}」吗？这将永久删除：",
+      "item_api_key": "您的 API Key 配置",
+      "item_model_settings": "所有已启用的模型设置",
+      "item_custom_models": "所有添加到此服务商的自定义模型",
+      "cannot_undo": "此操作无法撤销。",
+      "cancel": "取消",
+      "delete": "删除",
+      "deleting": "删除中..."
+    },
+    "api_key_required_dialog": {
+      "title": "需要 API Key",
+      "description": "启用此服务商的模型前，请先输入 API Key。请在上方输入框中输入您的 API Key。",
+      "ok": "确定"
+    },
+    "edit_model_dialog": {
+      "title": "编辑模型",
+      "model_information": "模型信息",
+      "model_id": "模型 ID",
+      "model_id_tooltip": "此模型的唯一标识符",
+      "display_name": "显示名称",
+      "capabilities": "能力",
+      "model_types": "模型类型",
+      "model_types_tooltip": "此模型支持的能力",
+      "streaming_output": "流式输出",
+      "streaming_output_tooltip": "模型是否支持流式响应",
+      "pricing": "价格",
+      "currency": "货币",
+      "input_price": "输入价格",
+      "output_price": "输出价格",
+      "per_million_tokens": "$ / 百万 Token",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中..."
+    },
+    "add_model_dialog": {
+      "title": "添加模型",
+      "model_id": "模型 ID",
+      "model_name": "模型名称",
+      "cancel": "取消",
+      "ok": "确定"
+    },
+    "ability_labels": {
+      "vision": "视觉",
+      "web_search": "网页搜索",
+      "reasoning": "推理",
+      "tool": "工具"
+    }
+  },
+  "History": {
+    "delete_aria_label": "删除对话",
+    "share_aria_label": "分享对话",
+    "share_success": "分享链接已复制到剪贴板",
+    "share_expires": "链接将于 {date} 过期",
+    "share_no_expire": "链接永不过期",
+    "share_failed": "创建分享链接失败",
+    "delete_success": "对话删除成功",
+    "delete_failed": "删除对话失败",
+    "delete_dialog_title": "删除对话",
+    "delete_dialog_description": "确定要删除此对话吗？此操作无法撤销。",
+    "delete_dialog_cancel": "取消",
+    "delete_dialog_confirm": "删除"
+  },
+  "Leaderboard": {
+    "title": "排行榜",
+    "elo_score": "ELO 分数"
+  },
+  "Account": {
+    "title": "账户",
+    "loading": "正在加载账户信息...",
+    "error": "加载账户信息失败，请刷新页面重试。",
+    "no_name": "未设置姓名",
+    "profile": {
+      "title": "个人资料",
+      "description": "更新您的账户详情和偏好设置",
+      "full_name": "姓名",
+      "full_name_placeholder": "输入您的姓名",
+      "email": "邮箱",
+      "bio": "个人简介",
+      "bio_placeholder": "介绍一下您自己...",
+      "save": "保存更改",
+      "saved": "已保存"
+    },
+    "subscription": {
+      "title": "订阅",
+      "current_plan": "当前方案",
+      "free": "免费版",
+      "api_requests": "API 请求数",
+      "monthly_limit": "已使用 {percent}% 的月度配额",
+      "upgrade": "升级方案"
+    },
+    "details": {
+      "title": "账户详情",
+      "member_since": "注册时间",
+      "account_id": "账户 ID",
+      "status": "状态",
+      "invited_by": "邀请人",
+      "active": "活跃"
+    }
   }
 }

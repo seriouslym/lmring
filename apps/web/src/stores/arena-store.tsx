@@ -10,11 +10,27 @@ import {
   type ModelOption,
 } from '@/types/arena';
 
+// Type for model override data
+export interface ModelOverrideData {
+  modelId: string;
+  displayName?: string | null;
+  groupName?: string | null;
+  abilities?: Record<string, boolean> | null;
+  supportsStreaming?: boolean | null;
+  priceCurrency?: string | null;
+  inputPrice?: number | null;
+  outputPrice?: number | null;
+}
+
 export type ArenaState = {
   comparisons: ModelComparison[];
   globalPrompt: string;
   initialized: boolean;
   availableModels: ModelOption[];
+  modelsLastLoadedAt: number | null;
+  enabledModelsMap: Map<string, Set<string>>;
+  customModelsMap: Map<string, Array<{ modelId: string; displayName: string }>>;
+  modelOverridesMap: Map<string, Map<string, ModelOverrideData>>;
 };
 
 export type ArenaActions = {
@@ -39,6 +55,12 @@ export type ArenaActions = {
   ) => void;
   setError: (index: number, error: string) => void;
   setAvailableModels: (models: ModelOption[]) => void;
+  setModelsLastLoadedAt: (timestamp: number | null) => void;
+  setComparisons: (comparisons: ModelComparison[]) => void;
+  resetComparisons: (availableModels: ModelOption[]) => void;
+  setEnabledModelsMap: (map: Map<string, Set<string>>) => void;
+  setCustomModelsMap: (map: Map<string, Array<{ modelId: string; displayName: string }>>) => void;
+  setModelOverridesMap: (map: Map<string, Map<string, ModelOverrideData>>) => void;
 };
 
 export type ArenaStore = ArenaState & ArenaActions;
@@ -60,6 +82,10 @@ const defaultInitState: ArenaState = {
   globalPrompt: '',
   initialized: false,
   availableModels: [],
+  modelsLastLoadedAt: null,
+  enabledModelsMap: new Map(),
+  customModelsMap: new Map(),
+  modelOverridesMap: new Map(),
 };
 
 export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
@@ -76,14 +102,12 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
           if (state.initialized || availableModels.length === 0) return;
 
           const defaultModelId = availableModels[0]?.id || '';
-          const secondDefaultModelId =
-            availableModels.find((m) => m.id !== defaultModelId)?.id || defaultModelId;
 
           set(
             {
               comparisons: [
                 createEmptyComparison('1', defaultModelId),
-                createEmptyComparison('2', secondDefaultModelId),
+                createEmptyComparison('2', defaultModelId),
               ],
               initialized: true,
               availableModels,
@@ -97,9 +121,7 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
           const state = get();
           if (state.comparisons.length >= 4) return;
 
-          const usedModelIds = state.comparisons.map((c) => c.modelId);
-          const availableModel = state.availableModels.find((m) => !usedModelIds.includes(m.id));
-          const newModelId = availableModel?.id || state.availableModels[0]?.id || '';
+          const newModelId = state.availableModels[0]?.id || '';
 
           set(
             {
@@ -265,6 +287,34 @@ export const createArenaStore = (initState: Partial<ArenaState> = {}) => {
 
         setAvailableModels: (models) =>
           set({ availableModels: models }, false, 'arena/setAvailableModels'),
+
+        setModelsLastLoadedAt: (timestamp) =>
+          set({ modelsLastLoadedAt: timestamp }, false, 'arena/setModelsLastLoadedAt'),
+
+        setComparisons: (comparisons) => set({ comparisons }, false, 'arena/setComparisons'),
+
+        resetComparisons: (availableModels) => {
+          const defaultModelId = availableModels[0]?.id || '';
+          set(
+            {
+              comparisons: [
+                createEmptyComparison('1', defaultModelId),
+                createEmptyComparison('2', defaultModelId),
+              ],
+            },
+            false,
+            'arena/resetComparisons',
+          );
+        },
+
+        setEnabledModelsMap: (map) =>
+          set({ enabledModelsMap: map }, false, 'arena/setEnabledModelsMap'),
+
+        setCustomModelsMap: (map) =>
+          set({ customModelsMap: map }, false, 'arena/setCustomModelsMap'),
+
+        setModelOverridesMap: (map) =>
+          set({ modelOverridesMap: map }, false, 'arena/setModelOverridesMap'),
       }),
       { name: 'arena-store', enabled: process.env.NODE_ENV === 'development' },
     ),
@@ -301,4 +351,8 @@ export const arenaSelectors = {
   availableModels: (state: ArenaStore) => state.availableModels,
   isAnyLoading: (state: ArenaStore) => state.comparisons.some((c) => c.isLoading),
   comparisonCount: (state: ArenaStore) => state.comparisons.length,
+  modelsLastLoadedAt: (state: ArenaStore) => state.modelsLastLoadedAt,
+  enabledModelsMap: (state: ArenaStore) => state.enabledModelsMap,
+  customModelsMap: (state: ArenaStore) => state.customModelsMap,
+  modelOverridesMap: (state: ArenaStore) => state.modelOverridesMap,
 };

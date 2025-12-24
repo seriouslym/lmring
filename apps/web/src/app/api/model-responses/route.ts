@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       responseContent: string;
       tokensUsed?: number;
       responseTimeMs?: number;
+      displayPosition?: number;
     };
 
     const validationResult = modelResponseSchema.safeParse(rawBody);
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         responseContent: body.responseContent,
         tokensUsed: body.tokensUsed,
         responseTimeMs: body.responseTimeMs,
+        displayPosition: body.displayPosition ?? 0,
       })
       .returning();
 
@@ -96,6 +98,7 @@ export async function GET(request: Request) {
         responseContent: modelResponses.responseContent,
         tokensUsed: modelResponses.tokensUsed,
         responseTimeMs: modelResponses.responseTimeMs,
+        displayPosition: modelResponses.displayPosition,
         createdAt: modelResponses.createdAt,
       })
       .from(modelResponses)

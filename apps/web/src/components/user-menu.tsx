@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@lmring/ui';
-import { LayoutDashboardIcon, LogOutIcon, PaletteIcon, SettingsIcon, UserIcon } from 'lucide-react';
+import { LayoutDashboardIcon, LogOutIcon, SettingsIcon, UserIcon } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { authClient } from '@/libs/AuthClient';
 
 interface UserMenuProps {
@@ -25,6 +26,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, collapsed = false }: UserMenuProps) {
+  const t = useTranslations('Sidebar');
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || 'en';
@@ -85,15 +87,7 @@ export function UserMenu({ user, collapsed = false }: UserMenuProps) {
           className="apple-transition"
         >
           <UserIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Account</span>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onClick={() => router.push(`/${locale}/theme`)}
-          className="apple-transition"
-        >
-          <PaletteIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Theme</span>
+          <span className="font-medium">{t('user_menu.account')}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -101,7 +95,7 @@ export function UserMenu({ user, collapsed = false }: UserMenuProps) {
           className="apple-transition"
         >
           <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Arena</span>
+          <span className="font-medium">{t('user_menu.arena')}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -109,7 +103,7 @@ export function UserMenu({ user, collapsed = false }: UserMenuProps) {
           className="apple-transition"
         >
           <SettingsIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Settings</span>
+          <span className="font-medium">{t('user_menu.settings')}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="bg-border/50" />
@@ -119,7 +113,7 @@ export function UserMenu({ user, collapsed = false }: UserMenuProps) {
           className="text-destructive focus:text-destructive cursor-pointer apple-transition"
         >
           <LogOutIcon className="mr-2 h-4 w-4" />
-          <span className="font-medium">Logout</span>
+          <span className="font-medium">{t('user_menu.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

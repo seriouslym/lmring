@@ -89,5 +89,259 @@
     "vllm_description": "vLLM is a high-throughput inference engine for LLMs.",
     "xinference_description": "Xinference is a distributed inference framework for various AI models.",
     "higress_description": "Higress is an AI gateway for managing and routing model requests."
+  },
+  "Arena": {
+    "loading_models": "Loading models...",
+    "configure_api_keys_title": "Please configure API Keys first",
+    "configure_api_keys_description": "You need to configure at least one Provider API Key in the settings page to use this feature",
+    "go_to_settings": "Go to Settings",
+    "select_model_title": "Please select at least one model",
+    "select_model_description": "Please ensure at least one model has sync enabled",
+    "select_model_for_all_cards_title": "Please select a model for all cards",
+    "select_model_for_all_cards_description": "All synced cards must have a model selected before submitting",
+    "missing_api_key_title": "Missing API Key configuration",
+    "missing_api_key_description": "The following Providers do not have API Keys configured: {providers}",
+    "prompt_placeholder": "Ask anything to compare model responses...",
+    "custom_model": "Custom"
+  },
+  "Settings": {
+    "title": "Settings",
+    "description": "Preferences and model settings.",
+    "powered_by": "Powered by {name}",
+    "tabs": {
+      "general": "General",
+      "provider": "AI Provider",
+      "system_model": "System Model",
+      "storage": "Data Storage",
+      "help": "Help & Support",
+      "about": "About"
+    },
+    "general": {
+      "title": "General Settings",
+      "theme": "Theme",
+      "theme_light": "Light",
+      "theme_dark": "Dark",
+      "theme_auto": "Automatic",
+      "language": "Language"
+    },
+    "system_model": {
+      "title": "System Models",
+      "description": "Default models provided by the system.",
+      "system_default": "System Default",
+      "chat": "Chat"
+    },
+    "storage": {
+      "title": "Advanced Operations",
+      "import_data": "Import Data",
+      "import_data_description": "Import data from a local file",
+      "import": "Import",
+      "clear_sessions": "Clear All Session Messages",
+      "clear_sessions_description": "This will clear all session data, including assistant, files, messages, plugins, etc.",
+      "clear_now": "Clear Now",
+      "reset_settings": "Reset All Settings",
+      "reset_settings_description": "Reset all settings to default values",
+      "reset_now": "Reset Now"
+    },
+    "help": {
+      "title": "Help & Support",
+      "description": "Resources and support to help you get the most out of LMRing.",
+      "resources": "Resources",
+      "how_it_works": "How it Works",
+      "how_it_works_description": "Learn how LMRing works",
+      "help_center": "Help Center",
+      "help_center_description": "Browse FAQs and guides",
+      "about_us": "About Us",
+      "about_lmring": "About LMRing",
+      "about_lmring_description": "Learn about our mission",
+      "join_team": "Join the Team",
+      "join_team_description": "View open positions"
+    },
+    "about": {
+      "title": "About LMRing",
+      "changelog": "Changelog",
+      "contact_us": "Contact Us",
+      "official_website": "Official Website",
+      "email_support": "Email Support",
+      "community": "Community and News",
+      "legal": "Legal Disclaimer",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "telemetry": "Send Anonymous Usage Data",
+      "telemetry_description": "By opting to send telemetry data, you can help us improve the overall user experience."
+    }
+  },
+  "Sidebar": {
+    "new_chat": "New Chat",
+    "leaderboard": "Leaderboard",
+    "history": "History",
+    "today": "Today",
+    "resources": "Resources",
+    "about_us": "About Us",
+    "how_it_works": "How it Works",
+    "help_center": "Help Center",
+    "join_team": "Join the Team",
+    "user_menu": {
+      "account": "Account",
+      "theme": "Theme",
+      "arena": "Arena",
+      "settings": "Settings",
+      "logout": "Logout"
+    }
+  },
+  "Provider": {
+    "search_placeholder": "Search...",
+    "all_providers": "All Providers",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "add_provider": "Add Provider",
+    "add_provider_dialog": {
+      "title": "Add Provider",
+      "provider_name": "Provider Name",
+      "provider_type": "Provider Type",
+      "select_provider_type": "Select provider type",
+      "cancel": "Cancel",
+      "ok": "OK",
+      "adding": "Adding..."
+    },
+    "detail": {
+      "api_key": "API Key",
+      "api_key_placeholder": "Enter API Key",
+      "api_key_saved_placeholder": "API Key saved (enter new to replace)",
+      "api_key_stored_hint": "Your API key is securely stored. Enter a new key to replace it.",
+      "api_proxy_url": "API Proxy URL",
+      "connectivity_check": "Connectivity Check",
+      "select_model_to_check": "Select model to check",
+      "search_models": "Search models...",
+      "check": "Check",
+      "checking": "Checking",
+      "connected_in": "Connected in {time}ms",
+      "connection_failed": "Connection failed",
+      "encryption_hint": "Your key will be encrypted using AES-GCM encryption algorithm",
+      "model_list": "Model List",
+      "models_available": "{count} models available across {categories} categories",
+      "search_models_placeholder": "Search Models...",
+      "no_models_found": "No models found matching your search"
+    },
+    "model_types": {
+      "chat": "Chat",
+      "embedding": "Embedding",
+      "image": "Image",
+      "tts": "TTS",
+      "stt": "STT",
+      "realtime": "Realtime"
+    },
+    "abilities": {
+      "vision": "Vision",
+      "image_generation": "Image Generation",
+      "reasoning": "Reasoning / Deep Thinking",
+      "online_search": "Online Search",
+      "function_calls": "Function Calls"
+    },
+    "delete_model_dialog": {
+      "title": "Delete Custom Model",
+      "description": "Are you sure you want to delete this model? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "delete_provider_dialog": {
+      "title": "Delete Provider",
+      "description": "Are you sure you want to delete \"{name}\"? This will permanently remove:",
+      "item_api_key": "Your API key configuration",
+      "item_model_settings": "All enabled model settings",
+      "item_custom_models": "All custom models added to this provider",
+      "cannot_undo": "This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "api_key_required_dialog": {
+      "title": "API Key Required",
+      "description": "You need to enter an API key before enabling models for this provider. Please enter your API key in the field above.",
+      "ok": "OK"
+    },
+    "edit_model_dialog": {
+      "title": "Edit Model",
+      "model_information": "Model Information",
+      "model_id": "Model ID",
+      "model_id_tooltip": "The unique identifier for this model",
+      "display_name": "Display Name",
+      "capabilities": "Capabilities",
+      "model_types": "Model Types",
+      "model_types_tooltip": "Capabilities supported by this model",
+      "streaming_output": "Streaming Output",
+      "streaming_output_tooltip": "Whether the model supports streaming responses",
+      "pricing": "Pricing",
+      "currency": "Currency",
+      "input_price": "Input Price",
+      "output_price": "Output Price",
+      "per_million_tokens": "$ / M Tokens",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "add_model_dialog": {
+      "title": "Add Model",
+      "model_id": "Model ID",
+      "model_name": "Model Name",
+      "cancel": "Cancel",
+      "ok": "OK"
+    },
+    "ability_labels": {
+      "vision": "Vision",
+      "web_search": "WebSearch",
+      "reasoning": "Reasoning",
+      "tool": "Tool"
+    }
+  },
+  "History": {
+    "delete_aria_label": "Delete conversation",
+    "share_aria_label": "Share conversation",
+    "share_success": "Share link copied to clipboard",
+    "share_expires": "Link expires on {date}",
+    "share_no_expire": "Link does not expire",
+    "share_failed": "Failed to create share link",
+    "delete_success": "Conversation deleted successfully",
+    "delete_failed": "Failed to delete conversation",
+    "delete_dialog_title": "Delete Conversation",
+    "delete_dialog_description": "Are you sure you want to delete this conversation? This action cannot be undone.",
+    "delete_dialog_cancel": "Cancel",
+    "delete_dialog_confirm": "Delete"
+  },
+  "Leaderboard": {
+    "title": "Leaderboard",
+    "elo_score": "ELO Score"
+  },
+  "Account": {
+    "title": "Account",
+    "loading": "Loading account information...",
+    "error": "Failed to load account information. Please try refreshing the page.",
+    "no_name": "No name set",
+    "profile": {
+      "title": "Profile Information",
+      "description": "Update your account details and preferences",
+      "full_name": "Full Name",
+      "full_name_placeholder": "Enter your full name",
+      "email": "Email",
+      "bio": "Bio",
+      "bio_placeholder": "Tell us about yourself...",
+      "save": "Save Changes",
+      "saved": "Saved"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "current_plan": "Current Plan",
+      "free": "Free",
+      "api_requests": "API Requests",
+      "monthly_limit": "{percent}% of monthly limit used",
+      "upgrade": "Upgrade Plan"
+    },
+    "details": {
+      "title": "Account Details",
+      "member_since": "Member Since",
+      "account_id": "Account ID",
+      "status": "Status",
+      "invited_by": "Invited By",
+      "active": "active"
+    }
   }
 }

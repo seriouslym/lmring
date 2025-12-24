@@ -15,23 +15,21 @@ export interface ModelOption {
   type?: 'hobby' | 'pro';
   isPremium?: boolean;
   isNew?: boolean;
+  isCustom?: boolean;
   default?: boolean;
 }
 
 export interface ModelConfig {
   maxTokens: number;
   temperature: number;
-  topP: number;
-  frequencyPenalty: number;
-  presencePenalty: number;
+  topP?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
 }
 
 export const DEFAULT_MODEL_CONFIG: ModelConfig = {
   maxTokens: 2048,
   temperature: 0.7,
-  topP: 0.9,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
 };
 
 export interface ModelComparison {

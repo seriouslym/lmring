@@ -12,3 +12,9 @@ export {
   settingsSelectors,
   useSettingsStore,
 } from './settings-store';
+export type { WorkflowActions, WorkflowState, WorkflowStore } from './workflow-store';
+export {
+  useWorkflowStore,
+  WorkflowStoreProvider,
+  workflowSelectors,
+} from './workflow-store';

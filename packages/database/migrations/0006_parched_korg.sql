@@ -1,0 +1,1 @@
+ALTER TABLE "model_responses" ADD COLUMN "display_position" integer DEFAULT 0 NOT NULL;

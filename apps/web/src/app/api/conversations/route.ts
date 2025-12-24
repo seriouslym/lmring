@@ -1,9 +1,19 @@
-import { db, desc, eq } from '@lmring/database';
-import { conversations } from '@lmring/database/schema';
+import { and, asc, db, desc, eq, inArray } from '@lmring/database';
+import { conversations, messages, modelResponses } from '@lmring/database/schema';
 import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
 import { logError } from '@/libs/error-logging';
 import { conversationSchema } from '@/libs/validation';
+
+interface ConversationWithExtras {
+  id: string;
+  userId: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  firstMessage?: string;
+  models?: Array<{ modelName: string; providerName: string }>;
+}
 
 export async function GET(request: Request) {
   try {
@@ -21,6 +31,8 @@ export async function GET(request: Request) {
     const parsedOffset = Number.parseInt(searchParams.get('offset') || '0', 10);
     const limit = Number.isNaN(parsedLimit) || parsedLimit < 1 ? 50 : Math.min(parsedLimit, 100);
     const offset = Number.isNaN(parsedOffset) || parsedOffset < 0 ? 0 : parsedOffset;
+    const withFirstMessage = searchParams.get('withFirstMessage') === 'true';
+    const withModels = searchParams.get('withModels') === 'true';
 
     const userConversations = await db
       .select()
@@ -30,7 +42,73 @@ export async function GET(request: Request) {
       .limit(limit)
       .offset(offset);
 
-    return NextResponse.json({ conversations: userConversations }, { status: 200 });
+    if (!withFirstMessage && !withModels) {
+      return NextResponse.json({ conversations: userConversations }, { status: 200 });
+    }
+
+    const conversationIds = userConversations.map((c) => c.id);
+
+    if (conversationIds.length === 0) {
+      return NextResponse.json({ conversations: [] }, { status: 200 });
+    }
+
+    const result: ConversationWithExtras[] = userConversations.map((c) => ({
+      ...c,
+    }));
+
+    if (withFirstMessage) {
+      const firstMessages = await db
+        .select({
+          conversationId: messages.conversationId,
+          content: messages.content,
+        })
+        .from(messages)
+        .where(and(inArray(messages.conversationId, conversationIds), eq(messages.role, 'user')))
+        .orderBy(asc(messages.createdAt));
+
+      const firstMessageMap = new Map<string, string>();
+      for (const msg of firstMessages) {
+        if (!firstMessageMap.has(msg.conversationId)) {
+          firstMessageMap.set(msg.conversationId, msg.content);
+        }
+      }
+
+      for (const conv of result) {
+        const firstMsg = firstMessageMap.get(conv.id);
+        if (firstMsg) {
+          conv.firstMessage = firstMsg;
+        }
+      }
+    }
+
+    if (withModels) {
+      const modelsUsed = await db
+        .selectDistinct({
+          conversationId: messages.conversationId,
+          modelName: modelResponses.modelName,
+          providerName: modelResponses.providerName,
+        })
+        .from(modelResponses)
+        .innerJoin(messages, eq(modelResponses.messageId, messages.id))
+        .where(inArray(messages.conversationId, conversationIds));
+
+      const modelsMap = new Map<string, Array<{ modelName: string; providerName: string }>>();
+      for (const model of modelsUsed) {
+        if (!modelsMap.has(model.conversationId)) {
+          modelsMap.set(model.conversationId, []);
+        }
+        modelsMap.get(model.conversationId)?.push({
+          modelName: model.modelName,
+          providerName: model.providerName,
+        });
+      }
+
+      for (const conv of result) {
+        conv.models = modelsMap.get(conv.id) || [];
+      }
+    }
+
+    return NextResponse.json({ conversations: result }, { status: 200 });
   } catch (error) {
     logError('Get conversations error', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

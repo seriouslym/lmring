@@ -49,6 +49,8 @@ export async function fetchUserApiKeys(
       providerName: string;
       apiKey: string;
       proxyUrl: string | null;
+      isCustom: boolean;
+      providerType: string | null;
     }
   >
 > {
@@ -62,6 +64,8 @@ export async function fetchUserApiKeys(
       providerName: apiKeys.providerName,
       encryptedKey: apiKeys.encryptedKey,
       proxyUrl: apiKeys.proxyUrl,
+      isCustom: apiKeys.isCustom,
+      providerType: apiKeys.providerType,
     })
     .from(apiKeys)
     .where(and(inArray(apiKeys.id, keyIds), eq(apiKeys.userId, userId)));
@@ -72,6 +76,8 @@ export async function fetchUserApiKeys(
       providerName: string;
       apiKey: string;
       proxyUrl: string | null;
+      isCustom: boolean;
+      providerType: string | null;
     }
   >();
 
@@ -83,6 +89,8 @@ export async function fetchUserApiKeys(
       providerName: key.providerName,
       apiKey: decrypt(key.encryptedKey),
       proxyUrl: key.proxyUrl,
+      isCustom: key.isCustom,
+      providerType: key.providerType,
     });
   }
 
@@ -143,6 +151,8 @@ export interface KeyData {
   providerName: string;
   apiKey: string;
   proxyUrl: string | null;
+  isCustom: boolean;
+  providerType: string | null;
 }
 
 /**

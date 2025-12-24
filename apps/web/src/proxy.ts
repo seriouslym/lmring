@@ -120,6 +120,7 @@ export const config = {
   // Match all pathnames except for
   // - … if they start with `/api` (API routes, including auth)
   // - … if they start with `/_next`, `/_vercel` or `monitoring`
+  // - … if they start with `/shared` (public shared pages, no i18n needed)
   // - … the ones containing a dot (e.g. `favicon.ico`)
-  matcher: '/((?!api|_next|_vercel|monitoring|.*\\..*).*)',
+  matcher: '/((?!api|_next|_vercel|monitoring|shared|.*\\..*).*)',
 };
