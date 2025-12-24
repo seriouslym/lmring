@@ -34,6 +34,7 @@ const { mockDbInstance, mockAuthInstance } = vi.hoisted(() => {
       offset: vi.fn().mockReturnThis(),
       orderBy: vi.fn().mockReturnThis(),
       innerJoin: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
       groupBy: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
       values: vi.fn().mockReturnThis(),
@@ -92,6 +93,22 @@ vi.mock('@lmring/database/schema', () => ({
     expiresAt: 'expiresAt',
     createdAt: 'createdAt',
   },
+  users: {
+    id: 'id',
+    fullName: 'fullName',
+    avatarUrl: 'avatarUrl',
+  },
+  modelResponses: {
+    id: 'id',
+    messageId: 'messageId',
+    modelName: 'modelName',
+    providerName: 'providerName',
+    responseContent: 'responseContent',
+    tokensUsed: 'tokensUsed',
+    responseTimeMs: 'responseTimeMs',
+    displayPosition: 'displayPosition',
+    createdAt: 'createdAt',
+  },
 }));
 
 vi.mock('nanoid', () => ({
@@ -107,6 +124,15 @@ describe('Share and Shared Results API', () => {
     title: 'Test Conversation',
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  const mockConversationWithUser = {
+    id: 'conv-123',
+    title: 'Test Conversation',
+    createdAt: new Date(),
+    userId: 'test-user-id',
+    userName: 'Test User',
+    userAvatarUrl: null,
   };
 
   const mockMessages = [
@@ -291,6 +317,7 @@ describe('Share and Shared Results API', () => {
 
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
+      mockDbInstance.leftJoin.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
       mockDbInstance.limit.mockResolvedValueOnce([]);
 
@@ -304,6 +331,7 @@ describe('Share and Shared Results API', () => {
     });
 
     it('should return shared conversation with messages', async () => {
+      // First query: get shared result
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
@@ -311,8 +339,9 @@ describe('Share and Shared Results API', () => {
 
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
+      mockDbInstance.leftJoin.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
-      mockDbInstance.limit.mockResolvedValueOnce([mockConversation]);
+      mockDbInstance.limit.mockResolvedValueOnce([mockConversationWithUser]);
 
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
@@ -334,6 +363,7 @@ describe('Share and Shared Results API', () => {
     });
 
     it('should not require authentication for shared links', async () => {
+      // First query: get shared result
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
@@ -341,8 +371,9 @@ describe('Share and Shared Results API', () => {
 
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);
+      mockDbInstance.leftJoin.mockReturnValue(mockDbInstance);
       mockDbInstance.where.mockReturnValue(mockDbInstance);
-      mockDbInstance.limit.mockResolvedValueOnce([mockConversation]);
+      mockDbInstance.limit.mockResolvedValueOnce([mockConversationWithUser]);
 
       mockDbInstance.select.mockReturnValue(mockDbInstance);
       mockDbInstance.from.mockReturnValue(mockDbInstance);

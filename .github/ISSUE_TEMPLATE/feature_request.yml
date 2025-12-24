@@ -1,0 +1,66 @@
+name: "✨ Feature Request"
+description: "Suggest a new feature or enhancement"
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your suggestion! Please describe your idea.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: "Related Package"
+      description: "Which package should this feature be added to?"
+      options:
+        - "apps/web"
+        - "packages/ai-hub"
+        - "packages/auth"
+        - "packages/database"
+        - "packages/env"
+        - "packages/i18n"
+        - "packages/model-depot"
+        - "packages/ui"
+        - "New Package"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem Statement"
+      description: "What problem does this solve?"
+      placeholder: "Is your feature request related to a problem?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: "How would you like this to work?"
+      placeholder: "Describe your ideal solution"
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: "Use Case"
+      description: "Real-world scenario where this would help"
+      placeholder: "As a user, I want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered (Optional)"
+      placeholder: "Other solutions you've thought about"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional Context (Optional)"
+      description: "Mockups, examples, references"

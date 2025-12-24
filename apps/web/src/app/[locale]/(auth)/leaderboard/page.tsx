@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@lmring/ui';
 import { motion } from 'framer-motion';
 import { TrendingDownIcon, TrendingUpIcon, TrophyIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const mockLeaderboard = [
   { rank: 1, name: 'GPT-4 Turbo', provider: 'OpenAI', elo: 1812, change: '+12', trend: 'up' },
@@ -23,6 +24,7 @@ const mockLeaderboard = [
 ];
 
 export default function LeaderboardPage() {
+  const t = useTranslations('Leaderboard');
   return (
     <div className="p-6 space-y-6">
       <motion.div
@@ -32,7 +34,7 @@ export default function LeaderboardPage() {
       >
         <div className="flex items-center gap-3 mb-6">
           <TrophyIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Model Leaderboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
         </div>
 
         <div className="grid gap-4">
@@ -60,7 +62,7 @@ export default function LeaderboardPage() {
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <div className="text-2xl font-bold">{model.elo}</div>
-                      <div className="text-sm text-muted-foreground">ELO Score</div>
+                      <div className="text-sm text-muted-foreground">{t('elo_score')}</div>
                     </div>
                     <div className="flex items-center gap-1">
                       {model.trend === 'up' ? (

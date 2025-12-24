@@ -2,7 +2,6 @@ import type { Locale } from '@lmring/i18n';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { UserMenu } from '@/components/user-menu';
 import { auth } from '@/libs/Auth';
 import { BaseTemplate } from '@/templates/BaseTemplate';
@@ -36,30 +35,24 @@ export default async function PublicLayout(props: {
     <BaseTemplate
       showSidebar={false}
       rightNav={
-        <>
-          {!session?.user ? (
-            <>
-              <li>
-                <Link href="/sign-in/" className="border-none text-gray-700 hover:text-gray-900">
-                  {t('sign_in_link')}
-                </Link>
-              </li>
-              <li>
-                <Link href="/sign-up/" className="border-none text-gray-700 hover:text-gray-900">
-                  {t('sign_up_link')}
-                </Link>
-              </li>
-            </>
-          ) : (
+        !session?.user ? (
+          <>
             <li>
-              <UserMenu user={userData} />
+              <Link href="/sign-in/" className="border-none text-gray-700 hover:text-gray-900">
+                {t('sign_in_link')}
+              </Link>
             </li>
-          )}
-
+            <li>
+              <Link href="/sign-up/" className="border-none text-gray-700 hover:text-gray-900">
+                {t('sign_up_link')}
+              </Link>
+            </li>
+          </>
+        ) : (
           <li>
-            <LocaleSwitcher />
+            <UserMenu user={userData} />
           </li>
-        </>
+        )
       }
     >
       {props.children}

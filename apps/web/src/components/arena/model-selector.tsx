@@ -1,157 +1,77 @@
 'use client';
 
-import { Badge, Button, Popover, PopoverContent, PopoverTrigger } from '@lmring/ui';
+import {
+  Badge,
+  Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@lmring/ui';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 
 import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelOption } from '@/types/arena';
 
-interface ModelSelectorProps {
+interface ModelSelectorTriggerProps {
   models: ModelOption[];
   selectedModel?: string;
-  onModelSelect: (modelId: string) => void;
+  onClick: () => void;
   onRemove?: () => void;
   placeholder?: string;
   disabled?: boolean;
   showRemove?: boolean;
 }
 
-export function ModelSelector({
+export function ModelSelectorTrigger({
   models,
   selectedModel,
-  onModelSelect,
+  onClick,
   onRemove,
   placeholder = 'Select a model',
   disabled = false,
   showRemove = false,
-}: ModelSelectorProps) {
-  const [open, setOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  const filteredModels = React.useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) {
-      return [...models];
-    }
-
-    return models.filter(
-      (model) =>
-        model.name.toLowerCase().includes(query) ||
-        model.provider.toLowerCase().includes(query) ||
-        model.id.toLowerCase().includes(query),
-    );
-  }, [models, searchQuery]);
-
+}: ModelSelectorTriggerProps) {
+  const t = useTranslations('Arena');
   const selectedModelInfo = models.find((m) => m.id === selectedModel);
 
-  React.useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-    } else {
-      setSearchQuery('');
-    }
-  }, [open]);
-
-  const handleSelect = (modelId: string) => {
-    onModelSelect(modelId);
-    setOpen(false);
-    setSearchQuery('');
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2 }}
-      className="relative w-full"
-    >
+    <div className="relative w-full">
       <div className="flex items-center gap-2">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              disabled={disabled}
-              className="w-full h-10 justify-between font-normal"
-            >
-              <div className="flex items-center gap-2 truncate">
-                {selectedModelInfo ? (
-                  <>
-                    <ProviderIcon providerId={selectedModelInfo.providerId} size={16} />
-                    <span className="text-sm truncate">{selectedModelInfo.name}</span>
-                    {selectedModelInfo.isNew && (
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
-                        NEW
-                      </Badge>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">{placeholder}</span>
+        <Button
+          variant="outline"
+          role="combobox"
+          onClick={onClick}
+          disabled={disabled}
+          className="w-full h-9 justify-between font-normal rounded-lg overflow-hidden"
+        >
+          <div className="flex items-center gap-2 truncate min-w-0">
+            {selectedModelInfo ? (
+              <>
+                <ProviderIcon providerId={selectedModelInfo.providerId} size={16} />
+                <span className="text-sm font-medium truncate">{selectedModelInfo.name}</span>
+                {selectedModelInfo.isCustom && (
+                  <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
+                    {t('custom_model')}
+                  </Badge>
                 )}
-              </div>
-              <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0" align="start">
-            <div className="flex items-center border-b px-3 py-2">
-              <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Search models..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 h-8 border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="ml-2 p-1 rounded hover:bg-muted"
-                >
-                  <XIcon className="h-3 w-3 opacity-50" />
-                </button>
-              )}
-            </div>
-            <div className="max-h-[300px] overflow-y-auto">
-              {filteredModels.length === 0 ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  No models found
-                </div>
-              ) : (
-                <div className="p-1">
-                  {filteredModels.map((model) => (
-                    <button
-                      type="button"
-                      key={model.id}
-                      onClick={() => handleSelect(model.id)}
-                      className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                    >
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <ProviderIcon providerId={model.providerId} size={16} />
-                        <span className="font-medium truncate">{model.name}</span>
-                        {model.isNew && (
-                          <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
-                            NEW
-                          </Badge>
-                        )}
-                      </div>
-                      {selectedModel === model.id && (
-                        <CheckIcon className="h-4 w-4 shrink-0 ml-2" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
+                {selectedModelInfo.isNew && (
+                  <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                    NEW
+                  </Badge>
+                )}
+              </>
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
 
         <AnimatePresence>
           {showRemove && selectedModel && (
@@ -163,11 +83,109 @@ export function ModelSelector({
               className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
               aria-label="Remove model"
             >
-              <XIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </motion.button>
           )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+interface ModelSelectorOverlayProps {
+  models: ModelOption[];
+  selectedModel?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onModelSelect: (modelId: string) => void;
+}
+
+export function ModelSelectorOverlay({
+  models,
+  selectedModel,
+  isOpen,
+  onClose,
+  onModelSelect,
+}: ModelSelectorOverlayProps) {
+  const t = useTranslations('Arena');
+  const [, setSearchQuery] = React.useState('');
+
+  const groupedModels = React.useMemo(() => {
+    const groups: Record<string, ModelOption[]> = {};
+    models.forEach((model) => {
+      const providerName = model.provider || 'Other';
+      if (!groups[providerName]) {
+        groups[providerName] = [];
+      }
+      groups[providerName].push(model);
+    });
+    return groups;
+  }, [models]);
+
+  const handleSelect = (modelId: string) => {
+    onModelSelect(modelId);
+    onClose();
+    setSearchQuery('');
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={onClose}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="relative w-[90%] max-w-[400px] z-50"
+          >
+            <div className="rounded-xl border bg-card text-card-foreground shadow-xl overflow-hidden">
+              <Command shouldFilter={true} className="rounded-xl border shadow-md">
+                <CommandInput placeholder="Search models..." onValueChange={setSearchQuery} />
+                <CommandList className="max-h-[300px]">
+                  <CommandEmpty>No models found.</CommandEmpty>
+                  {Object.entries(groupedModels).map(([provider, providerModels]) => (
+                    <CommandGroup key={provider} heading={provider}>
+                      {providerModels.map((model) => (
+                        <CommandItem
+                          key={model.id}
+                          value={`${model.name} ${model.provider} ${model.id}`}
+                          onSelect={() => handleSelect(model.id)}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <ProviderIcon providerId={model.providerId} size={16} />
+                            <span className="font-medium truncate">{model.name}</span>
+                            {model.isCustom && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
+                                {t('custom_model')}
+                              </Badge>
+                            )}
+                            {model.isNew && (
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                                NEW
+                              </Badge>
+                            )}
+                          </div>
+                          {selectedModel === model.id && (
+                            <Check className="h-4 w-4 shrink-0 ml-2" />
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  ))}
+                </CommandList>
+              </Command>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -135,23 +135,6 @@
       ]
     },
     {
-      "description": "Automerge patch and minor updates for devDependencies",
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchPackageNames": [
-        "!typescript",
-        "!next",
-        "!@next/bundle-analyzer"
-      ]
-    },
-    {
       "description": "More frequent checks for security updates",
       "matchUpdateTypes": [
         "patch"
@@ -161,9 +144,7 @@
       ],
       "schedule": [
         "at any time"
-      ],
-      "automerge": true,
-      "automergeType": "pr"
+      ]
     },
     {
       "description": "Group major updates separately with manual review",

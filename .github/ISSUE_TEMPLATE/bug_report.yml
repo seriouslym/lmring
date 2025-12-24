@@ -1,0 +1,101 @@
+name: "🐛 Bug Report"
+description: "Report a bug to help us improve"
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please fill out the form below.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: "Package"
+      description: "Which package is affected?"
+      options:
+        - "apps/web"
+        - "packages/ai-hub"
+        - "packages/auth"
+        - "packages/database"
+        - "packages/env"
+        - "packages/i18n"
+        - "packages/model-depot"
+        - "packages/ui"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment-mode
+    attributes:
+      label: "Deployment Mode"
+      options:
+        - "SaaS"
+        - "Self-hosted"
+        - "Both"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Bug Description"
+      description: "Clear description of the bug"
+      placeholder: "What happened?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: "How can we reproduce this?"
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      placeholder: "What should happen?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      placeholder: "What actually happens?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Your environment details"
+      placeholder: |
+        - Node.js: v24.x
+        - pnpm: 10.x
+        - OS: macOS / Windows / Linux
+        - Browser: Chrome / Safari / Firefox
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs / Screenshots (Optional)"
+      description: "Any relevant logs or screenshots"
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional Context (Optional)"

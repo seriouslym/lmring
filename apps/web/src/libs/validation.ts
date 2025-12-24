@@ -41,6 +41,7 @@ export const modelResponseSchema = z.object({
   responseContent: z.string().trim().min(1).max(50000),
   tokensUsed: z.number().int().min(0).max(1000000).optional(),
   responseTimeMs: z.number().int().min(0).max(3600000).optional(),
+  displayPosition: z.number().int().min(0).max(10).optional(),
 });
 
 export const voteSchema = z.object({
@@ -101,6 +102,41 @@ export const customModelSchema = z.object({
   displayName: z.string().max(200).optional(),
 });
 
+// Schema for model abilities
+export const modelAbilitiesSchema = z.object({
+  files: z.boolean().optional(),
+  functionCall: z.boolean().optional(),
+  imageOutput: z.boolean().optional(),
+  reasoning: z.boolean().optional(),
+  search: z.boolean().optional(),
+  structuredOutput: z.boolean().optional(),
+  video: z.boolean().optional(),
+  vision: z.boolean().optional(),
+});
+
+// Schema for creating/updating model override (for default models)
+export const modelOverrideSchema = z.object({
+  modelId: z.string().min(1).max(200),
+  displayName: z.string().max(200).optional(),
+  groupName: z.string().max(100).optional(),
+  abilities: modelAbilitiesSchema.optional(),
+  supportsStreaming: z.boolean().optional(),
+  priceCurrency: z.enum(['USD', 'CNY']).optional(),
+  inputPrice: z.number().min(0).max(1000).optional(),
+  outputPrice: z.number().min(0).max(1000).optional(),
+});
+
+// Schema for updating custom model (full update)
+export const customModelUpdateSchema = z.object({
+  displayName: z.string().max(200).optional(),
+  groupName: z.string().max(100).optional(),
+  abilities: modelAbilitiesSchema.optional(),
+  supportsStreaming: z.boolean().optional(),
+  priceCurrency: z.enum(['USD', 'CNY']).optional(),
+  inputPrice: z.number().min(0).max(1000).optional(),
+  outputPrice: z.number().min(0).max(1000).optional(),
+});
+
 export const userPreferencesSchema = z.object({
   theme: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
@@ -112,20 +148,20 @@ export const shareSchema = z.object({
   expiresInDays: z.number().int().min(1).max(365).optional(),
 });
 
-export const arenaModelSchema = z.object({
+/**
+ * Schema for single workflow stream request
+ * Used by /api/workflow/stream endpoint
+ */
+export const workflowStreamSchema = z.object({
+  workflowId: z.uuid('Invalid workflow ID'),
+  modelId: z
+    .string()
+    .min(1)
+    .max(200)
+    .refine((val) => val.trim().length > 0, {
+      message: 'Model ID cannot be empty or whitespace only',
+    }),
   keyId: z.uuid('Invalid API key ID'),
-  modelId: z.string().min(1).max(200),
-  options: z
-    .object({
-      temperature: z.number().min(0).max(2).optional(),
-      maxTokens: z.number().int().min(1).max(100000).optional(),
-      topP: z.number().min(0).max(1).optional(),
-    })
-    .optional(),
-});
-
-export const arenaCompareSchema = z.object({
-  models: z.array(arenaModelSchema).min(1).max(10),
   messages: z
     .array(
       z.object({
@@ -135,12 +171,13 @@ export const arenaCompareSchema = z.object({
     )
     .min(1)
     .max(100),
-  options: z
-    .object({
-      streaming: z.boolean().optional(),
-      stopOnError: z.boolean().optional(),
-    })
-    .optional(),
+  config: z.object({
+    temperature: z.number().min(0).max(2).default(0.7),
+    maxTokens: z.number().int().min(1).max(100000).default(2048),
+    topP: z.number().min(0).max(1).optional(),
+    frequencyPenalty: z.number().min(-2).max(2).optional(),
+    presencePenalty: z.number().min(-2).max(2).optional(),
+  }),
 });
 
 export type ConversationInput = z.infer<typeof conversationSchema>;
@@ -154,8 +191,10 @@ export type ModelEnableInput = z.infer<typeof modelEnableSchema>;
 export type CustomModelInput = z.infer<typeof customModelSchema>;
 export type UserPreferencesInput = z.infer<typeof userPreferencesSchema>;
 export type ShareInput = z.infer<typeof shareSchema>;
-export type ArenaModelInput = z.infer<typeof arenaModelSchema>;
-export type ArenaCompareInput = z.infer<typeof arenaCompareSchema>;
+export type WorkflowStreamInput = z.infer<typeof workflowStreamSchema>;
+export type ModelAbilitiesInput = z.infer<typeof modelAbilitiesSchema>;
+export type ModelOverrideInput = z.infer<typeof modelOverrideSchema>;
+export type CustomModelUpdateInput = z.infer<typeof customModelUpdateSchema>;
 
 export function maskApiKey(apiKey: string): string {
   if (apiKey.length <= 8) {

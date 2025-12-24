@@ -15,13 +15,13 @@
   },
   "dependencies": {
     "@lmring/env": "workspace:*",
-    "drizzle-orm": "^0.45.0",
+    "drizzle-orm": "^0.45.1",
     "postgres": "^3.4.7"
   },
   "devDependencies": {
     "@lmring/typescript-config": "workspace:*",
-    "@types/node": "^24.10.2",
-    "@types/pg": "^8.15.6",
+    "@types/node": "^25.0.3",
+    "@types/pg": "^8.16.0",
     "drizzle-kit": "^0.31.8",
     "typescript": "^5.9.3"
   }

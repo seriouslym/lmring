@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -20,8 +19,6 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ChevronDownIcon,
-  ClockIcon,
   EraserIcon,
   ExternalLinkIcon,
   MoreHorizontalIcon,
@@ -35,16 +32,21 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { ModelSelectorOverlay, ModelSelectorTrigger } from '@/components/arena/model-selector';
 import { ProviderIcon } from '@/components/arena/provider-icon';
 import type { ModelConfig, ModelOption } from '@/types/arena';
+import type { PendingResponse, WorkflowMessage, WorkflowStatus } from '@/types/workflow';
+import { ChatList } from './chat/chat-list';
 
 interface ModelCardProps {
   modelId?: string;
   models: ModelOption[];
   response?: string;
+  messages?: WorkflowMessage[];
+  pendingResponse?: PendingResponse;
   isLoading?: boolean;
-  responseTime?: number;
-  tokenCount?: number;
+  status?: WorkflowStatus;
+  error?: string;
   synced?: boolean;
   customPrompt?: string;
   config?: ModelConfig;
@@ -62,23 +64,24 @@ interface ModelCardProps {
   onAddCard?: () => void;
   onThumbsUp?: () => void;
   onThumbsDown?: () => void;
+  onRetry?: (messageId: string) => void;
+  onMaximize?: (content: string) => void;
 }
 
 const DEFAULT_CONFIG: ModelConfig = {
   maxTokens: 2048,
   temperature: 0.7,
-  topP: 0.9,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
 };
 
 export function ModelCard({
   modelId,
   models,
+  messages,
+  pendingResponse,
   response = '',
   isLoading = false,
-  responseTime,
-  tokenCount,
+  status,
+  error,
   synced = true,
   customPrompt = '',
   config = DEFAULT_CONFIG,
@@ -96,10 +99,12 @@ export function ModelCard({
   onAddCard,
   onThumbsUp,
   onThumbsDown,
+  onRetry,
+  onMaximize,
 }: ModelCardProps) {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
-  const [modelMenuOpen, setModelMenuOpen] = React.useState(false);
+  const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
 
   const selectedModel = models.find((m) => m.id === modelId);
 
@@ -108,6 +113,8 @@ export function ModelCard({
       onConfigChange?.({ ...config, [key]: value });
     }
   };
+
+  const hasContent = (messages && messages.length > 0) || !!pendingResponse || !!response;
 
   return (
     <motion.div
@@ -120,65 +127,15 @@ export function ModelCard({
       }}
       className="w-full h-full"
     >
-      <Card className="h-full arena-card flex flex-col glass-effect">
+      <Card className="h-full min-h-0 arena-card flex flex-col glass-effect relative overflow-hidden">
         <CardHeader className="pb-3 flex-shrink-0 space-y-0">
           <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <button
-                type="button"
-                onClick={() => setModelMenuOpen(!modelMenuOpen)}
-                className="w-full flex items-center justify-between h-9 px-3 rounded-lg border border-border/50 hover:border-border transition-colors bg-background/50"
-              >
-                {selectedModel ? (
-                  <div className="flex items-center gap-2">
-                    <ProviderIcon providerId={selectedModel.providerId} size={16} />
-                    <span className="font-medium text-sm">{selectedModel.name}</span>
-                    {selectedModel.isNew && (
-                      <Badge variant="default" className="text-xs px-1.5 py-0">
-                        NEW
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Select a model...</span>
-                )}
-                <ChevronDownIcon className="h-4 w-4 opacity-50" />
-              </button>
-
-              {modelMenuOpen && (
-                <>
-                  <button
-                    type="button"
-                    className="fixed inset-0 z-10"
-                    onClick={() => setModelMenuOpen(false)}
-                    onKeyDown={(e) => e.key === 'Escape' && setModelMenuOpen(false)}
-                    aria-label="Close model selector"
-                  />
-                  <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-popover border rounded-xl shadow-lg max-h-[300px] overflow-y-auto">
-                    {models.map((model) => (
-                      <button
-                        key={model.id}
-                        type="button"
-                        onClick={() => {
-                          onModelSelect?.(model.id);
-                          setModelMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 py-3 px-3 hover:bg-accent transition-colors text-left"
-                      >
-                        <ProviderIcon providerId={model.providerId} size={16} />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm">{model.name}</div>
-                        </div>
-                        {model.isNew && (
-                          <Badge variant="default" className="text-xs px-1.5 py-0">
-                            NEW
-                          </Badge>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+            <div className="relative flex-1 min-w-0">
+              <ModelSelectorTrigger
+                models={models}
+                selectedModel={selectedModel?.id}
+                onClick={() => setModelSelectorOpen(true)}
+              />
             </div>
 
             <div className="flex items-center gap-1">
@@ -266,14 +223,12 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Top P</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.topP.toFixed(2)}
+                              {config.topP != null ? config.topP.toFixed(2) : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.topP]}
-                            onValueChange={([value]) =>
-                              handleConfigChange('topP', value ?? config.topP)
-                            }
+                            value={[config.topP ?? 0.9]}
+                            onValueChange={([value]) => handleConfigChange('topP', value)}
                             min={0}
                             max={1}
                             step={0.01}
@@ -284,16 +239,15 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Frequency Penalty</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.frequencyPenalty.toFixed(2)}
+                              {config.frequencyPenalty != null
+                                ? config.frequencyPenalty.toFixed(2)
+                                : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.frequencyPenalty]}
+                            value={[config.frequencyPenalty ?? 0]}
                             onValueChange={([value]) =>
-                              handleConfigChange(
-                                'frequencyPenalty',
-                                value ?? config.frequencyPenalty,
-                              )
+                              handleConfigChange('frequencyPenalty', value)
                             }
                             min={0}
                             max={2}
@@ -305,13 +259,15 @@ export function ModelCard({
                           <div className="flex items-center justify-between">
                             <Label className="text-sm">Presence Penalty</Label>
                             <span className="text-sm text-muted-foreground">
-                              {config.presencePenalty.toFixed(2)}
+                              {config.presencePenalty != null
+                                ? config.presencePenalty.toFixed(2)
+                                : '-'}
                             </span>
                           </div>
                           <Slider
-                            value={[config.presencePenalty]}
+                            value={[config.presencePenalty ?? 0]}
                             onValueChange={([value]) =>
-                              handleConfigChange('presencePenalty', value ?? config.presencePenalty)
+                              handleConfigChange('presencePenalty', value)
                             }
                             min={0}
                             max={2}
@@ -430,7 +386,7 @@ export function ModelCard({
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col space-y-0 overflow-hidden pb-4">
-          {!response && !isLoading && selectedModel ? (
+          {!hasContent && !isLoading && selectedModel ? (
             <div className="flex-1 flex items-center justify-center p-4">
               <div className="rounded-lg border bg-muted/30 p-4 space-y-3 max-w-xl w-full backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -469,45 +425,18 @@ export function ModelCard({
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="space-y-4 p-1">
-                {(responseTime || tokenCount) && (
-                  <div className="flex items-center gap-2">
-                    {responseTime && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <ClockIcon className="h-3 w-3" />
-                        {responseTime}ms
-                      </Badge>
-                    )}
-                    {tokenCount && <Badge variant="secondary">{tokenCount} tokens</Badge>}
-                  </div>
-                )}
-
-                {isLoading && (
-                  <div className="space-y-3">
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    />
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse w-5/6"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                    />
-                    <motion.div
-                      className="h-4 bg-muted/50 rounded animate-pulse w-4/6"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                    />
-                  </div>
-                )}
-
-                {response && !isLoading && (
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{response}</p>
-                  </div>
-                )}
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 min-h-0">
+                <ChatList
+                  messages={messages || []}
+                  pendingResponse={pendingResponse}
+                  isLoading={isLoading}
+                  status={status}
+                  error={error}
+                  providerId={selectedModel?.providerId}
+                  onRetry={onRetry}
+                  onMaximize={onMaximize}
+                />
               </div>
             </div>
           )}
@@ -524,7 +453,7 @@ export function ModelCard({
             </div>
           )}
 
-          {response && !isLoading && (
+          {hasContent && !isLoading && (
             <div className="flex items-center justify-between pt-4 border-t flex-shrink-0">
               <div className="flex items-center gap-1">
                 <button
@@ -547,6 +476,14 @@ export function ModelCard({
             </div>
           )}
         </CardContent>
+
+        <ModelSelectorOverlay
+          models={models}
+          selectedModel={selectedModel?.id}
+          isOpen={modelSelectorOpen}
+          onClose={() => setModelSelectorOpen(false)}
+          onModelSelect={(modelId) => onModelSelect?.(modelId)}
+        />
       </Card>
     </motion.div>
   );

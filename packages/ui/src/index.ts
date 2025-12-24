@@ -1,6 +1,9 @@
 // Export utilities
 export { cn } from './utils';
 
+// Export hooks
+export { useControllableState } from './hooks';
+
 // Export UI components (barrel + subpath support)
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/resizable';
 
@@ -78,3 +81,27 @@ export {
   AlertDialogCancel,
 } from './components/alert-dialog';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/tabs';
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from './components/command';
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/collapsible';
+export { ScrollArea, ScrollBar } from './components/scroll-area';
+export { ResponseViewer, type ResponseViewerStatus } from './components/response-viewer';
+export { Shimmer } from './components/shimmer';
+export { StreamingCursor } from './components/streaming-cursor';
+export { Skeleton } from './components/skeleton';
+export {
+  ConversationCardSkeleton,
+  SidebarConversationSkeleton,
+  ProviderCardSkeleton,
+  ProviderSidebarSkeleton,
+  ModelCardSkeleton,
+} from './components/skeletons';
