@@ -1,11 +1,11 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
 
 export interface ProviderInstance {
   readonly providerId: string;
   readonly apiKey?: string;
   readonly baseURL?: string;
   readonly name?: string;
-  languageModel(modelId: string): LanguageModelV2;
+  languageModel(modelId: string): LanguageModelV3;
 }
 
 export interface ModelConfig {
@@ -48,5 +48,5 @@ export interface ResolvedModel {
   providerId: string;
   modelId: string;
   format: 'openai' | 'anthropic';
-  model: LanguageModelV2;
+  model: LanguageModelV3;
 }

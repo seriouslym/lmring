@@ -13,10 +13,11 @@ export type {
   StreamTextResult,
 } from 'ai';
 // Re-export AI SDK functions that users might need
+// Note: generateObject and streamObject are deprecated in AI SDK v6
+// Use generateText/streamText with Output.object() instead
 export {
-  generateObject,
   generateText,
-  streamObject,
+  Output,
   streamText,
 } from 'ai';
 export * from './core/arena';

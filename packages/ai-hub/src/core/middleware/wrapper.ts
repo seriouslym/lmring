@@ -1,13 +1,13 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
-import { type LanguageModelMiddleware, wrapLanguageModel } from 'ai';
+import type { LanguageModelV3, LanguageModelV3Middleware } from '@ai-sdk/provider';
+import { wrapLanguageModel } from 'ai';
 
 /**
  * Wraps a language model with middlewares
  */
 export function wrapWithMiddlewares(
-  model: LanguageModelV2,
-  middlewares: LanguageModelMiddleware | LanguageModelMiddleware[],
-): LanguageModelV2 {
+  model: LanguageModelV3,
+  middlewares: LanguageModelV3Middleware | LanguageModelV3Middleware[],
+): LanguageModelV3 {
   if (Array.isArray(middlewares)) {
     // Apply middlewares in order
     let wrappedModel = model;
@@ -35,10 +35,11 @@ export function createLoggingMiddleware(
     logOutput?: boolean;
     logger?: (message: string, data?: unknown) => void;
   } = {},
-): LanguageModelMiddleware {
+): LanguageModelV3Middleware {
   const { logInput = true, logger = console.log } = options;
 
   return {
+    specificationVersion: 'v3',
     transformParams: async ({ params }) => {
       if (logInput) {
         logger('Model input:', params);
@@ -58,8 +59,9 @@ export function createMetricsMiddleware(
     completionTokens?: number;
     totalTokens?: number;
   }) => void,
-): LanguageModelMiddleware {
+): LanguageModelV3Middleware {
   return {
+    specificationVersion: 'v3',
     wrapGenerate: async ({ doGenerate }) => {
       const startTime = Date.now();
       const result = await doGenerate();
@@ -95,7 +97,7 @@ export function createRetryMiddleware(
     retryDelay?: number;
     shouldRetry?: (error: Error) => boolean;
   } = {},
-): LanguageModelMiddleware {
+): LanguageModelV3Middleware {
   const {
     maxRetries = 3,
     retryDelay = 1000,
@@ -103,6 +105,7 @@ export function createRetryMiddleware(
   } = options;
 
   return {
+    specificationVersion: 'v3',
     wrapGenerate: async ({ doGenerate }) => {
       let lastError: Error | undefined;
 
@@ -130,10 +133,10 @@ export function createRetryMiddleware(
  * Composes multiple middlewares into one
  */
 export function composeMiddlewares(
-  ...middlewares: LanguageModelMiddleware[]
-): LanguageModelMiddleware {
-  type GenerateWrapper = NonNullable<LanguageModelMiddleware['wrapGenerate']>;
-  type StreamWrapper = NonNullable<LanguageModelMiddleware['wrapStream']>;
+  ...middlewares: LanguageModelV3Middleware[]
+): LanguageModelV3Middleware {
+  type GenerateWrapper = NonNullable<LanguageModelV3Middleware['wrapGenerate']>;
+  type StreamWrapper = NonNullable<LanguageModelV3Middleware['wrapStream']>;
   type GenerateOptions = Parameters<GenerateWrapper>[0];
   type StreamOptions = Parameters<StreamWrapper>[0];
   type GenerateHandler = (options: GenerateOptions) => ReturnType<GenerateWrapper>;
@@ -172,6 +175,7 @@ export function composeMiddlewares(
   );
 
   return {
+    specificationVersion: 'v3',
     transformParams: async ({ type, params, model }) => {
       let result = params;
 

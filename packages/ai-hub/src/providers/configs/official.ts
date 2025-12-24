@@ -39,7 +39,8 @@ const SDK_CREATORS: Record<string, (options: ProviderOptions) => ProviderInstanc
   xai: wrapProvider('xai', createXai),
   deepseek: wrapProvider('deepseek', createDeepSeek),
   mistral: wrapProvider('mistral', createMistral),
-  openrouter: wrapProvider('openrouter', createOpenRouter),
+  // @openrouter/ai-sdk-provider still uses V2 types, cast as unknown until package is updated
+  openrouter: wrapProvider('openrouter', createOpenRouter as unknown as typeof createOpenAI),
 };
 
 export const OFFICIAL_PROVIDERS: ProviderConfig[] = OFFICIAL_PROVIDER_METADATA.map((metadata) => {

@@ -23,6 +23,9 @@ export const API_ERRORS = {
   // Gone errors (410)
   SHARE_LINK_EXPIRED: 'Share link has expired',
 
+  // Conflict errors (409)
+  MODEL_ID_CONFLICTS_WITH_BUILTIN: 'Model ID conflicts with a built-in model',
+
   // Server errors (500)
   INTERNAL_SERVER_ERROR: 'Internal server error',
 } as const;

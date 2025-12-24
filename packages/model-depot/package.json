@@ -18,7 +18,7 @@
     "./providers": "./src/providers/index.ts"
   },
   "dependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@lmring/typescript-config": "workspace:*",

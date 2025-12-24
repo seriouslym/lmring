@@ -1,10 +1,5 @@
-import type {
-  GenerateTextResult,
-  LanguageModelMiddleware,
-  ModelMessage,
-  StreamTextResult,
-  ToolSet,
-} from 'ai';
+import type { LanguageModelV3Middleware } from '@ai-sdk/provider';
+import type { GenerateTextResult, ModelMessage, StreamTextResult, ToolSet } from 'ai';
 import type { AiPlugin } from './plugin';
 import type { ProviderInstance } from './provider';
 
@@ -16,18 +11,18 @@ type ProviderLike = {
 };
 
 type ComparisonResultPayload =
-  | GenerateTextResult<ToolSet, unknown>
-  | StreamTextResult<ToolSet, unknown>
+  | GenerateTextResult<ToolSet, never>
+  | StreamTextResult<ToolSet, never>
   | {
       text: string;
-      usage?: Awaited<StreamTextResult<ToolSet, unknown>['usage']>;
+      usage?: Awaited<StreamTextResult<ToolSet, never>['usage']>;
     };
 
 export interface RuntimeConfig {
   providerId: string;
   providerOptions?: Record<string, unknown>;
   plugins?: AiPlugin[];
-  middlewares?: LanguageModelMiddleware[];
+  middlewares?: LanguageModelV3Middleware[];
 }
 
 export interface StreamTextParams {

@@ -1,4 +1,4 @@
-import type { LanguageModelV2, LanguageModelV2Middleware } from '@ai-sdk/provider';
+import type { LanguageModelV3, LanguageModelV3Middleware } from '@ai-sdk/provider';
 import { ProviderBuilder } from '../../providers/builder';
 import { registry } from '../../providers/registry';
 import type { ProviderOptions, ResolvedModel } from '../../types/provider';
@@ -6,8 +6,8 @@ import { ModelResolutionError, ProviderError } from '../../utils/errors';
 import { wrapWithMiddlewares } from '../middleware/wrapper';
 
 interface ProviderWithModel {
-  languageModel?: (modelId: string) => LanguageModelV2;
-  chat?: (modelId: string) => LanguageModelV2;
+  languageModel?: (modelId: string) => LanguageModelV3;
+  chat?: (modelId: string) => LanguageModelV3;
 }
 
 export class ModelResolver {
@@ -18,7 +18,7 @@ export class ModelResolver {
     fallbackProviderId?: string,
     options?: {
       providerOptions?: ProviderOptions;
-      middlewares?: LanguageModelV2Middleware[];
+      middlewares?: LanguageModelV3Middleware[];
       useAnthropicFormat?: boolean;
     },
   ): ResolvedModel {
@@ -58,7 +58,7 @@ export class ModelResolver {
     });
 
     // Get model from provider
-    let model: LanguageModelV2;
+    let model: LanguageModelV3;
 
     const providerWithModel = provider as ProviderWithModel;
     const languageModel = providerWithModel.languageModel?.bind(providerWithModel);

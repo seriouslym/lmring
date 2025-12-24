@@ -18,6 +18,7 @@ const vertexaiChatModels: ChatModelCard[] = [
     maxOutput: 32_768,
     enabled: true,
     abilities: {
+      imageOutput: true,
       reasoning: true,
       search: true,
       vision: true,
