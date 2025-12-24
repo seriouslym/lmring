@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
-import { Toaster } from '@/components/sonner';
+import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme-provider';
 import '@/styles/global.css';
 import '@/styles/arena.css';
