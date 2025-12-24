@@ -1,7 +1,9 @@
 import { and, db, eq } from '@lmring/database';
 import { apiKeys, userCustomModels, userEnabledModels } from '@lmring/database/schema';
+import { getModelIdsForProvider } from '@lmring/model-depot';
 import { NextResponse } from 'next/server';
 import { auth } from '@/libs/Auth';
+import { API_ERRORS } from '@/libs/error-constants';
 import { logError } from '@/libs/error-logging';
 import { customModelSchema } from '@/libs/validation';
 
@@ -124,6 +126,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (existingModel) {
       return NextResponse.json(
         { error: 'MODEL_EXISTS', message: 'A custom model with this ID already exists' },
+        { status: 409 },
+      );
+    }
+
+    // Check if the model ID conflicts with a built-in model
+    const builtinModelIds = getModelIdsForProvider(key.providerName);
+    if (builtinModelIds.includes(modelId)) {
+      return NextResponse.json(
+        {
+          error: 'MODEL_ID_CONFLICTS_WITH_BUILTIN',
+          message: API_ERRORS.MODEL_ID_CONFLICTS_WITH_BUILTIN,
+        },
         { status: 409 },
       );
     }
