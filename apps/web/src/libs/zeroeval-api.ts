@@ -1,10 +1,10 @@
 /**
  * ZeroEval API Service Layer
  * API Documentation: https://api.zeroeval.com/
+ *
  */
 
-const ZEROEVAL_BASE_URL = 'https://api.zeroeval.com/leaderboard';
-const MAGIA_BASE_URL = 'https://api.zeroeval.com/magia';
+const ZEROEVAL_BASE_URL = '/api/zeroeval';
 
 // Arena names for Code Arena calculation (excludes chat-arena and tonejs)
 const CODE_ARENA_KEYS = [
@@ -550,7 +550,7 @@ export async function getArenaScores(modelIds: string[]): Promise<ArenaScoresRes
   params.set('model_ids', modelIds.join(','));
   params.set('arena_names', ALL_ARENA_NAMES.join(','));
 
-  return fetchWithRetry<ArenaScoresResponse>(`${MAGIA_BASE_URL}/models/scores?${params}`);
+  return fetchWithRetry<ArenaScoresResponse>(`${ZEROEVAL_BASE_URL}/arena-scores?${params}`);
 }
 
 /**
@@ -572,7 +572,7 @@ export async function getArenaScoresForCategory(
   params.set('model_ids', modelIds.join(','));
   params.set('arena_names', arenaNames.join(','));
 
-  return fetchWithRetry<ArenaScoresResponse>(`${MAGIA_BASE_URL}/models/scores?${params}`);
+  return fetchWithRetry<ArenaScoresResponse>(`${ZEROEVAL_BASE_URL}/arena-scores?${params}`);
 }
 
 // ============================================================================
