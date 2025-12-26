@@ -13,6 +13,7 @@ import {
   Cloudflare,
   Cohere,
   DeepSeek,
+  ElevenLabs,
   Fireworks,
   GiteeAI,
   Github,
@@ -24,7 +25,9 @@ import {
   Infinigence,
   InternLM,
   Jina,
+  Kling,
   LmStudio,
+  Luma,
   Meta,
   Minimax,
   Mistral,
@@ -39,6 +42,7 @@ import {
   Perplexity,
   PPIO,
   Qiniu,
+  Recraft,
   Replicate,
   SambaNova,
   Search1API,
@@ -74,6 +78,7 @@ const ICON_MAP: Record<string, any> = {
   zhipu: Zhipu,
   baichuan: Baichuan,
   moonshot: Moonshot,
+  moonshotai: Moonshot,
   yi: Yi,
   minimax: Minimax,
   step: Stepfun,
@@ -118,6 +123,23 @@ const ICON_MAP: Record<string, any> = {
   meta: Meta,
   qwen: AlibabaCloud,
   taichu: AiMass,
+  // ZeroEval additional mappings
+  'zai-org': Zhipu,
+  'black-forest-labs': Bfl,
+  fireworks: Fireworks,
+  bytedance: Volcengine,
+  amazon: Aws,
+  aws: Aws,
+  tencent: Hunyuan,
+  'moonshot-ai': Moonshot,
+  'moonshot ai': Moonshot,
+  kimi: Moonshot,
+  elevenlabs: ElevenLabs,
+  luma: Luma,
+  kling: Kling,
+  'recraft-ai': Recraft,
+  // Note: xiaomi (XiaomiMiMo), cartesia, wanvideo, playai, deepgram, rime, 'reve-ai'
+  // require @lobehub/icons package update or fallback to default 🤖 emoji
 };
 
 interface ProviderIconProps {

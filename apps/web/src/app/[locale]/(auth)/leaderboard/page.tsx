@@ -2,29 +2,222 @@
 
 import { Card, CardContent } from '@lmring/ui';
 import { motion } from 'framer-motion';
-import { TrendingDownIcon, TrendingUpIcon, TrophyIcon } from 'lucide-react';
+import { ExternalLinkIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  CategoryTabs,
+  LeaderboardBarChart,
+  LeaderboardContentSkeleton,
+  type LeaderboardModel,
+  LeaderboardScatterPlot,
+  LeaderboardTable,
+  LeaderboardTableSkeleton,
+  MetricSelector,
+  type SortConfig,
+  type ViewMode,
+  ViewToggle,
+} from '@/components/leaderboard';
+import {
+  CATEGORY_CONFIGS,
+  calculateChatArenaScore,
+  calculateCodeArenaScore,
+  getArenaScores,
+  getModelsAll,
+  getModelsFull,
+  isNewModel,
+  type LeaderboardCategory,
+  type MetricConfig,
+  type ModelsAllParams,
+  sortModels,
+  type ZeroEvalModelBasic,
+  type ZeroEvalModelFull,
+} from '@/libs/zeroeval-api';
 
-const mockLeaderboard = [
-  { rank: 1, name: 'GPT-4 Turbo', provider: 'OpenAI', elo: 1812, change: '+12', trend: 'up' },
-  { rank: 2, name: 'Claude 3 Opus', provider: 'Anthropic', elo: 1798, change: '+8', trend: 'up' },
-  { rank: 3, name: 'Gemini Pro', provider: 'Google', elo: 1756, change: '-5', trend: 'down' },
-  { rank: 4, name: 'GPT-4', provider: 'OpenAI', elo: 1743, change: '+3', trend: 'up' },
-  {
-    rank: 5,
-    name: 'Claude 3 Sonnet',
-    provider: 'Anthropic',
-    elo: 1721,
-    change: '+15',
-    trend: 'up',
-  },
-  { rank: 6, name: 'Llama 2 70B', provider: 'Meta', elo: 1698, change: '-2', trend: 'down' },
-  { rank: 7, name: 'Mistral Large', provider: 'Mistral', elo: 1687, change: '+7', trend: 'up' },
-  { rank: 8, name: 'GPT-3.5 Turbo', provider: 'OpenAI', elo: 1654, change: '-3', trend: 'down' },
-];
+const PAGE_SIZE = 20;
 
 export default function LeaderboardPage() {
   const t = useTranslations('Leaderboard');
+
+  type ModelWithArena = (ZeroEvalModelFull | ZeroEvalModelBasic) & {
+    code_arena_score?: number | null;
+    chat_arena_score?: number | null;
+    arena_raw_scores?: Awaited<ReturnType<typeof getArenaScores>>[string] | null;
+  };
+
+  const [rawModels, setRawModels] = useState<ModelWithArena[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [category, setCategory] = useState<LeaderboardCategory>('llm');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: 'gpqa_score',
+    direction: 'desc',
+  });
+  const [selectedMetric, setSelectedMetric] = useState<string>('gpqa');
+  const [xAxisMetric, setXAxisMetric] = useState<string>('input_price');
+  const [yAxisMetric, setYAxisMetric] = useState<string>('gpqa');
+  const [page, setPage] = useState(1);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const categoryConfig = useMemo(() => {
+    const config = CATEGORY_CONFIGS.find((c) => c.id === category);
+    const fallback = CATEGORY_CONFIGS[0];
+    if (config) return config;
+    if (fallback) return fallback;
+    // This should never happen as CATEGORY_CONFIGS is a non-empty constant array
+    throw new Error('No category config available');
+  }, [category]);
+
+  const fetchData = useCallback(async (currentCategory: LeaderboardCategory) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const config = CATEGORY_CONFIGS.find((c) => c.id === currentCategory);
+
+      if (currentCategory === 'llm' || currentCategory === 'vision') {
+        const models = await getModelsFull();
+        const modelIds = models.map((m) => m.model_id);
+        let arenaData: Awaited<ReturnType<typeof getArenaScores>> = {};
+        try {
+          arenaData = await getArenaScores(modelIds);
+        } catch {
+          console.warn('Failed to fetch arena scores, continuing without them');
+        }
+
+        const enrichedModels: ModelWithArena[] = models.map((model) => {
+          const arenaScores = arenaData[model.model_id];
+          return {
+            ...model,
+            code_arena_score: arenaScores ? calculateCodeArenaScore(arenaScores) : null,
+            chat_arena_score: arenaScores ? calculateChatArenaScore(arenaScores) : null,
+            arena_raw_scores: arenaScores || null,
+          };
+        });
+
+        setRawModels(enrichedModels);
+      } else {
+        const apiParams: ModelsAllParams = config?.apiParams || {};
+        const data = await getModelsAll(apiParams);
+        setRawModels(data);
+      }
+      setLastUpdated(new Date());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+    } finally {
+      setLoading(false);
+      setIsInitialLoad(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData(category);
+  }, [fetchData, category]);
+
+  const filteredModels = rawModels;
+
+  const rankedModels: LeaderboardModel[] = useMemo(() => {
+    const sorted = sortModels(filteredModels, sortConfig.field, sortConfig.direction);
+    return sorted.map((model, index) => ({
+      ...model,
+      rank: index + 1,
+      isNew: isNewModel(model.release_date, model.announcement_date),
+    })) as LeaderboardModel[];
+  }, [filteredModels, sortConfig]);
+
+  const paginatedModels = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return rankedModels.slice(start, start + PAGE_SIZE);
+  }, [rankedModels, page]);
+
+  const barChartModels = useMemo(() => {
+    const metricConfig = categoryConfig.metrics.find((m) => m.id === selectedMetric);
+    const field = metricConfig?.field || categoryConfig.metrics[0]?.field || 'gpqa_score';
+    const sorted = sortModels(filteredModels, field, 'desc');
+    return sorted.slice(0, PAGE_SIZE).map((model, index) => ({
+      ...model,
+      rank: index + 1,
+      isNew: isNewModel(model.release_date, model.announcement_date),
+    })) as LeaderboardModel[];
+  }, [filteredModels, selectedMetric, categoryConfig.metrics]);
+
+  const scatterPlotModels = useMemo(() => {
+    const metricConfig = categoryConfig.metrics.find((m) => m.id === yAxisMetric);
+    const field = metricConfig?.field || categoryConfig.metrics[0]?.field || 'gpqa_score';
+    const sorted = sortModels(filteredModels, field, 'desc');
+    return sorted.slice(0, PAGE_SIZE).map((model, index) => ({
+      ...model,
+      rank: index + 1,
+      isNew: isNewModel(model.release_date, model.announcement_date),
+    })) as LeaderboardModel[];
+  }, [filteredModels, yAxisMetric, categoryConfig.metrics]);
+
+  const handleSort = useCallback((field: string) => {
+    setSortConfig((prev) => ({
+      field,
+      direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc',
+    }));
+    setPage(1);
+  }, []);
+
+  const handleCategoryChange = useCallback((newCategory: LeaderboardCategory) => {
+    setCategory(newCategory);
+    setPage(1);
+    const config = CATEGORY_CONFIGS.find((c) => c.id === newCategory);
+    if (config && config.metrics.length > 0) {
+      const firstMetric = config.metrics[0];
+      if (firstMetric) {
+        setSortConfig({ field: firstMetric.field, direction: 'desc' });
+        setSelectedMetric(firstMetric.id);
+      }
+      if (config.metrics.length >= 2) {
+        const firstM = config.metrics[0];
+        const secondLastM = config.metrics[config.metrics.length - 2];
+        if (firstM) setYAxisMetric(firstM.id);
+        if (secondLastM) setXAxisMetric(secondLastM.id);
+      }
+    }
+  }, []);
+
+  const getMetricConfig = useCallback(
+    (metricId: string): MetricConfig => {
+      const found = categoryConfig.metrics.find((m) => m.id === metricId);
+      if (found) return found;
+      const fallback = categoryConfig.metrics[0];
+      if (fallback) return fallback;
+      // This should never happen as every category has metrics
+      throw new Error('No metric config available');
+    },
+    [categoryConfig],
+  );
+
+  if (loading && isInitialLoad) {
+    return <LeaderboardTableSkeleton rows={PAGE_SIZE} metricColumns={7} />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-medium text-foreground">{t('title')}</h1>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center h-[400px] gap-4">
+            <p className="text-destructive">{error}</p>
+            <button
+              type="button"
+              onClick={() => fetchData(category)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <motion.div
@@ -32,54 +225,116 @@ export default function LeaderboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <TrophyIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
-        </div>
-
-        <div className="grid gap-4">
-          {mockLeaderboard.map((model, index) => (
-            <motion.div
-              key={model.rank}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-medium text-foreground">AI Leaderboards</h1>
+            <p className="text-sm text-muted-foreground">Top models ranked by performance.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {lastUpdated && (
+              <span className="text-xs text-muted-foreground">
+                Updated{' '}
+                {lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            )}
+            <a
+              href="https://zeroeval.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Card className="hover:apple-shadow-lg apple-transition">
-                <CardContent className="flex items-center justify-between p-6">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`text-2xl font-bold ${model.rank <= 3 ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      #{model.rank}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{model.name}</h3>
-                      <p className="text-sm text-muted-foreground">{model.provider}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{model.elo}</div>
-                      <div className="text-sm text-muted-foreground">{t('elo_score')}</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {model.trend === 'up' ? (
-                        <TrendingUpIcon className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <TrendingDownIcon className="h-4 w-4 text-red-500" />
-                      )}
-                      <span className={model.trend === 'up' ? 'text-green-500' : 'text-red-500'}>
-                        {model.change}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+              View full leaderboard
+              <ExternalLinkIcon className="h-3 w-3" />
+            </a>
+          </div>
         </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <CategoryTabs activeCategory={category} onCategoryChange={handleCategoryChange} />
+
+              <div className="flex items-center gap-3">
+                {viewMode === 'bar' && (
+                  <MetricSelector
+                    metrics={categoryConfig.metrics}
+                    selectedMetric={selectedMetric}
+                    onMetricChange={setSelectedMetric}
+                    label="Metric"
+                    inline
+                  />
+                )}
+
+                {viewMode === 'scatter' && (
+                  <>
+                    <MetricSelector
+                      metrics={categoryConfig.metrics}
+                      selectedMetric={xAxisMetric}
+                      onMetricChange={setXAxisMetric}
+                      label="X Axis"
+                      inline
+                    />
+                    <MetricSelector
+                      metrics={categoryConfig.metrics}
+                      selectedMetric={yAxisMetric}
+                      onMetricChange={setYAxisMetric}
+                      label="Y Axis"
+                      inline
+                    />
+                  </>
+                )}
+
+                <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-muted-foreground">
+                {loading ? '—' : `${rankedModels.length} MODELS`}
+              </div>
+            </div>
+
+            <div className="min-h-[500px]">
+              {loading ? (
+                <LeaderboardContentSkeleton
+                  rows={PAGE_SIZE}
+                  metricColumns={categoryConfig.metrics.length}
+                />
+              ) : (
+                <>
+                  {viewMode === 'table' && (
+                    <LeaderboardTable
+                      models={paginatedModels}
+                      metrics={categoryConfig.metrics}
+                      sortConfig={sortConfig}
+                      onSort={handleSort}
+                      page={page}
+                      pageSize={PAGE_SIZE}
+                      totalCount={rankedModels.length}
+                      onPageChange={setPage}
+                    />
+                  )}
+
+                  {viewMode === 'bar' && (
+                    <LeaderboardBarChart
+                      models={barChartModels}
+                      metric={getMetricConfig(selectedMetric)}
+                      maxItems={PAGE_SIZE}
+                    />
+                  )}
+
+                  {viewMode === 'scatter' && (
+                    <LeaderboardScatterPlot
+                      models={scatterPlotModels}
+                      xMetric={getMetricConfig(xAxisMetric)}
+                      yMetric={getMetricConfig(yAxisMetric)}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );
