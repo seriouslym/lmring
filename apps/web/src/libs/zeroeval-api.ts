@@ -16,8 +16,18 @@ const CODE_ARENA_KEYS = [
   'dataviz',
 ] as const;
 
-// All arena names for API request
+// All arena names for LLM API request
 const ALL_ARENA_NAMES = ['chat-arena', ...CODE_ARENA_KEYS, 'tonejs'] as const;
+
+// Arena names for each category
+export const CATEGORY_ARENA_NAMES = {
+  llm: ALL_ARENA_NAMES,
+  vision: ALL_ARENA_NAMES,
+  'image-generation': ['text-to-image', 'image-to-image'] as const,
+  'video-generation': ['text-to-video', 'image-to-video', 'video-editing'] as const,
+  'text-to-speech': ['text-to-speech'] as const,
+  'speech-to-text': ['speech-to-text'] as const,
+} as const;
 
 // ============================================================================
 // Type Definitions
@@ -133,6 +143,7 @@ export interface ZeroEvalBenchmarkScore {
 // ============================================================================
 
 export interface ArenaScores {
+  // LLM arenas
   'chat-arena'?: number;
   'text-to-website'?: number;
   threejs?: number;
@@ -141,6 +152,14 @@ export interface ArenaScores {
   'text-to-svg'?: number;
   dataviz?: number;
   tonejs?: number;
+  // Non-LLM arenas
+  'text-to-image'?: number;
+  'image-to-image'?: number;
+  'text-to-video'?: number;
+  'image-to-video'?: number;
+  'video-editing'?: number;
+  'text-to-speech'?: number;
+  'speech-to-text'?: number;
 }
 
 export type ArenaScoresResponse = Record<string, ArenaScores>;
@@ -308,6 +327,20 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
     apiParams: { output_modality: 'image' },
     metrics: [
       {
+        id: 'text_to_image',
+        label: 'Image Gen',
+        field: 'text-to-image',
+        format: 'number',
+        higherIsBetter: true,
+      },
+      {
+        id: 'image_to_image',
+        label: 'Image Edit',
+        field: 'image-to-image',
+        format: 'number',
+        higherIsBetter: true,
+      },
+      {
         id: 'input_price',
         label: 'Input $/M',
         field: 'input_price',
@@ -329,6 +362,27 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
     icon: 'Video',
     apiParams: { output_modality: 'video' },
     metrics: [
+      {
+        id: 'text_to_video',
+        label: 'Video Gen',
+        field: 'text-to-video',
+        format: 'number',
+        higherIsBetter: true,
+      },
+      {
+        id: 'image_to_video',
+        label: 'Image to Video',
+        field: 'image-to-video',
+        format: 'number',
+        higherIsBetter: true,
+      },
+      {
+        id: 'video_editing',
+        label: 'Video Edit',
+        field: 'video-editing',
+        format: 'number',
+        higherIsBetter: true,
+      },
       {
         id: 'input_price',
         label: 'Input $/M',
@@ -352,6 +406,13 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
     apiParams: { input_modality: 'text', output_modality: 'audio' },
     metrics: [
       {
+        id: 'text_to_speech',
+        label: 'TTS Arena',
+        field: 'text-to-speech',
+        format: 'number',
+        higherIsBetter: true,
+      },
+      {
         id: 'input_price',
         label: 'Input $/M',
         field: 'input_price',
@@ -373,6 +434,13 @@ export const CATEGORY_CONFIGS: CategoryConfig[] = [
     icon: 'Mic',
     apiParams: { input_modality: 'audio', output_modality: 'text' },
     metrics: [
+      {
+        id: 'speech_to_text',
+        label: 'STT Arena',
+        field: 'speech-to-text',
+        format: 'number',
+        higherIsBetter: true,
+      },
       {
         id: 'input_price',
         label: 'Input $/M',
@@ -485,6 +553,28 @@ export async function getArenaScores(modelIds: string[]): Promise<ArenaScoresRes
   return fetchWithRetry<ArenaScoresResponse>(`${MAGIA_BASE_URL}/models/scores?${params}`);
 }
 
+/**
+ * Get arena scores for multiple models by category
+ * @param modelIds - Array of model IDs to fetch arena scores for
+ * @param category - The leaderboard category to get arena scores for
+ */
+export async function getArenaScoresForCategory(
+  modelIds: string[],
+  category: LeaderboardCategory,
+): Promise<ArenaScoresResponse> {
+  if (modelIds.length === 0) {
+    return {};
+  }
+
+  const arenaNames = CATEGORY_ARENA_NAMES[category];
+
+  const params = new URLSearchParams();
+  params.set('model_ids', modelIds.join(','));
+  params.set('arena_names', arenaNames.join(','));
+
+  return fetchWithRetry<ArenaScoresResponse>(`${MAGIA_BASE_URL}/models/scores?${params}`);
+}
+
 // ============================================================================
 // Arena Score Calculation Functions
 // ============================================================================
@@ -513,6 +603,30 @@ export function calculateChatArenaScore(arenaScores: ArenaScores): number | null
   const score = arenaScores['chat-arena'];
   // Keep 2 decimal places for display
   return score != null ? Math.round(score * 100 * 100) / 100 : null;
+}
+
+/**
+ * Convert arena scores to display values (× 100) for non-LLM categories
+ * @param arenaScores - Raw arena scores from API
+ * @param category - The leaderboard category
+ * @returns Object with converted arena scores
+ */
+export function calculateCategoryArenaScores(
+  arenaScores: ArenaScores,
+  category: LeaderboardCategory,
+): Partial<ArenaScores> {
+  const arenaKeys = CATEGORY_ARENA_NAMES[category];
+  const result: Partial<ArenaScores> = {};
+
+  for (const key of arenaKeys) {
+    const rawScore = arenaScores[key as keyof ArenaScores];
+    if (rawScore != null) {
+      // Convert to display value: × 100, keep 2 decimal places
+      result[key as keyof ArenaScores] = Math.round(rawScore * 100 * 100) / 100;
+    }
+  }
+
+  return result;
 }
 
 // ============================================================================

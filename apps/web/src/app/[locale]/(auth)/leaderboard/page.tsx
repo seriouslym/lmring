@@ -2,7 +2,6 @@
 
 import { Card, CardContent } from '@lmring/ui';
 import { motion } from 'framer-motion';
-import { ExternalLinkIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -20,9 +19,11 @@ import {
 } from '@/components/leaderboard';
 import {
   CATEGORY_CONFIGS,
+  calculateCategoryArenaScores,
   calculateChatArenaScore,
   calculateCodeArenaScore,
   getArenaScores,
+  getArenaScoresForCategory,
   getModelsAll,
   getModelsFull,
   isNewModel,
@@ -30,20 +31,18 @@ import {
   type MetricConfig,
   type ModelsAllParams,
   sortModels,
-  type ZeroEvalModelBasic,
-  type ZeroEvalModelFull,
 } from '@/libs/zeroeval-api';
+import { type ModelWithArena, useLeaderboardStore } from '@/stores';
 
 const PAGE_SIZE = 20;
 
 export default function LeaderboardPage() {
   const t = useTranslations('Leaderboard');
 
-  type ModelWithArena = (ZeroEvalModelFull | ZeroEvalModelBasic) & {
-    code_arena_score?: number | null;
-    chat_arena_score?: number | null;
-    arena_raw_scores?: Awaited<ReturnType<typeof getArenaScores>>[string] | null;
-  };
+  // Zustand store for caching data by category
+  const getCachedData = useLeaderboardStore((state) => state.getCachedData);
+  const setCachedData = useLeaderboardStore((state) => state.setCachedData);
+  const getLastUpdated = useLeaderboardStore((state) => state.getLastUpdated);
 
   const [rawModels, setRawModels] = useState<ModelWithArena[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,46 +69,84 @@ export default function LeaderboardPage() {
     throw new Error('No category config available');
   }, [category]);
 
-  const fetchData = useCallback(async (currentCategory: LeaderboardCategory) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const config = CATEGORY_CONFIGS.find((c) => c.id === currentCategory);
+  const fetchData = useCallback(
+    async (currentCategory: LeaderboardCategory) => {
+      // Check cache first
+      const cachedData = getCachedData(currentCategory);
+      if (cachedData) {
+        setRawModels(cachedData);
+        setLastUpdated(getLastUpdated(currentCategory));
+        setLoading(false);
+        setIsInitialLoad(false);
+        return;
+      }
 
-      if (currentCategory === 'llm' || currentCategory === 'vision') {
-        const models = await getModelsFull();
-        const modelIds = models.map((m) => m.model_id);
-        let arenaData: Awaited<ReturnType<typeof getArenaScores>> = {};
-        try {
-          arenaData = await getArenaScores(modelIds);
-        } catch {
-          console.warn('Failed to fetch arena scores, continuing without them');
+      // No cache - fetch from API
+      setLoading(true);
+      setError(null);
+      try {
+        const config = CATEGORY_CONFIGS.find((c) => c.id === currentCategory);
+
+        let fetchedModels: ModelWithArena[];
+
+        if (currentCategory === 'llm' || currentCategory === 'vision') {
+          const models = await getModelsFull();
+          const modelIds = models.map((m) => m.model_id);
+          let arenaData: Awaited<ReturnType<typeof getArenaScores>> = {};
+          try {
+            arenaData = await getArenaScores(modelIds);
+          } catch {
+            console.warn('Failed to fetch arena scores, continuing without them');
+          }
+
+          fetchedModels = models.map((model) => {
+            const arenaScores = arenaData[model.model_id];
+            return {
+              ...model,
+              code_arena_score: arenaScores ? calculateCodeArenaScore(arenaScores) : null,
+              chat_arena_score: arenaScores ? calculateChatArenaScore(arenaScores) : null,
+              arena_raw_scores: arenaScores || null,
+            };
+          });
+        } else {
+          const apiParams: ModelsAllParams = config?.apiParams || {};
+          const basicModels = await getModelsAll(apiParams);
+          const modelIds = basicModels.map((m) => m.model_id);
+
+          let arenaData: Awaited<ReturnType<typeof getArenaScoresForCategory>> = {};
+          try {
+            arenaData = await getArenaScoresForCategory(modelIds, currentCategory);
+          } catch {
+            console.warn('Failed to fetch arena scores, continuing without them');
+          }
+
+          fetchedModels = basicModels.map((model) => {
+            const arenaScores = arenaData[model.model_id];
+            const convertedScores = arenaScores
+              ? calculateCategoryArenaScores(arenaScores, currentCategory)
+              : {};
+            return {
+              ...model,
+              arena_raw_scores: arenaScores || null,
+              // Flatten converted arena scores to top level for sorting/display
+              ...convertedScores,
+            };
+          });
         }
 
-        const enrichedModels: ModelWithArena[] = models.map((model) => {
-          const arenaScores = arenaData[model.model_id];
-          return {
-            ...model,
-            code_arena_score: arenaScores ? calculateCodeArenaScore(arenaScores) : null,
-            chat_arena_score: arenaScores ? calculateChatArenaScore(arenaScores) : null,
-            arena_raw_scores: arenaScores || null,
-          };
-        });
-
-        setRawModels(enrichedModels);
-      } else {
-        const apiParams: ModelsAllParams = config?.apiParams || {};
-        const data = await getModelsAll(apiParams);
-        setRawModels(data);
+        // Store in cache and update state
+        setCachedData(currentCategory, fetchedModels);
+        setRawModels(fetchedModels);
+        setLastUpdated(new Date());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+        setIsInitialLoad(false);
       }
-      setLastUpdated(new Date());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
-      setIsInitialLoad(false);
-    }
-  }, []);
+    },
+    [getCachedData, setCachedData, getLastUpdated],
+  );
 
   useEffect(() => {
     fetchData(category);
@@ -230,23 +267,11 @@ export default function LeaderboardPage() {
             <h1 className="text-2xl font-medium text-foreground">AI Leaderboards</h1>
             <p className="text-sm text-muted-foreground">Top models ranked by performance.</p>
           </div>
-          <div className="flex items-center gap-4">
-            {lastUpdated && (
-              <span className="text-xs text-muted-foreground">
-                Updated{' '}
-                {lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            )}
-            <a
-              href="https://zeroeval.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              View full leaderboard
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
-          </div>
+          {lastUpdated && (
+            <span className="text-xs text-muted-foreground">
+              Updated {lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
         </div>
 
         <Card>
@@ -332,6 +357,20 @@ export default function LeaderboardPage() {
                   )}
                 </>
               )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-border text-center">
+              <p className="text-xs text-muted-foreground">
+                Data sourced from{' '}
+                <a
+                  href="https://github.com/WildEval/ZeroEval"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  ZeroEval
+                </a>
+              </p>
             </div>
           </CardContent>
         </Card>
