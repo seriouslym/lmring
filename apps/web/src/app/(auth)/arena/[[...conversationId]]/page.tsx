@@ -36,7 +36,6 @@ import type { ArenaWorkflow } from '@/types/workflow';
 
 export default function ArenaPage() {
   const params = useParams();
-  const locale = params.locale as string;
   const conversationIdParam = params.conversationId as string[] | undefined;
   const conversationId = conversationIdParam?.[0];
 
@@ -953,7 +952,7 @@ export default function ArenaPage() {
       <div className="flex items-center justify-center h-full bg-background">
         <div className="text-center space-y-4">
           <div className="text-destructive">{conversationError}</div>
-          <Button onClick={() => router.push(`/${locale}/arena`)}>Start New Conversation</Button>
+          <Button onClick={() => router.push('/arena')}>Start New Conversation</Button>
         </div>
       </div>
     );

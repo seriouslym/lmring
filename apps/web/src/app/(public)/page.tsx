@@ -1,17 +1,13 @@
-import type { Locale } from '@lmring/i18n';
 import { Brain, Globe, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getRequestLocale } from '@/libs/request-locale';
 
-type IIndexProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata(props: IIndexProps): Promise<Metadata> {
-  const { locale } = await props.params;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
   const t = await getTranslations({
-    locale: locale as Locale,
+    locale,
     namespace: 'Index',
   });
 
@@ -21,11 +17,11 @@ export async function generateMetadata(props: IIndexProps): Promise<Metadata> {
   };
 }
 
-export default async function Index(props: IIndexProps) {
-  const { locale } = await props.params;
-  setRequestLocale(locale as Locale);
+export default async function Index() {
+  const locale = await getRequestLocale();
+  setRequestLocale(locale);
   const t = await getTranslations({
-    locale: locale as Locale,
+    locale,
     namespace: 'Index',
   });
 

@@ -1,7 +1,6 @@
 'use client';
 
-import { routing } from '@lmring/i18n';
-import { usePathname } from '@lmring/i18n/navigation';
+import { I18nConfig, type Locale } from '@lmring/i18n';
 import {
   Badge,
   Button,
@@ -92,12 +91,13 @@ import {
   TwitterIcon,
   UsersIcon,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import * as React from 'react';
 import { useProviderMetadata } from '@/hooks/use-provider-metadata';
+import { isSupportedLocale } from '@/libs/locale-utils';
 import { maskApiKey } from '@/libs/validation';
+import { languageSelectors, useLanguageStore } from '@/stores/language-store';
 import { ProviderLayout } from './_components/provider/ProviderLayout';
 import type { ApiKeyRecord, Provider } from './_components/provider/types';
 
@@ -174,7 +174,7 @@ const systemModels = [
 type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
 // Language display names mapping
-const LANGUAGE_NAMES: Record<string, string> = {
+const LANGUAGE_NAMES: Record<Locale, string> = {
   en: 'English',
   zh: '中文',
   fr: 'Français',
@@ -182,9 +182,6 @@ const LANGUAGE_NAMES: Record<string, string> = {
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations('Settings');
   const [mounted, setMounted] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<Tab>('general');
@@ -192,10 +189,14 @@ export default function SettingsPage() {
   const [apiKeysLoaded, setApiKeysLoaded] = React.useState(false);
   const [savedApiKeys, setSavedApiKeys] = React.useState<ApiKeyRecord[]>([]);
   const providerMetadata = useProviderMetadata();
+  const locale = useLanguageStore(languageSelectors.language);
+  const setLanguage = useLanguageStore((state) => state.setLanguage);
 
   const handleLanguageChange = (newLocale: string) => {
-    router.push(`/${newLocale}${pathname}`);
-    router.refresh();
+    if (!isSupportedLocale(newLocale)) {
+      return;
+    }
+    setLanguage(newLocale);
   };
 
   React.useEffect(() => {
@@ -506,7 +507,7 @@ export default function SettingsPage() {
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                              {routing.locales.map((loc) => (
+                              {I18nConfig.locales.map((loc) => (
                                 <SelectItem key={loc} value={loc}>
                                   {LANGUAGE_NAMES[loc] || loc.toUpperCase()}
                                 </SelectItem>
