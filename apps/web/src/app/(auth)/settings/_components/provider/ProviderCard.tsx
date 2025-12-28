@@ -3,7 +3,7 @@ import { OpenAI } from '@lobehub/icons';
 import { motion } from 'framer-motion';
 import type { Provider } from './types';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 interface ProviderCardProps {
   provider: Provider;

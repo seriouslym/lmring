@@ -65,6 +65,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (request.method !== 'GET') {
+    return;
+  }
+
   const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) {
@@ -84,5 +88,14 @@ self.addEventListener('fetch', (event) => {
 
   const modifiedRequest = new Request(request, { headers });
 
-  event.respondWith(fetch(modifiedRequest));
+  event.respondWith(
+    (async () => {
+      try {
+        return await fetch(modifiedRequest);
+      } catch (error) {
+        console.error('language-sw: failed to forward request', error);
+        return fetch(request);
+      }
+    })(),
+  );
 });

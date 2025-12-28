@@ -204,21 +204,35 @@ export default function SettingsPage() {
   }, []);
 
   React.useEffect(() => {
+    const controller = new AbortController();
+
     const loadApiKeys = async () => {
       try {
-        const response = await fetch('/api/settings/api-keys');
+        const response = await fetch('/api/settings/api-keys', {
+          signal: controller.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           setSavedApiKeys(data.keys || []);
         }
       } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
         console.error('Failed to load API keys:', error);
       } finally {
+        if (controller.signal.aborted) {
+          return;
+        }
         setApiKeysLoaded(true);
       }
     };
 
     loadApiKeys();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const initialProviders: Provider[] = React.useMemo(() => {
