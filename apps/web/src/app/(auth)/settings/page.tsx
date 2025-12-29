@@ -598,7 +598,7 @@ export default function SettingsPage() {
                           {t('help.resources')}
                         </h3>
                         <div className="grid gap-4">
-                          <Link href="/how-it-works">
+                          <Link href="/how-it-works" target="_blank" rel="noopener noreferrer">
                             <Card className="cursor-pointer hover:shadow-md transition-all">
                               <CardContent className="p-4 flex items-center gap-4">
                                 <HelpCircleIcon className="h-8 w-8 text-primary" />
