@@ -2,13 +2,9 @@
 
 import { I18nConfig, type Locale } from '@lmring/i18n';
 import {
-  Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Label,
   Select,
   SelectContent,
@@ -86,11 +82,10 @@ import {
   HelpCircleIcon,
   InfoIcon,
   LifeBuoyIcon,
-  MailIcon,
   Settings2Icon,
   TwitterIcon,
-  UsersIcon,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import * as React from 'react';
@@ -159,17 +154,6 @@ const ICON_MAP: Record<string, any> = {
   higress: Higress,
   taichu: AiMass,
 };
-
-const systemModels = [
-  { id: 'gpt-4o', name: 'GPT-4o', description: 'OpenAI flagship model' },
-  {
-    id: 'claude-3-5-sonnet',
-    name: 'Claude 3.5 Sonnet',
-    description: 'Anthropic most intelligent model',
-  },
-  { id: 'gemini-pro', name: 'Gemini 1.5 Pro', description: 'Google most capable AI model' },
-  { id: 'moonshot', name: 'Moonshot V1', description: 'Moonshot AI Large Language Model' },
-];
 
 type Tab = 'general' | 'provider' | 'system-model' | 'storage' | 'help' | 'about';
 
@@ -549,22 +533,19 @@ export default function SettingsPage() {
                       </p>
                     </div>
 
-                    <div className="grid gap-4">
-                      {systemModels.map((model) => (
-                        <Card key={model.id}>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-base">{model.name}</CardTitle>
-                            <CardDescription>{model.description}</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{t('system_model.system_default')}</Badge>
-                              <Badge variant="outline">{t('system_model.chat')}</Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+                      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-3 mb-4">
+                          <InfoIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">
+                          {t('system_model.under_development')}
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md">
+                          {t('system_model.coming_soon')}
+                        </p>
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 )}
 
@@ -593,26 +574,6 @@ export default function SettingsPage() {
                           <DatabaseIcon className="h-4 w-4" /> {t('storage.import')}
                         </Button>
                       </div>
-
-                      <div className="flex items-center justify-between py-4 border-b">
-                        <div className="space-y-0.5">
-                          <div className="font-medium">{t('storage.clear_sessions')}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {t('storage.clear_sessions_description')}
-                          </div>
-                        </div>
-                        <Button variant="destructive">{t('storage.clear_now')}</Button>
-                      </div>
-
-                      <div className="flex items-center justify-between py-4">
-                        <div className="space-y-0.5">
-                          <div className="font-medium">{t('storage.reset_settings')}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {t('storage.reset_settings_description')}
-                          </div>
-                        </div>
-                        <Button variant="destructive">{t('storage.reset_now')}</Button>
-                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -637,11 +598,7 @@ export default function SettingsPage() {
                           {t('help.resources')}
                         </h3>
                         <div className="grid gap-4">
-                          <a
-                            href="https://lmring.ai/how-it-works"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                          <Link href="/how-it-works" target="_blank" rel="noopener noreferrer">
                             <Card className="cursor-pointer hover:shadow-md transition-all">
                               <CardContent className="p-4 flex items-center gap-4">
                                 <HelpCircleIcon className="h-8 w-8 text-primary" />
@@ -654,25 +611,7 @@ export default function SettingsPage() {
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
                               </CardContent>
                             </Card>
-                          </a>
-                          <a
-                            href="https://lmring.ai/help-center"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Card className="cursor-pointer hover:shadow-md transition-all">
-                              <CardContent className="p-4 flex items-center gap-4">
-                                <LifeBuoyIcon className="h-8 w-8 text-primary" />
-                                <div>
-                                  <h4 className="font-medium">{t('help.help_center')}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {t('help.help_center_description')}
-                                  </p>
-                                </div>
-                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                              </CardContent>
-                            </Card>
-                          </a>
+                          </Link>
                         </div>
                       </div>
 
@@ -682,7 +621,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="grid gap-4">
                           <a
-                            href="https://lmring.ai/about"
+                            href="https://github.com/llm-ring"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -693,24 +632,6 @@ export default function SettingsPage() {
                                   <h4 className="font-medium">{t('help.about_lmring')}</h4>
                                   <p className="text-sm text-muted-foreground">
                                     {t('help.about_lmring_description')}
-                                  </p>
-                                </div>
-                                <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
-                              </CardContent>
-                            </Card>
-                          </a>
-                          <a
-                            href="https://lmring.ai/careers"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Card className="cursor-pointer hover:shadow-md transition-all">
-                              <CardContent className="p-4 flex items-center gap-4">
-                                <UsersIcon className="h-8 w-8 text-primary" />
-                                <div>
-                                  <h4 className="font-medium">{t('help.join_team')}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {t('help.join_team_description')}
                                   </p>
                                 </div>
                                 <ExternalLinkIcon className="h-4 w-4 ml-auto text-muted-foreground" />
@@ -738,16 +659,17 @@ export default function SettingsPage() {
 
                     <div className="space-y-8">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
-                            🤯
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">LMRing</h3>
-                            <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
-                          </div>
+                        <div>
+                          <h3 className="font-bold text-lg">LMRing</h3>
+                          <p className="text-sm text-muted-foreground">v2.0.0-next.135</p>
                         </div>
-                        <Button variant="outline">{t('about.changelog')}</Button>
+                        <a
+                          href="https://github.com/llm-ring/lmring/releases"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="outline">{t('about.changelog')}</Button>
+                        </a>
                       </div>
 
                       <div className="space-y-4">
@@ -756,7 +678,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="space-y-2">
                           <a
-                            href="https://lmring.ai"
+                            href="https://lmring.com"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
@@ -765,10 +687,12 @@ export default function SettingsPage() {
                             <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
-                            href="mailto:support@lmring.ai"
+                            href="https://github.com/llm-ring"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
-                            <MailIcon className="h-4 w-4" /> {t('about.email_support')}{' '}
+                            <GithubIcon className="h-4 w-4" /> {t('about.contact_us')}{' '}
                             <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                         </div>
@@ -779,14 +703,30 @@ export default function SettingsPage() {
                           {t('about.community')}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <Button variant="secondary" className="w-full justify-start gap-2">
-                            <GithubIcon className="h-4 w-4" /> GitHub
+                          <a
+                            href="https://github.com/llm-ring/lmring/discussions"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full"
+                          >
+                            <Button variant="secondary" className="w-full justify-start gap-2">
+                              <GithubIcon className="h-4 w-4" /> GitHub
+                            </Button>
+                          </a>
+                          <Button
+                            variant="secondary"
+                            className="w-full justify-start gap-2"
+                            disabled
+                          >
+                            <div className="h-4 w-4 bg-indigo-500 rounded-full" /> Discord{' '}
+                            {t('about.coming_soon')}
                           </Button>
-                          <Button variant="secondary" className="w-full justify-start gap-2">
-                            <div className="h-4 w-4 bg-indigo-500 rounded-full" /> Discord
-                          </Button>
-                          <Button variant="secondary" className="w-full justify-start gap-2">
-                            <TwitterIcon className="h-4 w-4" /> X / Twitter
+                          <Button
+                            variant="secondary"
+                            className="w-full justify-start gap-2"
+                            disabled
+                          >
+                            <TwitterIcon className="h-4 w-4" /> X / Twitter {t('about.coming_soon')}
                           </Button>
                         </div>
                       </div>
@@ -797,7 +737,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="space-y-2">
                           <a
-                            href="https://lmring.ai/terms"
+                            href="https://github.com/llm-ring/lmring/blob/main/TERMS.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
@@ -805,7 +745,7 @@ export default function SettingsPage() {
                             {t('about.terms')} <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
-                            href="https://lmring.ai/privacy"
+                            href="https://github.com/llm-ring/lmring/blob/main/PRIVACY.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
