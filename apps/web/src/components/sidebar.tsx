@@ -193,7 +193,7 @@ export function Sidebar({ user }: SidebarProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmring.ai/about"
+                  href="https://lmring.com/about"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -204,7 +204,7 @@ export function Sidebar({ user }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmring.ai/how-it-works"
+                  href="https://lmring.com/how-it-works"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -215,7 +215,7 @@ export function Sidebar({ user }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmring.ai/help-center"
+                  href="https://lmring.com/help-center"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"
@@ -226,7 +226,7 @@ export function Sidebar({ user }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://lmring.ai/careers"
+                  href="https://lmring.com/careers"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center cursor-pointer"

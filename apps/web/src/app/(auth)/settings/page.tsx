@@ -638,7 +638,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="grid gap-4">
                           <a
-                            href="https://lmring.ai/how-it-works"
+                            href="https://lmring.com/how-it-works"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -656,7 +656,7 @@ export default function SettingsPage() {
                             </Card>
                           </a>
                           <a
-                            href="https://lmring.ai/help-center"
+                            href="https://lmring.com/help-center"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -682,7 +682,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="grid gap-4">
                           <a
-                            href="https://lmring.ai/about"
+                            href="https://lmring.com/about"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -700,7 +700,7 @@ export default function SettingsPage() {
                             </Card>
                           </a>
                           <a
-                            href="https://lmring.ai/careers"
+                            href="https://lmring.com/careers"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -756,7 +756,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="space-y-2">
                           <a
-                            href="https://lmring.ai"
+                            href="https://lmring.com"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
@@ -765,7 +765,7 @@ export default function SettingsPage() {
                             <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
-                            href="mailto:support@lmring.ai"
+                            href="mailto:support@lmring.com"
                             className="flex items-center gap-2 text-sm hover:underline"
                           >
                             <MailIcon className="h-4 w-4" /> {t('about.email_support')}{' '}
@@ -797,7 +797,7 @@ export default function SettingsPage() {
                         </h3>
                         <div className="space-y-2">
                           <a
-                            href="https://lmring.ai/terms"
+                            href="https://lmring.com/terms"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
@@ -805,7 +805,7 @@ export default function SettingsPage() {
                             {t('about.terms')} <ExternalLinkIcon className="h-3 w-3" />
                           </a>
                           <a
-                            href="https://lmring.ai/privacy"
+                            href="https://lmring.com/privacy"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm hover:underline"
