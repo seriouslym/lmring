@@ -122,7 +122,12 @@ function DynamicIntlProvider({
   }, [language, currentLocale]);
 
   return (
-    <NextIntlClientProvider key={currentLocale} locale={currentLocale} messages={messages}>
+    <NextIntlClientProvider
+      key={currentLocale}
+      locale={currentLocale}
+      messages={messages}
+      timeZone="UTC"
+    >
       {children}
     </NextIntlClientProvider>
   );
