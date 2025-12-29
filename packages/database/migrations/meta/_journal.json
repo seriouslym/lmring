@@ -57,6 +57,13 @@
       "when": 1765775240000,
       "tag": "0007_add_model_overrides",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1765775300000,
+      "tag": "0008_enable_rls_policies",
+      "breakpoints": true
     }
   ]
 }
