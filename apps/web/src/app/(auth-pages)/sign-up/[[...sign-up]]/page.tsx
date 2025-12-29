@@ -1,18 +1,17 @@
-import type { Locale } from '@lmring/i18n';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { AuthFormWrapper } from '@/components/auth';
+import { getRequestLocale } from '@/libs/request-locale';
 
 type ISignUpPageProps = {
-  params: Promise<{ locale: string }>;
   searchParams: Promise<{ callbackUrl?: string }>;
 };
 
-export async function generateMetadata(props: ISignUpPageProps): Promise<Metadata> {
-  const { locale } = await props.params;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
   const t = await getTranslations({
-    locale: locale as Locale,
+    locale,
     namespace: 'SignUp',
   });
 
@@ -23,11 +22,11 @@ export async function generateMetadata(props: ISignUpPageProps): Promise<Metadat
 }
 
 export default async function SignUpPage(props: ISignUpPageProps) {
-  const { locale } = await props.params;
   const { callbackUrl } = await props.searchParams;
-  setRequestLocale(locale as Locale);
+  const locale = await getRequestLocale();
+  setRequestLocale(locale);
   const t = await getTranslations({
-    locale: locale as Locale,
+    locale,
     namespace: 'SignUp',
   });
 
@@ -38,11 +37,11 @@ export default async function SignUpPage(props: ISignUpPageProps) {
         <p className="mt-2 text-sm text-muted-foreground">{t('meta_description')}</p>
       </div>
 
-      <AuthFormWrapper type="signup" callbackUrl={callbackUrl || `/${locale}/arena`} />
+      <AuthFormWrapper type="signup" callbackUrl={callbackUrl || '/arena'} />
 
       <div className="text-center text-sm">
         <span className="text-muted-foreground">Already have an account? </span>
-        <Link href={`/${locale}/sign-in`} className="font-medium text-primary hover:underline">
+        <Link href="/sign-in" className="font-medium text-primary hover:underline">
           Sign in
         </Link>
       </div>

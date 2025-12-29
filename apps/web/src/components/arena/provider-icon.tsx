@@ -58,6 +58,7 @@ import {
   Volcengine,
   Wenxin,
   XAI,
+  XiaomiMiMo,
   Xinference,
   Yi,
   Zhipu,
@@ -138,6 +139,7 @@ const ICON_MAP: Record<string, any> = {
   luma: Luma,
   kling: Kling,
   'recraft-ai': Recraft,
+  xiaomi: XiaomiMiMo,
   // Note: xiaomi (XiaomiMiMo), cartesia, wanvideo, playai, deepgram, rime, 'reve-ai'
   // require @lobehub/icons package update or fallback to default 🤖 emoji
 };

@@ -1,20 +1,16 @@
-import type { Locale } from '@lmring/i18n';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
-
-type IAccountDisabledPageProps = {
-  params: Promise<{ locale: string }>;
-};
+import { getRequestLocale } from '@/libs/request-locale';
 
 export const metadata: Metadata = {
   title: 'Account Disabled',
   description: 'Your account has been disabled',
 };
 
-export default async function AccountDisabledPage(props: IAccountDisabledPageProps) {
-  const { locale } = await props.params;
-  setRequestLocale(locale as Locale);
+export default async function AccountDisabledPage() {
+  const locale = await getRequestLocale();
+  setRequestLocale(locale);
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -63,7 +59,7 @@ export default async function AccountDisabledPage(props: IAccountDisabledPagePro
 
       <div className="text-center">
         <Link
-          href={`/${locale}`}
+          href="/"
           className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
         >
           <svg

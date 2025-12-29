@@ -18,7 +18,6 @@ import {
 import { motion } from 'framer-motion';
 import { CalendarIcon, ClockIcon, MessageSquareIcon, Share2Icon, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -26,8 +25,6 @@ import { ProviderIcon } from '@/components/arena/provider-icon';
 import { type ConversationData, useConversation } from '@/hooks/use-conversation';
 
 export default function HistoryPage() {
-  const params = useParams();
-  const locale = (params.locale as string) || 'en';
   const t = useTranslations('History');
   const { getConversationsWithModels, shareConversation, deleteConversation, isLoading } =
     useConversation();
@@ -150,7 +147,7 @@ export default function HistoryPage() {
               here.
             </p>
             <Link
-              href={`/${locale}/arena`}
+              href="/arena"
               className="mt-6 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
               Start New Chat
@@ -181,7 +178,7 @@ export default function HistoryPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <Link href={`/${locale}/arena/${conversation.id}`}>
+              <Link href={`/arena/${conversation.id}`}>
                 <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
