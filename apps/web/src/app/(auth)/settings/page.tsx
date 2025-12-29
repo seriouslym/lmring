@@ -221,10 +221,9 @@ export default function SettingsPage() {
         }
         console.error('Failed to load API keys:', error);
       } finally {
-        if (controller.signal.aborted) {
-          return;
+        if (!controller.signal.aborted) {
+          setApiKeysLoaded(true);
         }
-        setApiKeysLoaded(true);
       }
     };
 
