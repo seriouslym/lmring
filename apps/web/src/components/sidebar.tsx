@@ -1,22 +1,9 @@
 'use client';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  ScrollArea,
-  SidebarConversationSkeleton,
-} from '@lmring/ui';
+import { ScrollArea, SidebarConversationSkeleton } from '@lmring/ui';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDownIcon,
   ClockIcon,
-  HelpCircleIcon,
-  InfoIcon,
-  LifeBuoyIcon,
   MenuIcon,
   MessageSquareIcon,
   MessageSquarePlusIcon,
@@ -24,7 +11,6 @@ import {
   PanelLeftOpen,
   SparklesIcon,
   TrophyIcon,
-  UsersIcon,
   XIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -163,80 +149,22 @@ export function Sidebar({ user }: SidebarProps) {
             )}
           </button>
         ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent transition-colors"
-              >
-                <SparklesIcon className="h-6 w-6 text-primary flex-shrink-0" />
-                <AnimatePresence>
-                  {!collapsed && (
-                    <>
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-lg font-semibold whitespace-nowrap overflow-hidden text-left"
-                      >
-                        LMRing
-                      </motion.span>
-                      <ChevronDownIcon className="h-4 w-4 flex-shrink-0" />
-                    </>
-                  )}
-                </AnimatePresence>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>{t('resources')}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://lmring.com/about"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center cursor-pointer"
+          <div className="flex items-center gap-2 px-2 py-1.5">
+            <SparklesIcon className="h-6 w-6 text-primary flex-shrink-0" />
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-lg font-semibold whitespace-nowrap overflow-hidden text-left"
                 >
-                  <InfoIcon className="mr-2 h-4 w-4" />
-                  <span>{t('about_us')}</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://lmring.com/how-it-works"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center cursor-pointer"
-                >
-                  <HelpCircleIcon className="mr-2 h-4 w-4" />
-                  <span>{t('how_it_works')}</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://lmring.com/help-center"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center cursor-pointer"
-                >
-                  <LifeBuoyIcon className="mr-2 h-4 w-4" />
-                  <span>{t('help_center')}</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://lmring.com/careers"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center cursor-pointer"
-                >
-                  <UsersIcon className="mr-2 h-4 w-4" />
-                  <span>{t('join_team')}</span>
-                </a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  LMRing
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         )}
 
         {!collapsed && (
