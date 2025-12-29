@@ -67,7 +67,6 @@ const navItemsConfig: NavItem[] = [
 ];
 
 interface SidebarProps {
-  locale?: string;
   user?: {
     name?: string;
     email?: string;
@@ -75,7 +74,7 @@ interface SidebarProps {
   };
 }
 
-export function Sidebar({ locale = 'en', user }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
   const t = useTranslations('Sidebar');
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -91,7 +90,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
   const availableModels = useArenaStore(arenaSelectors.availableModels);
   const resetComparisons = useArenaStore((state) => state.resetComparisons);
 
-  const currentPath = pathname.replace(`/${locale}`, '');
+  const currentPath = pathname;
 
   const isSettingsPage = currentPath.startsWith('/settings');
 
@@ -261,7 +260,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
           const Icon = item.icon;
 
           return (
-            <Link key={item.href} href={`/${locale}${item.href}`} className="block">
+            <Link key={item.href} href={item.href} className="block">
               <motion.div
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
@@ -332,7 +331,7 @@ export function Sidebar({ locale = 'en', user }: SidebarProps) {
                       : truncateText(conv.title, 20);
 
                     return (
-                      <Link key={conv.id} href={`/${locale}/arena/${conv.id}`} className="block">
+                      <Link key={conv.id} href={`/arena/${conv.id}`} className="block">
                         <motion.div
                           whileHover={{ x: 2 }}
                           whileTap={{ scale: 0.98 }}

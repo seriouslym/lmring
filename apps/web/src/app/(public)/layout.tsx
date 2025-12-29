@@ -1,19 +1,16 @@
-import type { Locale } from '@lmring/i18n';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { UserMenu } from '@/components/user-menu';
 import { auth } from '@/libs/Auth';
+import { getRequestLocale } from '@/libs/request-locale';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
-export default async function PublicLayout(props: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await props.params;
-  setRequestLocale(locale as Locale);
+export default async function PublicLayout(props: { children: React.ReactNode }) {
+  const locale = await getRequestLocale();
+  setRequestLocale(locale);
   const t = await getTranslations({
-    locale: locale as Locale,
+    locale,
     namespace: 'PublicLayout',
   });
 

@@ -1,11 +1,11 @@
-import { type Locale, routing } from '@lmring/i18n';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { hasLocale, NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { Toaster } from 'sonner';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { loadLocaleMessages } from '@/libs/load-locale-messages';
+import { getRequestLocale } from '@/libs/request-locale';
+import { LanguageProvider } from '@/providers/language-provider';
 import '@/styles/global.css';
 import '@/styles/arena.css';
 
@@ -18,33 +18,20 @@ export const metadata: Metadata = {
   ],
 };
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
-export default async function RootLayout(props: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale: localeParam } = await props.params;
-  const locale = localeParam as Locale;
-
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-
+export default async function RootLayout(props: { children: React.ReactNode }) {
+  const locale = await getRequestLocale();
   setRequestLocale(locale);
-  const messages = await getMessages({ locale });
+  const messages = await loadLocaleMessages(locale);
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <ThemeProvider>
-          <NextIntlClientProvider locale={locale} messages={messages}>
+        <LanguageProvider initialLanguage={locale} initialMessages={messages}>
+          <ThemeProvider>
             <PostHogProvider>{props.children}</PostHogProvider>
             <Toaster />
-          </NextIntlClientProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
